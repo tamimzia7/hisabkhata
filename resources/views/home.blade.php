@@ -293,6 +293,96 @@
         </div>
     </section>
 
+    <!-- HOW IT WORKS -->
+    <section id="how" class="py-24 relative z-10">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <span class="inline-block glass text-emerald-300 text-xs font-semibold px-4 py-1.5 rounded-full mb-5 tracking-[0.2em] font-bn">কিভাবে কাজ করে</span>
+                <h2 class="text-3xl md:text-5xl font-display mb-4 font-bn">মাত্র <span class="gradient-green">৩ ধাপে</span> শুরু</h2>
+                <p class="text-gray-400 text-lg font-bn">কোনো জটিল সেটআপ লাগবে না — এক মিনিটেই তৈরি</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="glass-strong rounded-2xl p-8 text-center glow-green">
+                    <div class="w-16 h-16 mx-auto bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-2xl font-bold text-white mb-5 shadow-lg shadow-emerald-500/30">১</div>
+                    <h3 class="text-xl font-bold mb-2 font-bn">অ্যাকাউন্ট খুলুন</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed font-bn">নাম, ইমেইল আর পাসওয়ার্ড দিন — ফ্রি রেজিস্ট্রেশন। কার্ড লাগবে না।</p>
+                </div>
+                <div class="glass-strong rounded-2xl p-8 text-center glow-green">
+                    <div class="w-16 h-16 mx-auto bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center text-2xl font-bold text-white mb-5 shadow-lg shadow-teal-500/30">২</div>
+                    <h3 class="text-xl font-bold mb-2 font-bn">ধরন বেছে নিন</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed font-bn">শিক্ষার্থী, সংসার নাকি দোকান — আপনার প্রয়োজন অনুযায়ী মোড বেছে নিন।</p>
+                </div>
+                <div class="glass-strong rounded-2xl p-8 text-center glow-green">
+                    <div class="w-16 h-16 mx-auto bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-2xl font-bold text-white mb-5 shadow-lg shadow-orange-500/30">৩</div>
+                    <h3 class="text-xl font-bold mb-2 font-bn">হিসাব শুরু করুন</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed font-bn">প্রতিদিনের আয়-ব্যয় লিখুন — রিপোর্ট ও ব্যালেন্স নিজে থেকেই তৈরি হবে।</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section id="testimonials" class="py-24 relative z-10">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <span class="inline-block glass text-emerald-300 text-xs font-semibold px-4 py-1.5 rounded-full mb-5 tracking-[0.2em] font-bn">ব্যবহারকারীদের মতামত</span>
+                <h2 class="text-3xl md:text-5xl font-display mb-4 font-bn">তারাই <span class="gradient-green">বলছেন</span></h2>
+                <p class="text-gray-400 text-lg font-bn">হাজারো ব্যবহারকারীর অভিজ্ঞতা</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="glass rounded-2xl p-8">
+                    <div class="text-amber-400 mb-3">★★★★★</div>
+                    <p class="text-sm text-gray-300 leading-relaxed mb-5 font-bn">“মেসের মিল রেট হিসাব করতে আগে ঘণ্টা লাগতো। এখন এক মিনিটেই হয়ে যায়। অসাধারণ!”</p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full"></div>
+                        <div><p class="text-sm font-semibold font-bn">রাফি আহমেদ</p><p class="text-xs text-gray-500 font-bn">শিক্ষার্থী, ঢাকা</p></div>
+                    </div>
+                </div>
+                <div class="glass rounded-2xl p-8">
+                    <div class="text-amber-400 mb-3">★★★★★</div>
+                    <p class="text-sm text-gray-300 leading-relaxed mb-5 font-bn">“বাংলায় পুরো অ্যাপ — আমার মাও এখন বাজেট রাখেন। পরিবারের জন্য নিখুঁত।”</p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full"></div>
+                        <div><p class="text-sm font-semibold font-bn">সালমা বেগম</p><p class="text-xs text-gray-500 font-bn">গৃহিণী, চট্টগ্রাম</p></div>
+                    </div>
+                </div>
+                <div class="glass rounded-2xl p-8">
+                    <div class="text-amber-400 mb-3">★★★★★</div>
+                    <p class="text-sm text-gray-300 leading-relaxed mb-5 font-bn">“দোকানের বাকি ও ইনভয়েস এখন পরিষ্কার। কাস্টমারদের বাকি আর ভুল হয় না।”</p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full"></div>
+                        <div><p class="text-sm font-semibold font-bn">করিম মিয়া</p><p class="text-xs text-gray-500 font-bn">দোকানদার, সিলেট</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECURITY -->
+    <section id="security" class="py-24 relative z-10">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="glass-strong rounded-3xl p-10 md:p-16 glow-green grid md:grid-cols-2 gap-10 items-center">
+                <div>
+                    <span class="inline-block glass text-emerald-300 text-xs font-semibold px-4 py-1.5 rounded-full mb-5 tracking-[0.2em] font-bn">নিরাপত্তা</span>
+                    <h2 class="text-3xl md:text-4xl font-display mb-4 font-bn">আপনার ডেটা <span class="gradient-green">সম্পূর্ণ নিরাপদ</span></h2>
+                    <p class="text-gray-400 mb-6 font-bn">আপনার টাকার তথ্য কারো হাতে পড়বে না। সব ডেটা এনক্রিপ্টেড ও সুরক্ষিত সার্ভারে সংরক্ষিত।</p>
+                    <ul class="space-y-3 text-sm font-bn">
+                        <li class="flex items-center gap-3"><span class="text-emerald-400">✓</span> SSL এনক্রিপশন</li>
+                        <li class="flex items-center gap-3"><span class="text-emerald-400">✓</span> নিয়মিত ব্যাকআপ</li>
+                        <li class="flex items-center gap-3"><span class="text-emerald-400">✓</span> দুই-ধাপের যাচাই</li>
+                        <li class="flex items-center gap-3"><span class="text-emerald-400">✓</span> কোনো তৃতীয় পক্ষের সাথে শেয়ার নয়</li>
+                    </ul>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="glass rounded-2xl p-6 text-center"><div class="text-3xl mb-2">🔐</div><p class="text-sm font-bn">এনক্রিপ্টেড</p></div>
+                    <div class="glass rounded-2xl p-6 text-center"><div class="text-3xl mb-2">☁️</div><p class="text-sm font-bn">ক্লাউড ব্যাকআপ</p></div>
+                    <div class="glass rounded-2xl p-6 text-center"><div class="text-3xl mb-2">🛡️</div><p class="text-sm font-bn">ফায়ারওয়াল</p></div>
+                    <div class="glass rounded-2xl p-6 text-center"><div class="text-3xl mb-2">📱</div><p class="text-sm font-bn">যেকোনো ডিভাইস</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- FAQ -->
     <section id="faq" class="py-24 relative z-10">
         <div class="max-w-7xl mx-auto px-6">

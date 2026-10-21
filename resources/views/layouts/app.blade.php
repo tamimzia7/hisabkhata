@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bn" x-data="{
+<html lang="{{ app()->getLocale() }}" x-data="{
     dark: true,
     mobileMenu: false,
     toastMsg: window.__flashToast || '',
