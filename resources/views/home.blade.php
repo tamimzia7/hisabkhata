@@ -29,8 +29,13 @@
             </div>
             <div class="hidden md:flex items-center gap-3">
                 <button @click="dark = !dark" class="w-10 h-10 glass rounded-full flex items-center justify-center hover:scale-110 transition"><span x-show="!dark">🌙</span><span x-show="dark">☀️</span></button>
+                @php $currentLocale = app()->getLocale(); @endphp
+                <div class="flex items-center gap-1 glass rounded-full px-2 py-1">
+                    <a href="{{ route('lang.switch', 'bn') }}" class="px-2.5 py-1 text-xs font-bn rounded-full transition {{ $currentLocale === 'bn' ? 'bg-emerald-500 text-white' : 'text-gray-300 hover:bg-white/10' }}">বাংলা</a>
+                    <a href="{{ route('lang.switch', 'en') }}" class="px-2.5 py-1 text-xs font-bn rounded-full transition {{ $currentLocale === 'en' ? 'bg-emerald-500 text-white' : 'text-gray-300 hover:bg-white/10' }}">EN</a>
+                </div>
                 @guest
-                    <a href="{{ route('login') }}" class="text-sm font-semibold text-gray-300 hover:text-white px-4 py-2 font-bn">লগইন</a>
+                    <a href="{{ route('login') }}" class="text-sm font-semibold text-gray-300 hover:text-white px-4 py-2 font-bn">{{ __('Login') }}</a>
                     <a href="{{ route('register') }}" class="btn-shine btn-green text-sm font-bold px-6 py-2.5 rounded-full font-bn">ফ্রি শুরু →</a>
                 @else
                     <a href="{{ route('dashboard') }}" class="btn-shine btn-green text-sm font-bold px-6 py-2.5 rounded-full font-bn">ড্যাশবোর্ড →</a>

@@ -5,14 +5,31 @@
 @section('content')
 <div class="min-h-screen flex items-center justify-center p-6 relative z-10">
     <div class="glass-strong rounded-3xl p-8 md:p-10 w-full max-w-md glow-green">
-        <a href="{{ route('home') }}" class="text-emerald-300 text-sm font-bn mb-6 inline-block">← হোমে ফিরুন</a>
-        <h2 class="text-3xl font-bold font-display mb-2 font-bn">লগইন</h2>
-        <p class="text-gray-400 text-sm mb-6 font-bn">আপনার অ্যাকাউন্টে প্রবেশ করুন</p>
+        <div class="flex items-center justify-between mb-6">
+            <a href="{{ route('home') }}" class="flex items-center gap-2 group">
+                <svg width="40" height="40" viewBox="0 0 200 200" fill="none" class="group-hover:scale-105 transition-transform duration-300 drop-shadow-[0_0_15px_rgba(16,185,129,0.4)]">
+                    <defs>
+                        <linearGradient id="logoGreenLogin" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#34D399"/><stop offset="100%" stop-color="#047857"/></linearGradient>
+                        <linearGradient id="logoOrangeLogin" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#EA580C"/></linearGradient>
+                    </defs>
+                    <path d="M 40 130 Q 100 160 160 130 L 160 60 Q 100 90 40 60 Z" fill="url(#logoGreenLogin)"/>
+                    <rect x="65" y="50" width="16" height="75" rx="5" fill="#047857"/><rect x="119" y="50" width="16" height="75" rx="5" fill="#047857"/><rect x="65" y="80" width="70" height="16" rx="5" fill="#047857"/>
+                    <circle cx="145" cy="115" r="32" fill="url(#logoOrangeLogin)"/><text x="145" y="128" font-family="Inter, sans-serif" font-size="36" font-weight="800" fill="white" text-anchor="middle">৳</text>
+                </svg>
+                <div>
+                    <span class="text-lg font-bold tracking-tight font-bn text-white">হিসাবখাতা</span>
+                    <p class="text-[9px] tracking-[0.2em] text-emerald-400 -mt-0.5">SMART FINANCE</p>
+                </div>
+            </a>
+            <a href="{{ route('home') }}" class="text-emerald-300 text-sm font-bn">← হোমে ফিরুন</a>
+        </div>
+        <h2 class="text-3xl font-bold font-display mb-2 font-bn">{{ __('Login') }}</h2>
+        <p class="text-gray-400 text-sm mb-6 font-bn">{{ __('Login to account') }}</p>
 
         <form method="POST" action="{{ route('login') }}" class="space-y-4">
             @csrf
             <div>
-                <label for="email" class="text-sm text-gray-300 font-bn">ইমেইল</label>
+                <label for="email" class="text-sm text-gray-300 font-bn">{{ __('Email') }}</label>
                 <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus placeholder="you@example.com"
                     class="w-full mt-1 glass rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50">
                 @error('email')
@@ -20,18 +37,18 @@
                 @enderror
             </div>
             <div>
-                <label for="password" class="text-sm text-gray-300 font-bn">পাসওয়ার্ড</label>
+                <label for="password" class="text-sm text-gray-300 font-bn">{{ __('Password') }}</label>
                 <input id="password" name="password" type="password" required placeholder="••••••••"
                     class="w-full mt-1 glass rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50">
                 @error('password')
                     <p class="text-red-400 text-xs mt-1.5 font-bn">{{ $message }}</p>
                 @enderror
             </div>
-            <button type="submit" class="btn-shine btn-green w-full py-3 rounded-lg font-bold font-bn">লগইন</button>
+            <button type="submit" class="btn-shine btn-green w-full py-3 rounded-lg font-bold font-bn">{{ __('Login') }}</button>
             <p class="text-xs text-center text-gray-500 font-bn">নিরাপদ লগইন — প্রতি মিনিটে সর্বোচ্চ ৫ বার চেষ্টা করা যাবে।</p>
         </form>
 
-        <div class="mt-6 pt-6 border-t border-white/10 text-sm text-center font-bn"><span class="text-gray-400">অ্যাকাউন্ট নেই?</span> <a href="{{ route('register') }}" class="text-emerald-400 font-semibold">রেজিস্টার করুন</a></div>
+        <div class="mt-6 pt-6 border-t border-white/10 text-sm text-center font-bn"><span class="text-gray-400">{{ __('No account?') }}</span> <a href="{{ route('register') }}" class="text-emerald-400 font-semibold">{{ __('Register now') }}</a></div>
     </div>
 </div>
 @endsection

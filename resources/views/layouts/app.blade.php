@@ -72,7 +72,15 @@
 </div>
 
 <!-- TOAST -->
-<div x-show="showToast" x-transition x-init="showToast && setTimeout(() => showToast = false, 2500)" class="fixed top-20 right-6 z-[100] glass-strong text-emerald-300 px-5 py-3 rounded-xl shadow-2xl text-sm font-bn" x-text="toastMsg" x-cloak></div>
+    <div x-show="showToast" x-transition x-init="showToast && setTimeout(() => showToast = false, 2500)" class="fixed top-20 right-6 z-[100] glass-strong text-emerald-300 px-5 py-3 rounded-xl shadow-2xl text-sm font-bn" x-text="toastMsg" x-cloak></div>
+
+    <!-- LANGUAGE SELECTOR -->
+    @php $currentLocale = app()->getLocale(); @endphp
+    <div class="fixed bottom-6 right-6 z-50 flex items-center gap-2 glass rounded-full px-3 py-2 shadow-2xl">
+        <a href="{{ route('lang.switch', 'bn') }}" class="px-3 py-1.5 text-xs font-bn rounded-full transition {{ $currentLocale === 'bn' ? 'bg-emerald-500 text-white' : 'text-gray-300 hover:bg-white/10' }}">বাংলা</a>
+        <div class="w-px h-4 bg-white/20"></div>
+        <a href="{{ route('lang.switch', 'en') }}" class="px-3 py-1.5 text-xs font-bn rounded-full transition {{ $currentLocale === 'en' ? 'bg-emerald-500 text-white' : 'text-gray-300 hover:bg-white/10' }}">English</a>
+    </div>
 
 @yield('content')
 

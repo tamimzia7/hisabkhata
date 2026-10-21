@@ -19,3 +19,11 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });
+
+Route::get('/lang/{locale}', function ($locale) {
+    if (in_array($locale, ['en', 'bn'])) {
+        session(['locale' => $locale]);
+        app()->setLocale($locale);
+    }
+    return back();
+})->name('lang.switch');
