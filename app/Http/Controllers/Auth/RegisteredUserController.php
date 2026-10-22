@@ -31,14 +31,14 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'string', 'min:8'],
             'mode' => ['required', Rule::in(['student', 'personal', 'business'])],
         ], [
-            'name.required' => 'পুরো নাম লিখুন।',
-            'email.required' => 'ইমেইল লিখুন।',
-            'email.email' => 'সঠিক ইমেইল ঠিকানা লিখুন।',
-            'email.unique' => 'এই ইমেইল দিয়ে আগে থেকেই অ্যাকাউন্ট আছে।',
-            'password.required' => 'পাসওয়ার্ড লিখুন।',
-            'password.min' => 'পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।',
-            'mode.required' => 'আপনার ধরন নির্বাচন করুন।',
-            'mode.in' => 'আপনার ধরন নির্বাচন করুন।',
+            'name.required' => __('site.auth.messages.name_required'),
+            'email.required' => __('site.auth.messages.email_required'),
+            'email.email' => __('site.auth.messages.email_invalid'),
+            'email.unique' => __('site.auth.messages.email_taken'),
+            'password.required' => __('site.auth.messages.password_required'),
+            'password.min' => __('site.auth.messages.password_min'),
+            'mode.required' => __('site.auth.messages.mode_required'),
+            'mode.in' => __('site.auth.messages.mode_required'),
         ]);
 
         $user = User::create($validated);
@@ -47,6 +47,6 @@ class RegisteredUserController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard')->with('toast', 'অ্যাকাউন্ট তৈরি হয়েছে! আপনার ড্যাশবোর্ডে স্বাগতম।');
+        return redirect()->route('dashboard')->with('toast', __('site.auth.messages.account_created'));
     }
 }

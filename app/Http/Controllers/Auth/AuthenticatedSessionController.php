@@ -28,20 +28,20 @@ class AuthenticatedSessionController extends Controller
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
         ], [
-            'email.required' => 'ইমেইল লিখুন।',
-            'email.email' => 'সঠিক ইমেইল ঠিকানা লিখুন।',
-            'password.required' => 'পাসওয়ার্ড লিখুন।',
+            'email.required' => __('site.auth.messages.email_required'),
+            'email.email' => __('site.auth.messages.email_invalid'),
+            'password.required' => __('site.auth.messages.password_required'),
         ]);
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             throw ValidationException::withMessages([
-                'email' => 'ইমেইল বা পাসওয়ার্ড মিলছে না।',
+                'email' => __('site.auth.messages.credentials_invalid'),
             ]);
         }
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'))->with('toast', 'সফলভাবে লগইন হয়েছে!');
+        return redirect()->intended(route('dashboard'))->with('toast', __('site.auth.messages.login_success'));
     }
 
     /**
@@ -54,6 +54,6 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('home')->with('toast', 'লগআউট হয়েছে!');
+        return redirect()->route('home')->with('toast', __('site.auth.messages.logout_success'));
     }
 }
