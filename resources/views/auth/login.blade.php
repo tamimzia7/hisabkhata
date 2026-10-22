@@ -3,9 +3,9 @@
 @section('title', __('site.auth.login_title'))
 
 @section('content')
-<div class="min-h-screen flex items-center justify-center p-6 relative z-10">
-    <div class="glass-strong rounded-3xl p-8 md:p-10 w-full max-w-md glow-green">
-        <div class="flex items-center justify-between mb-6 gap-3">
+<div class="min-h-screen flex items-center justify-center p-4 sm:p-6 relative z-10">
+    <div class="glass-strong rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-10 w-full max-w-md glow-green">
+        <div class="flex items-center justify-between mb-6 gap-2 sm:gap-3">
             <a href="{{ route('home') }}" class="flex items-center gap-2 group">
                 <svg width="40" height="40" viewBox="0 0 200 200" fill="none" class="group-hover:scale-105 transition-transform duration-300 drop-shadow-[0_0_15px_rgba(16,185,129,0.4)]">
                     <defs>
@@ -17,15 +17,15 @@
                     <circle cx="145" cy="115" r="32" fill="url(#logoOrangeLogin)"/><text x="145" y="128" font-family="Inter, sans-serif" font-size="36" font-weight="800" fill="white" text-anchor="middle">৳</text>
                 </svg>
                 <div>
-                    <span class="text-lg font-bold tracking-tight font-bn text-white">{{ __('site.common.brand') }}</span>
+                    <span class="text-base sm:text-lg font-bold tracking-tight font-bn text-white">{{ __('site.common.brand') }}</span>
                     <p class="text-[9px] tracking-[0.2em] text-emerald-400 -mt-0.5">{{ __('site.common.smart_finance') }}</p>
                 </div>
             </a>
             @include('partials.language-switcher')
         </div>
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-3xl font-bold font-display font-bn">{{ __('site.auth.login') }}</h2>
-            <a href="{{ route('home') }}" class="text-emerald-300 text-sm font-bn">{{ __('site.auth.back_home') }}</a>
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-6">
+            <h2 class="text-2xl sm:text-3xl font-bold font-display font-bn">{{ __('site.auth.login') }}</h2>
+            <a href="{{ route('home') }}" class="text-emerald-300 text-xs sm:text-sm font-bn">{{ __('site.auth.back_home') }}</a>
         </div>
         <p class="text-gray-400 text-sm mb-6 font-bn">{{ __('site.auth.login_subtitle') }}</p>
 
@@ -34,7 +34,7 @@
             <div>
                 <label for="email" class="text-sm text-gray-300 font-bn">{{ __('site.auth.email') }}</label>
                 <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus placeholder="you@example.com"
-                    class="w-full mt-1 glass rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50">
+                    class="w-full mt-1 glass rounded-lg px-3 sm:px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50">
                 @error('email')
                     <p class="text-red-400 text-xs mt-1.5 font-bn">{{ $message }}</p>
                 @enderror
@@ -42,7 +42,7 @@
             <div>
                 <label for="password" class="text-sm text-gray-300 font-bn">{{ __('site.auth.password') }}</label>
                 <input id="password" name="password" type="password" required placeholder="••••••••"
-                    class="w-full mt-1 glass rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50">
+                    class="w-full mt-1 glass rounded-lg px-3 sm:px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50">
                 @error('password')
                     <p class="text-red-400 text-xs mt-1.5 font-bn">{{ $message }}</p>
                 @enderror

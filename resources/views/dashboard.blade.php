@@ -41,9 +41,9 @@
 
     <!-- Main -->
     <main class="flex-1 p-3 md:p-6 overflow-x-hidden">
-        <div class="flex items-center justify-between mb-6 gap-3">
-            <div>
-                <h1 class="text-2xl md:text-3xl font-bold font-display font-bn">
+        <div class="flex flex-wrap items-start sm:items-center justify-between mb-5 sm:mb-6 gap-3">
+            <div class="min-w-0">
+                <h1 class="text-xl sm:text-2xl md:text-3xl font-bold font-display font-bn">
                     @if($user->mode === 'admin') {{ __('site.dashboard.heading_admin') }}
                     @elseif($user->mode === 'personal') {{ __('site.dashboard.heading_personal') }}
                     @elseif($user->mode === 'business') {{ __('site.dashboard.heading_business') }}
@@ -52,12 +52,12 @@
                 </h1>
                 <p class="text-sm text-gray-400 font-bn">{{ __('site.dashboard.welcome', ['name' => $user->name]) }}</p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
                 @include('partials.language-switcher')
                 <form method="POST" action="{{ route('logout') }}" class="md:hidden">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="glass px-3 py-2 rounded-lg text-sm font-bn">{{ __('site.dashboard.logout') }}</button>
+                    <button type="submit" class="glass px-2.5 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-bn">{{ __('site.dashboard.logout') }}</button>
                 </form>
             </div>
         </div>
@@ -65,16 +65,16 @@
         <!-- ===== ADMIN ===== -->
         @if($user->mode === 'admin')
             <div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                    <div class="glass-strong rounded-xl p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.total_users') }}</p><p class="text-2xl font-bold text-emerald-400">{{ __('site.dashboard.values.total_users') }}</p></div>
-                    <div class="glass-strong rounded-xl p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.active') }}</p><p class="text-2xl font-bold text-teal-400">{{ __('site.dashboard.values.active') }}</p></div>
-                    <div class="glass-strong rounded-xl p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.monthly_income') }}</p><p class="text-2xl font-bold text-lime-400">{{ __('site.dashboard.values.monthly_income') }}</p></div>
-                    <div class="glass-strong rounded-xl p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.total_entries') }}</p><p class="text-2xl font-bold text-orange-400">{{ __('site.dashboard.values.total_entries') }}</p></div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-6">
+                    <div class="glass-strong rounded-xl p-3 sm:p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.total_users') }}</p><p class="text-lg sm:text-2xl font-bold text-emerald-400">{{ __('site.dashboard.values.total_users') }}</p></div>
+                    <div class="glass-strong rounded-xl p-3 sm:p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.active') }}</p><p class="text-lg sm:text-2xl font-bold text-teal-400">{{ __('site.dashboard.values.active') }}</p></div>
+                    <div class="glass-strong rounded-xl p-3 sm:p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.monthly_income') }}</p><p class="text-lg sm:text-2xl font-bold text-lime-400">{{ __('site.dashboard.values.monthly_income') }}</p></div>
+                    <div class="glass-strong rounded-xl p-3 sm:p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.total_entries') }}</p><p class="text-lg sm:text-2xl font-bold text-orange-400">{{ __('site.dashboard.values.total_entries') }}</p></div>
                 </div>
                 <div class="grid lg:grid-cols-3 gap-4">
-                    <div class="lg:col-span-2 glass-strong rounded-2xl p-5">
+                    <div class="lg:col-span-2 glass-strong rounded-2xl p-4 sm:p-5">
                         <h3 class="font-bold mb-4 font-bn">{{ __('site.dashboard.user_list') }}</h3>
-                        <div class="overflow-x-auto"><table class="w-full text-sm">
+                        <div class="overflow-x-auto"><table class="w-full min-w-[480px] text-sm">
                             <thead class="text-gray-400 text-left"><tr><th class="py-2 font-bn">{{ __('site.dashboard.name') }}</th><th class="font-bn">{{ __('site.dashboard.mode') }}</th><th class="font-bn">{{ __('site.dashboard.payment') }}</th></tr></thead>
                             <tbody>
                                 @foreach([[__('site.dashboard.admin_user_1'), 'student', true], [__('site.dashboard.admin_user_2'), 'personal', true], [__('site.dashboard.admin_user_3'), 'business', false]] as [$name, $mode, $paid])
@@ -87,7 +87,7 @@
                             </tbody>
                         </table></div>
                     </div>
-                    <div class="glass-strong rounded-2xl p-5">
+                    <div class="glass-strong rounded-2xl p-4 sm:p-5">
                         <h3 class="font-bold mb-4 font-bn">{{ __('site.dashboard.quick_actions') }}</h3>
                         <div class="space-y-2">
                             <button class="w-full glass rounded-lg py-2 text-sm hover:bg-emerald-500/10 font-bn">{{ __('site.dashboard.new_user') }}</button>
@@ -102,13 +102,13 @@
         <!-- ===== STUDENT / MEAL ===== -->
         @if($user->mode === 'student')
             <div>
-                <div class="grid grid-cols-3 gap-3 mb-6">
-                    <div class="glass-strong rounded-xl p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.total_meals') }}</p><p class="text-2xl font-bold text-emerald-400">{{ __('site.dashboard.values.total_meals') }}</p></div>
-                    <div class="glass-strong rounded-xl p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.meal_rate') }}</p><p class="text-2xl font-bold text-teal-400">{{ __('site.dashboard.values.meal_rate') }}</p></div>
-                    <div class="glass-strong rounded-xl p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.balance') }}</p><p class="text-2xl font-bold text-orange-400">{{ __('site.dashboard.values.balance') }}</p></div>
+                <div class="grid grid-cols-3 gap-2 sm:gap-3 mb-6">
+                    <div class="glass-strong rounded-xl p-3 sm:p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.total_meals') }}</p><p class="text-lg sm:text-2xl font-bold text-emerald-400">{{ __('site.dashboard.values.total_meals') }}</p></div>
+                    <div class="glass-strong rounded-xl p-3 sm:p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.meal_rate') }}</p><p class="text-lg sm:text-2xl font-bold text-teal-400">{{ __('site.dashboard.values.meal_rate') }}</p></div>
+                    <div class="glass-strong rounded-xl p-3 sm:p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.balance') }}</p><p class="text-lg sm:text-2xl font-bold text-orange-400">{{ __('site.dashboard.values.balance') }}</p></div>
                 </div>
                 <div class="grid lg:grid-cols-2 gap-4">
-                    <div class="glass-strong rounded-2xl p-5">
+                    <div class="glass-strong rounded-2xl p-4 sm:p-5">
                         <h3 class="font-bold mb-4 font-bn">{{ __('site.dashboard.member_balances') }}</h3>
                         <template x-for="m in members" :key="m.id">
                             <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg mb-2">
@@ -121,7 +121,7 @@
                             <button @click="if(newMemberName){ members.push({id:Date.now(), name:newMemberName, deposit:0, meals:0}); newMemberName=''; toast(@js(__('site.dashboard.member_added'))); }" class="btn-green px-4 py-2 rounded-lg text-sm font-bold font-bn">{{ __('site.dashboard.add') }}</button>
                         </div>
                     </div>
-                    <div class="glass-strong rounded-2xl p-5">
+                    <div class="glass-strong rounded-2xl p-4 sm:p-5">
                         <h3 class="font-bold mb-4 font-bn">{{ __('site.dashboard.today_meals') }}</h3>
                         <div class="space-y-2 text-sm font-bn">
                             <div class="flex justify-between p-2 bg-white/5 rounded-lg"><span>{{ __('site.dashboard.breakfast') }}</span><span class="text-emerald-400">✓ {{ __('site.dashboard.people_count') }}</span></div>
@@ -137,14 +137,14 @@
         <!-- ===== PERSONAL ===== -->
         @if($user->mode === 'personal')
             <div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                    <div class="glass-strong rounded-xl p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.income') }}</p><p class="text-2xl font-bold text-emerald-400">{{ __('site.dashboard.values.income') }}</p></div>
-                    <div class="glass-strong rounded-xl p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.expense') }}</p><p class="text-2xl font-bold text-orange-400">৳<span x-text="personalExpenses.reduce((s,e)=>s+e.amount,0)"></span></p></div>
-                    <div class="glass-strong rounded-xl p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.savings') }}</p><p class="text-2xl font-bold text-teal-400">{{ __('site.dashboard.values.savings') }}</p></div>
-                    <div class="glass-strong rounded-xl p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.budget_left') }}</p><p class="text-2xl font-bold text-lime-400">{{ __('site.dashboard.values.budget_left') }}</p></div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-6">
+                    <div class="glass-strong rounded-xl p-3 sm:p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.income') }}</p><p class="text-lg sm:text-2xl font-bold text-emerald-400">{{ __('site.dashboard.values.income') }}</p></div>
+                    <div class="glass-strong rounded-xl p-3 sm:p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.expense') }}</p><p class="text-lg sm:text-2xl font-bold text-orange-400">৳<span x-text="personalExpenses.reduce((s,e)=>s+e.amount,0)"></span></p></div>
+                    <div class="glass-strong rounded-xl p-3 sm:p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.savings') }}</p><p class="text-lg sm:text-2xl font-bold text-teal-400">{{ __('site.dashboard.values.savings') }}</p></div>
+                    <div class="glass-strong rounded-xl p-3 sm:p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.budget_left') }}</p><p class="text-lg sm:text-2xl font-bold text-lime-400">{{ __('site.dashboard.values.budget_left') }}</p></div>
                 </div>
                 <div class="grid lg:grid-cols-2 gap-4">
-                    <div class="glass-strong rounded-2xl p-5">
+                    <div class="glass-strong rounded-2xl p-4 sm:p-5">
                         <h3 class="font-bold mb-4 font-bn">{{ __('site.dashboard.budget_title') }}</h3>
                         <template x-for="e in personalExpenses" :key="e.id">
                             <div class="mb-4">
@@ -152,14 +152,14 @@
                                 <div class="h-2 bg-white/10 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full" :style="'width:' + Math.min(100, (e.amount/e.budget)*100) + '%'"></div></div>
                             </div>
                         </template>
-                        <div class="grid grid-cols-3 gap-2 mt-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
                             <input x-model="newExpenseName" placeholder="{{ __('site.dashboard.expense_name_placeholder') }}" class="glass rounded-lg px-3 py-2 text-sm col-span-1 font-bn">
                             <input x-model="newExpenseAmount" type="number" placeholder="{{ __('site.dashboard.amount_placeholder') }}" class="glass rounded-lg px-3 py-2 text-sm font-bn">
                             <input x-model="newExpenseBudget" type="number" placeholder="{{ __('site.dashboard.budget_placeholder') }}" class="glass rounded-lg px-3 py-2 text-sm font-bn">
                         </div>
                         <button @click="if(newExpenseName && newExpenseAmount){ personalExpenses.push({id:Date.now(), cat:newExpenseName, amount:+newExpenseAmount, budget:+newExpenseBudget || +newExpenseAmount}); newExpenseName=''; newExpenseAmount=''; newExpenseBudget=''; toast(@js(__('site.dashboard.expense_added'))); }" class="w-full mt-2 btn-green rounded-lg py-2 font-bold text-sm font-bn">{{ __('site.dashboard.add_expense') }}</button>
                     </div>
-                    <div class="glass-strong rounded-2xl p-5">
+                    <div class="glass-strong rounded-2xl p-4 sm:p-5">
                         <h3 class="font-bold mb-4 font-bn">{{ __('site.dashboard.recent_entries') }}</h3>
                         <div class="space-y-2 text-sm font-bn">
                             <div class="flex justify-between p-2 bg-white/5 rounded-lg"><span>{{ __('site.dashboard.groceries') }}</span><span class="text-red-400">{{ __('site.dashboard.groceries_amount') }}</span></div>
@@ -174,14 +174,14 @@
         <!-- ===== BUSINESS ===== -->
         @if($user->mode === 'business')
             <div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                    <div class="glass-strong rounded-xl p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.today_sales') }}</p><p class="text-2xl font-bold text-emerald-400">{{ __('site.dashboard.values.today_sales') }}</p></div>
-                    <div class="glass-strong rounded-xl p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.total_due') }}</p><p class="text-2xl font-bold text-orange-400">৳<span x-text="businessInvoices.filter(i=>!i.paid).reduce((s,i)=>s+i.amount,0)"></span></p></div>
-                    <div class="glass-strong rounded-xl p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.month_profit') }}</p><p class="text-2xl font-bold text-teal-400">{{ __('site.dashboard.values.month_profit') }}</p></div>
-                    <div class="glass-strong rounded-xl p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.invoices') }}</p><p class="text-2xl font-bold text-lime-400" x-text="businessInvoices.length"></p></div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-6">
+                    <div class="glass-strong rounded-xl p-3 sm:p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.today_sales') }}</p><p class="text-lg sm:text-2xl font-bold text-emerald-400">{{ __('site.dashboard.values.today_sales') }}</p></div>
+                    <div class="glass-strong rounded-xl p-3 sm:p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.total_due') }}</p><p class="text-lg sm:text-2xl font-bold text-orange-400">৳<span x-text="businessInvoices.filter(i=>!i.paid).reduce((s,i)=>s+i.amount,0)"></span></p></div>
+                    <div class="glass-strong rounded-xl p-3 sm:p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.month_profit') }}</p><p class="text-lg sm:text-2xl font-bold text-teal-400">{{ __('site.dashboard.values.month_profit') }}</p></div>
+                    <div class="glass-strong rounded-xl p-3 sm:p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.invoices') }}</p><p class="text-lg sm:text-2xl font-bold text-lime-400" x-text="businessInvoices.length"></p></div>
                 </div>
                 <div class="grid lg:grid-cols-2 gap-4">
-                    <div class="glass-strong rounded-2xl p-5">
+                    <div class="glass-strong rounded-2xl p-4 sm:p-5">
                         <h3 class="font-bold mb-4 font-bn">{{ __('site.dashboard.recent_invoices') }}</h3>
                         <template x-for="i in businessInvoices" :key="i.id">
                             <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg mb-2">
@@ -189,13 +189,13 @@
                                 <div class="text-right"><p class="text-sm font-bold font-bn" x-text="'৳' + i.amount"></p><span class="text-xs font-bn" :class="i.paid ? 'text-emerald-400' : 'text-amber-400'" x-text="i.paid ? @js(__('site.dashboard.paid')) : @js(__('site.dashboard.due'))"></span></div>
                             </div>
                         </template>
-                        <div class="grid grid-cols-2 gap-2 mt-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
                             <input x-model="newInvoiceCustomer" placeholder="{{ __('site.dashboard.customer') }}" class="glass rounded-lg px-3 py-2 text-sm font-bn">
                             <input x-model="newInvoiceAmount" type="number" placeholder="{{ __('site.dashboard.amount_placeholder') }}" class="glass rounded-lg px-3 py-2 text-sm font-bn">
                         </div>
                         <button @click="if(newInvoiceCustomer && newInvoiceAmount){ businessInvoices.unshift({id:Date.now(), inv:'INV-'+(1025+businessInvoices.length), customer:newInvoiceCustomer, amount:+newInvoiceAmount, paid:false}); newInvoiceCustomer=''; newInvoiceAmount=''; toast(@js(__('site.dashboard.invoice_created'))); }" class="w-full mt-2 btn-green rounded-lg py-2 font-bold text-sm font-bn">{{ __('site.dashboard.new_invoice') }}</button>
                     </div>
-                    <div class="glass-strong rounded-2xl p-5">
+                    <div class="glass-strong rounded-2xl p-4 sm:p-5">
                         <h3 class="font-bold mb-4 font-bn">{{ __('site.dashboard.customer_due') }}</h3>
                         <template x-for="i in businessInvoices.filter(x=>!x.paid)" :key="i.id">
                             <div class="flex justify-between p-2 bg-white/5 rounded-lg mb-2 text-sm font-bn"><span x-text="i.customer"></span><span class="text-orange-400" x-text="'৳' + i.amount"></span></div>

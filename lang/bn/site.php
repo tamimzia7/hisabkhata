@@ -12,16 +12,21 @@ return [
     ],
 
     'nav' => [
+        'home' => 'হোম',
         'showcase' => 'ভেতরে কী আছে',
+        'showcase_short' => 'ভেতরে',
         'features' => 'ফিচার',
+        'features_short' => 'ফিচার',
         'compare' => 'তুলনা',
         'pricing' => 'দাম',
+        'pricing_short' => 'দাম',
         'faq' => 'প্রশ্নোত্তর',
         'login' => 'লগইন',
         'start_free' => 'ফ্রি শুরু →',
         'start_free_short' => 'ফ্রি শুরু',
         'dashboard' => 'ড্যাশবোর্ড →',
         'dashboard_short' => 'ড্যাশবোর্ড',
+        'mobile_label' => 'মোবাইল নেভিগেশন',
     ],
 
     'hero' => [

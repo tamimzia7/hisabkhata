@@ -12,16 +12,21 @@ return [
     ],
 
     'nav' => [
+        'home' => 'Home',
         'showcase' => "What's Inside",
+        'showcase_short' => 'Inside',
         'features' => 'Features',
+        'features_short' => 'Features',
         'compare' => 'Compare',
         'pricing' => 'Pricing',
+        'pricing_short' => 'Pricing',
         'faq' => 'FAQ',
         'login' => 'Login',
         'start_free' => 'Start Free →',
         'start_free_short' => 'Start Free',
         'dashboard' => 'Dashboard →',
         'dashboard_short' => 'Dashboard',
+        'mobile_label' => 'Mobile navigation',
     ],
 
     'hero' => [
