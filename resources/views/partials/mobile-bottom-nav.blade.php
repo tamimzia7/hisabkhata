@@ -2,7 +2,7 @@
     class="md:hidden fixed inset-x-0 bottom-0 z-50 glass-nav border-t border-emerald-500/15"
     style="padding-bottom: env(safe-area-inset-bottom);">
     <div class="grid grid-cols-5">
-        <a href="#top" @click="mobileMenu = false; active = '#top'"
+        <a href="#top" @click="active = '#top'"
             :class="active === '#top' ? 'text-emerald-400' : 'text-gray-400'"
             class="relative flex flex-col items-center justify-center gap-1 py-2 text-[10px] leading-none font-bn transition-colors">
             <span class="absolute top-0 h-0.5 w-8 rounded-full bg-emerald-400 transition-opacity"
@@ -12,7 +12,7 @@
             </svg>
             <span>{{ __('site.nav.home') }}</span>
         </a>
-        <a href="#showcase" @click="mobileMenu = false; active = '#showcase'"
+        <a href="#showcase" @click="active = '#showcase'"
             :class="active === '#showcase' ? 'text-emerald-400' : 'text-gray-400'"
             class="relative flex flex-col items-center justify-center gap-1 py-2 text-[10px] leading-none font-bn transition-colors">
             <span class="absolute top-0 h-0.5 w-8 rounded-full bg-emerald-400 transition-opacity"
@@ -23,7 +23,7 @@
             </svg>
             <span>{{ __('site.nav.showcase_short') }}</span>
         </a>
-        <a href="#features" @click="mobileMenu = false; active = '#features'"
+        <a href="#features" @click="active = '#features'"
             :class="active === '#features' ? 'text-emerald-400' : 'text-gray-400'"
             class="relative flex flex-col items-center justify-center gap-1 py-2 text-[10px] leading-none font-bn transition-colors">
             <span class="absolute top-0 h-0.5 w-8 rounded-full bg-emerald-400 transition-opacity"
@@ -35,7 +35,7 @@
             </svg>
             <span>{{ __('site.nav.features_short') }}</span>
         </a>
-        <a href="#pricing" @click="mobileMenu = false; active = '#pricing'"
+        <a href="#pricing" @click="active = '#pricing'"
             :class="active === '#pricing' ? 'text-emerald-400' : 'text-gray-400'"
             class="relative flex flex-col items-center justify-center gap-1 py-2 text-[10px] leading-none font-bn transition-colors">
             <span class="absolute top-0 h-0.5 w-8 rounded-full bg-emerald-400 transition-opacity"
@@ -48,7 +48,7 @@
             <span>{{ __('site.nav.pricing_short') }}</span>
         </a>
         @auth
-            <a href="{{ route('dashboard') }}" @click="mobileMenu = false; active = 'account'"
+            <a href="{{ route('dashboard') }}" @click="active = 'account'"
                 :class="active === 'account' ? 'text-emerald-400' : 'text-gray-400'"
                 class="relative flex flex-col items-center justify-center gap-1 py-2 text-[10px] leading-none font-bn transition-colors">
                 <span class="absolute top-0 h-0.5 w-8 rounded-full bg-emerald-400 transition-opacity"
@@ -60,7 +60,7 @@
                 <span>{{ __('site.nav.dashboard_short') }}</span>
             </a>
         @else
-            <a href="{{ route('login') }}" @click="mobileMenu = false; active = 'account'"
+            <a href="{{ route('login') }}" @click="active = 'account'"
                 :class="active === 'account' ? 'text-emerald-400' : 'text-gray-400'"
                 class="relative flex flex-col items-center justify-center gap-1 py-2 text-[10px] leading-none font-bn transition-colors">
                 <span class="absolute top-0 h-0.5 w-8 rounded-full bg-emerald-400 transition-opacity"

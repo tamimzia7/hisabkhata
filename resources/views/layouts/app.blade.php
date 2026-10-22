@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" x-data="{
     dark: true,
-    mobileMenu: false,
     toastMsg: window.__flashToast || '',
     showToast: Boolean(window.__flashToast),
 }" :class="dark ? 'dark' : ''">

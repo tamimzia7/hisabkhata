@@ -15,7 +15,7 @@
                     <rect x="65" y="50" width="16" height="75" rx="5" fill="#047857"/><rect x="119" y="50" width="16" height="75" rx="5" fill="#047857"/><rect x="65" y="80" width="70" height="16" rx="5" fill="#047857"/>
                     <circle cx="145" cy="115" r="32" fill="url(#logoOrange)"/><text x="145" y="128" font-family="Inter, sans-serif" font-size="36" font-weight="800" fill="white" text-anchor="middle">৳</text>
                 </svg>
-                <div class="hidden min-[400px]:block">
+                <div class="hidden min-[360px]:block">
                     <span class="text-lg sm:text-xl font-bold tracking-tight font-bn text-white">{{ __('site.common.brand') }}</span>
                     <p class="text-[10px] tracking-[0.2em] text-emerald-400 -mt-0.5">{{ __('site.common.smart_finance') }}</p>
                 </div>
@@ -51,27 +51,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg>
                     </a>
                 @endguest
-                <button @click="mobileMenu = !mobileMenu" aria-label="{{ __('site.nav.mobile_label') }}" class="glass w-9 h-9 rounded-lg flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                </button>
             </div>
-        </div>
-        <div x-show="mobileMenu" x-transition class="lg:hidden px-4 pb-4 pt-2 space-y-1 border-t border-emerald-500/10 max-h-[calc(100vh-4.5rem)] overflow-y-auto">
-            <a href="#top" @click="mobileMenu=false" class="block py-2 text-gray-300 font-bn">{{ __('site.nav.home') }}</a>
-            <a href="#showcase" @click="mobileMenu=false" class="block py-2 text-gray-300 font-bn">{{ __('site.nav.showcase') }}</a>
-            <a href="#features" @click="mobileMenu=false" class="block py-2 text-gray-300 font-bn">{{ __('site.nav.features') }}</a>
-            <a href="#compare" @click="mobileMenu=false" class="block py-2 text-gray-300 font-bn">{{ __('site.nav.compare') }}</a>
-            <a href="#pricing" @click="mobileMenu=false" class="block py-2 text-gray-300 font-bn">{{ __('site.nav.pricing') }}</a>
-            <a href="#faq" @click="mobileMenu=false" class="block py-2 text-gray-300 font-bn">{{ __('site.nav.faq') }}</a>
-            <div class="py-2">
-                @include('partials.language-switcher')
-            </div>
-            @guest
-                <a href="{{ route('login') }}" @click="mobileMenu=false" class="block text-center glass py-2.5 rounded-lg font-bold mt-2 font-bn">{{ __('site.nav.login') }}</a>
-                <a href="{{ route('register') }}" @click="mobileMenu=false" class="block text-center btn-green py-2.5 rounded-lg font-bold mt-2 font-bn">{{ __('site.nav.start_free_short') }}</a>
-            @else
-                <a href="{{ route('dashboard') }}" @click="mobileMenu=false" class="block text-center btn-green py-2.5 rounded-lg font-bold mt-2 font-bn">{{ __('site.nav.dashboard_short') }}</a>
-            @endguest
         </div>
     </nav>
 
