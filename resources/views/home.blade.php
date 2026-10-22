@@ -64,7 +64,7 @@
     <section class="relative pt-12 pb-14 sm:pt-16 md:pt-28 md:pb-24 z-10">
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6">
             <div class="grid md:grid-cols-2 gap-10 md:gap-12 items-center">
-                <div>
+                <div class="min-w-0">
                     <div class="inline-flex items-center gap-2 glass rounded-full px-3 sm:px-5 py-2 text-xs sm:text-sm font-medium mb-6 sm:mb-8 glow-green">
                         <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>
                         <span class="text-emerald-200 font-bn">{{ __('site.hero.badge') }}</span>
@@ -93,8 +93,8 @@
                         <div class="flex items-center gap-1 text-amber-400">⭐⭐⭐⭐⭐ <span class="text-gray-300 ml-2 font-bn">{{ __('site.hero.rating') }}</span></div>
                     </div>
                 </div>
-                <div class="relative">
-                    <div class="relative glass-strong rounded-3xl overflow-hidden glow-green">
+                <div class="relative min-w-0">
+                    <div class="relative min-w-0 glass-strong rounded-3xl overflow-hidden glow-green">
                         <div class="bg-white/5 px-5 py-3 flex items-center gap-2 border-b border-emerald-500/10">
                             <div class="w-3 h-3 bg-red-400/70 rounded-full"></div><div class="w-3 h-3 bg-yellow-400/70 rounded-full"></div><div class="w-3 h-3 bg-green-400/70 rounded-full"></div>
                             <div class="ml-2 sm:ml-4 min-w-0 flex-1 bg-white/5 rounded-lg px-2 sm:px-4 py-1.5 text-[10px] sm:text-xs text-gray-400 text-center truncate">hisabkhata.com/dashboard</div>
@@ -107,7 +107,7 @@
                             </div>
                             <div class="glass rounded-xl p-3 sm:p-4">
                                 <div class="flex items-center justify-between gap-2 mb-3"><h4 class="text-xs sm:text-sm font-semibold font-bn">{{ __('site.hero.monthly_summary') }}</h4><span class="text-[10px] sm:text-xs text-emerald-400 font-bn">{{ __('site.hero.month') }}</span></div>
-                                <canvas id="heroChart" height="70"></canvas>
+                                <canvas id="heroChart" height="70" class="w-full"></canvas>
                             </div>
                         </div>
                     </div>
