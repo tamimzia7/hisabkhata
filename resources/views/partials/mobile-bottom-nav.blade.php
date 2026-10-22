@@ -1,7 +1,7 @@
 <nav x-data="{ active: window.location.hash || '#top' }" aria-label="{{ __('site.nav.mobile_label') }}"
     class="md:hidden fixed inset-x-0 bottom-0 z-50 glass-nav border-t border-emerald-500/15"
     style="padding-bottom: env(safe-area-inset-bottom);">
-    <div class="grid grid-cols-5">
+    <div class="grid grid-cols-4">
         <a href="#top" @click="active = '#top'"
             :class="active === '#top' ? 'text-emerald-400' : 'text-gray-400'"
             class="relative flex flex-col items-center justify-center gap-1 py-2 text-[10px] leading-none font-bn transition-colors">
@@ -47,30 +47,5 @@
             </svg>
             <span>{{ __('site.nav.pricing_short') }}</span>
         </a>
-        @auth
-            <a href="{{ route('dashboard') }}" @click="active = 'account'"
-                :class="active === 'account' ? 'text-emerald-400' : 'text-gray-400'"
-                class="relative flex flex-col items-center justify-center gap-1 py-2 text-[10px] leading-none font-bn transition-colors">
-                <span class="absolute top-0 h-0.5 w-8 rounded-full bg-emerald-400 transition-opacity"
-                    :class="active === 'account' ? 'opacity-100' : 'opacity-0'"></span>
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                    <circle cx="12" cy="8" r="3.25" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 20.25a6.75 6.75 0 0 1 13.5 0" />
-                </svg>
-                <span>{{ __('site.nav.dashboard_short') }}</span>
-            </a>
-        @else
-            <a href="{{ route('login') }}" @click="active = 'account'"
-                :class="active === 'account' ? 'text-emerald-400' : 'text-gray-400'"
-                class="relative flex flex-col items-center justify-center gap-1 py-2 text-[10px] leading-none font-bn transition-colors">
-                <span class="absolute top-0 h-0.5 w-8 rounded-full bg-emerald-400 transition-opacity"
-                    :class="active === 'account' ? 'opacity-100' : 'opacity-0'"></span>
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                    <circle cx="12" cy="8" r="3.25" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 20.25a6.75 6.75 0 0 1 13.5 0" />
-                </svg>
-                <span>{{ __('site.nav.login') }}</span>
-            </a>
-        @endauth
     </div>
 </nav>
