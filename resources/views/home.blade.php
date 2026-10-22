@@ -6,7 +6,7 @@
     <nav class="sticky top-0 z-50 glass-nav">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
             <a href="{{ route('home') }}" class="flex items-center gap-3 group">
-                <svg width="44" height="44" viewBox="0 0 200 200" fill="none" class="group-hover:scale-105 transition-transform duration-300 drop-shadow-[0_0_15px_rgba(16,185,129,0.4)]">
+                <svg width="44" height="44" viewBox="0 0 200 200" fill="none" class="w-9 h-9 sm:w-11 sm:h-11 group-hover:scale-105 transition-transform duration-300 drop-shadow-[0_0_15px_rgba(16,185,129,0.4)]">
                     <defs>
                         <linearGradient id="logoGreen" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#34D399"/><stop offset="100%" stop-color="#047857"/></linearGradient>
                         <linearGradient id="logoOrange" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#EA580C"/></linearGradient>
@@ -15,7 +15,7 @@
                     <rect x="65" y="50" width="16" height="75" rx="5" fill="#047857"/><rect x="119" y="50" width="16" height="75" rx="5" fill="#047857"/><rect x="65" y="80" width="70" height="16" rx="5" fill="#047857"/>
                     <circle cx="145" cy="115" r="32" fill="url(#logoOrange)"/><text x="145" y="128" font-family="Inter, sans-serif" font-size="36" font-weight="800" fill="white" text-anchor="middle">৳</text>
                 </svg>
-                <div>
+                <div class="hidden min-[400px]:block">
                     <span class="text-lg sm:text-xl font-bold tracking-tight font-bn text-white">{{ __('site.common.brand') }}</span>
                     <p class="text-[10px] tracking-[0.2em] text-emerald-400 -mt-0.5">{{ __('site.common.smart_finance') }}</p>
                 </div>
@@ -37,9 +37,24 @@
                     <a href="{{ route('dashboard') }}" class="btn-shine btn-green text-sm font-bold px-6 py-2.5 rounded-full font-bn">{{ __('site.nav.dashboard') }}</a>
                 @endguest
             </div>
-            <button @click="mobileMenu = !mobileMenu" class="lg:hidden glass w-10 h-10 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-            </button>
+            <div class="flex lg:hidden items-center gap-1 sm:gap-1.5">
+                @include('partials.language-switcher', ['compact' => true])
+                @guest
+                    <a href="{{ route('login') }}" aria-label="{{ __('site.nav.login') }}" title="{{ __('site.nav.login') }}" class="w-9 h-9 glass rounded-lg flex items-center justify-center text-gray-300 hover:text-white transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"/></svg>
+                    </a>
+                    <a href="{{ route('register') }}" aria-label="{{ __('site.auth.register') }}" title="{{ __('site.auth.register') }}" class="w-9 h-9 btn-green rounded-lg flex items-center justify-center transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.25"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 19.5a5.25 5.25 0 0 1 10.5 0M18 7.5v6m3-3h-6"/></svg>
+                    </a>
+                @else
+                    <a href="{{ route('dashboard') }}" aria-label="{{ __('site.nav.dashboard') }}" title="{{ __('site.nav.dashboard') }}" class="w-9 h-9 btn-green rounded-lg flex items-center justify-center transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg>
+                    </a>
+                @endguest
+                <button @click="mobileMenu = !mobileMenu" aria-label="{{ __('site.nav.mobile_label') }}" class="glass w-9 h-9 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+            </div>
         </div>
         <div x-show="mobileMenu" x-transition class="lg:hidden px-4 pb-4 pt-2 space-y-1 border-t border-emerald-500/10 max-h-[calc(100vh-4.5rem)] overflow-y-auto">
             <a href="#top" @click="mobileMenu=false" class="block py-2 text-gray-300 font-bn">{{ __('site.nav.home') }}</a>
