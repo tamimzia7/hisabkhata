@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdminActivity;
+use App\Models\Setting;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\RedirectResponse;
@@ -13,19 +15,34 @@ use Illuminate\View\View;
 class DashboardController extends Controller
 {
     /**
+     * Admin panel pages that can be opened directly.
+     *
+     * @var list<string>
+     */
+    private const ADMIN_PAGES = [
+        'admin-dashboard',
+        'system-users',
+        'system-activity',
+        'client-users',
+        'client-settings',
+        'admin-subscriptions',
+        'admin-pricing',
+        'admin-content',
+        'admin-blog',
+        'admin-reviews',
+        'admin-profile',
+    ];
+
+    /**
      * Show the dashboard for the authenticated user's mode.
      */
     public function __invoke(Request $request): View
     {
-        if ($request->user()->mode === 'admin') {
-            return view('admin.dashboard', [
-                'users' => User::latest()->take(10)->get(),
-                'totalUsers' => User::count(),
-                'admin' => $request->user(),
-            ]);
+        if (! $request->user()->isAdmin()) {
+            return view('dashboard');
         }
 
-        return view('dashboard');
+        return $this->adminView($request, $this->requestedPage($request));
     }
 
     /**
@@ -35,12 +52,7 @@ class DashboardController extends Controller
     {
         $this->ensureAdmin($request);
 
-        return view('admin.dashboard', [
-            'users' => User::latest()->take(10)->get(),
-            'totalUsers' => User::count(),
-            'admin' => $request->user(),
-            'adminPage' => 'admin-profile',
-        ]);
+        return $this->adminView($request, 'admin-profile');
     }
 
     /**
@@ -89,10 +101,40 @@ class DashboardController extends Controller
     }
 
     /**
+     * Build the admin panel view with the data for every panel page.
+     */
+    private function adminView(Request $request, string $page): View
+    {
+        return view('admin.dashboard', [
+            'admin' => $request->user(),
+            'adminPage' => $page,
+            'recentUsers' => User::latest()->take(2)->get(),
+            'clientUsers' => User::where('mode', '!=', 'admin')->latest()->get(),
+            'systemUsers' => User::where('mode', 'admin')->orderBy('id')->get(),
+            'activities' => AdminActivity::with('user')->latest()->take(20)->get(),
+            'clientSettings' => [
+                'free_trial' => Setting::boolean('client.free_trial', true),
+                'manual_access' => Setting::boolean('client.manual_access', true),
+            ],
+            'totalUsers' => User::count(),
+        ]);
+    }
+
+    /**
+     * Resolve the panel page requested through the query string.
+     */
+    private function requestedPage(Request $request): string
+    {
+        $page = (string) $request->query('page', 'admin-dashboard');
+
+        return in_array($page, self::ADMIN_PAGES, true) ? $page : 'admin-dashboard';
+    }
+
+    /**
      * Abort unless the authenticated user is an admin.
      */
     private function ensureAdmin(Request $request): void
     {
-        abort_unless($request->user()->mode === 'admin', 403);
+        abort_unless($request->user()->isAdmin(), 403);
     }
 }

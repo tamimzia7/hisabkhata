@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\ClientSettingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SystemUserController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'home')->name('home');
@@ -20,6 +22,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/admin/profile', [DashboardController::class, 'profile'])->name('admin.profile');
     Route::put('/admin/profile', [DashboardController::class, 'updateProfile'])->name('admin.profile.update');
+
+    Route::post('/admin/system-users', [SystemUserController::class, 'store'])->name('admin.system-users.store');
+    Route::delete('/admin/system-users/{user}', [SystemUserController::class, 'destroy'])->name('admin.system-users.destroy');
+
+    Route::put('/admin/client-settings', [ClientSettingController::class, 'update'])->name('admin.client-settings.update');
 
     Route::delete('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });
