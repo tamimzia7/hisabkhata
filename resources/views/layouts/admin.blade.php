@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" x-data="{
-    page: 'admin-dashboard',
+    page: @js($adminPage ?? 'admin-dashboard'),
     subTab: 'transactions',
     sidebarOpen: false,
     modalOpen: false,
@@ -16,6 +16,7 @@
                     'admin-content': @js(__('site.admin.page_content')),
                     'admin-blog': @js(__('site.admin.blog_articles')),
                     'admin-reviews': @js(__('site.admin.testimonials')),
+                    'admin-profile': @js(__('site.admin.admin_profile')),
                 };
         return titles[this.page] ?? '';
     },
@@ -113,6 +114,10 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                 {{ __('site.admin.subscriptions') }}
             </a>
+            <a href="#" @click.prevent="page = 'admin-profile'; sidebarOpen = false" :class="page === 'admin-profile' ? 'nav-active' : 'text-gray-400'" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-bn text-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ __('site.admin.profile') }}
+            </a>
 
             <div class="px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 mt-6 font-bn">{{ __('site.admin.content_cms') }}</div>
             <a href="#" @click.prevent="page = 'admin-pricing'; sidebarOpen = false" :class="page === 'admin-pricing' ? 'nav-active' : 'text-gray-400'" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-bn text-sm">
@@ -134,7 +139,7 @@
         </nav>
 
         <div class="p-4 border-t border-white/5 space-y-3">
-            <div class="flex items-center gap-3">
+            <button @click="page = 'admin-profile'; sidebarOpen = false" class="w-full flex items-center gap-3 rounded-lg p-1 -m-1 hover:bg-white/5 transition text-left" :title="@js(__('site.admin.profile'))">
                 <div class="w-9 h-9 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-[#06130D] font-bold shrink-0">
                     {{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
                 </div>
@@ -142,7 +147,7 @@
                     <p class="text-sm font-bold text-white font-bn truncate">{{ auth()->user()->name }}</p>
                     <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
                 </div>
-            </div>
+            </button>
             <div class="flex items-center justify-between">
                 <span class="text-xs text-gray-400 font-bn">{{ __('site.admin.language') }}</span>
                 @include('partials.language-switcher')

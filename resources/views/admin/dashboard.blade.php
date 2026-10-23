@@ -379,7 +379,7 @@
             <table class="w-full min-w-[640px] text-sm text-left">
                 <thead class="bg-white/5 text-xs text-gray-400 uppercase">
                     <tr>
-                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.title') }}</th>
+                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.blog_title') }}</th>
                         <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.category') }}</th>
                         <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.status') }}</th>
                         <th class="px-4 sm:px-6 py-4 font-bn text-right">{{ __('site.admin.action') }}</th>
@@ -431,6 +431,75 @@
                 <p class="text-xs text-white font-bn">- করিম ভাই</p>
                 <span class="text-xs text-gray-500 font-bn">{{ __('site.admin.pending') }}</span>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= 8. PROFILE ================= -->
+<div x-show="page === 'admin-profile'" x-cloak x-transition.opacity class="space-y-5 sm:space-y-6 max-w-4xl">
+    <div class="grid md:grid-cols-5 gap-4 sm:gap-6">
+        <div class="glass rounded-xl p-5 sm:p-6 md:col-span-2">
+            <div class="flex flex-col items-center text-center">
+                <div class="w-20 h-20 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-[#06130D] text-3xl font-bold shrink-0">
+                    {{ mb_strtoupper(mb_substr($admin->name, 0, 1)) }}
+                </div>
+                <h3 class="mt-4 text-lg font-bold text-white font-bn truncate max-w-full">{{ $admin->name }}</h3>
+                <p class="text-sm text-gray-400 truncate max-w-full">{{ $admin->email }}</p>
+                <span class="mt-3 text-xs px-2.5 py-1 rounded bg-lime-500/10 text-lime-400 font-bn">{{ __('site.admin.mode_admin') }}</span>
+            </div>
+            <div class="mt-5 pt-4 border-t border-white/10 space-y-3">
+                <div class="flex justify-between items-center gap-3">
+                    <span class="text-xs text-gray-400 font-bn shrink-0">{{ __('site.admin.role') }}</span>
+                    <span class="text-xs text-white font-bn truncate">{{ __('site.admin.mode_admin') }}</span>
+                </div>
+                <div class="flex justify-between items-center gap-3">
+                    <span class="text-xs text-gray-400 font-bn shrink-0">{{ __('site.admin.member_since') }}</span>
+                    <span class="text-xs text-white font-bn truncate">{{ $admin->created_at?->format('d M Y') }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-strong rounded-xl p-5 sm:p-6 md:col-span-3">
+            <h3 class="text-lg font-bold text-white font-bn mb-4 border-b border-white/10 pb-2">{{ __('site.admin.edit_profile') }}</h3>
+            <form method="POST" action="{{ route('admin.profile.update') }}" class="space-y-4">
+                @csrf
+                @method('PUT')
+                <div>
+                    <label for="name" class="block text-sm text-gray-400 mb-1 font-bn">{{ __('site.admin.full_name') }}</label>
+                    <input id="name" name="name" type="text" value="{{ old('name', $admin->name) }}" class="w-full bg-[#06130D] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 font-bn">
+                    @error('name')<p class="text-xs text-red-400 mt-1 font-bn">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label for="email" class="block text-sm text-gray-400 mb-1 font-bn">{{ __('site.admin.email_address') }}</label>
+                    <input id="email" name="email" type="email" value="{{ old('email', $admin->email) }}" class="w-full bg-[#06130D] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 font-bn">
+                    @error('email')<p class="text-xs text-red-400 mt-1 font-bn">{{ $message }}</p>@enderror
+                </div>
+                <div class="pt-2 border-t border-white/10">
+                    <p class="text-xs text-gray-500 font-bn mb-3">{{ __('site.admin.password_note') }}</p>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="current_password" class="block text-sm text-gray-400 mb-1 font-bn">{{ __('site.admin.current_password') }}</label>
+                            <input id="current_password" name="current_password" type="password" autocomplete="current-password" class="w-full bg-[#06130D] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 font-bn">
+                            @error('current_password')<p class="text-xs text-red-400 mt-1 font-bn">{{ $message }}</p>@enderror
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label for="password" class="block text-sm text-gray-400 mb-1 font-bn">{{ __('site.admin.new_password') }}</label>
+                                <input id="password" name="password" type="password" autocomplete="new-password" class="w-full bg-[#06130D] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 font-bn">
+                                <p class="text-xs text-gray-500 mt-1 font-bn">{{ __('site.admin.new_password_hint') }}</p>
+                                @error('password')<p class="text-xs text-red-400 mt-1 font-bn">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label for="password_confirmation" class="block text-sm text-gray-400 mb-1 font-bn">{{ __('site.admin.confirm_password') }}</label>
+                                <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" class="w-full bg-[#06130D] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 font-bn">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-2">
+                    <button type="submit" class="btn-emerald px-6 py-2 rounded-lg font-bold font-bn text-sm">{{ __('site.admin.save_changes') }}</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

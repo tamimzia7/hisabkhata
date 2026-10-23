@@ -18,6 +18,9 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
+    Route::get('/admin/profile', [DashboardController::class, 'profile'])->name('admin.profile');
+    Route::put('/admin/profile', [DashboardController::class, 'updateProfile'])->name('admin.profile.update');
+
     Route::delete('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });
 
