@@ -105,7 +105,9 @@
 <div x-show="page === 'system-users'" x-cloak x-transition.opacity class="space-y-5 sm:space-y-6 max-w-6xl">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         @if($staffCanManage)
-            <p class="text-sm text-gray-400 font-bn">{{ __('site.admin.create_only_customer_care') }}</p>
+            <p class="text-sm text-gray-400 font-bn">
+                {{ $admin->role === \App\Models\User::ROLE_DEVELOPER ? __('site.admin.create_any_staff') : __('site.admin.create_only_customer_care') }}
+            </p>
             <button @click="staffModalOpen = true" class="btn-emerald px-5 py-2.5 rounded-lg text-sm font-bold font-bn shrink-0">{{ __('site.admin.new_system_user') }}</button>
         @else
             <p class="text-sm text-orange-400 font-bn">{{ __('site.admin.no_staff_permission') }}</p>
@@ -151,7 +153,7 @@
                             <td class="px-4 sm:px-6 py-4"><span class="text-emerald-400 font-bn text-xs">{{ __('site.admin.active') }}</span></td>
                             <td class="px-4 sm:px-6 py-4 text-gray-400 text-xs font-bn">{{ $staff->created_at?->format('d M Y') }}</td>
                             <td class="px-4 sm:px-6 py-4 text-right whitespace-nowrap">
-                                @if($staff->role === \App\Models\User::ROLE_CUSTOMER_CARE && $staffCanManage)
+                                @if($staffCanManage && ! $staff->is($admin) && in_array($staff->role, [\App\Models\User::ROLE_SUB_ADMIN, \App\Models\User::ROLE_CUSTOMER_CARE], true))
                                     <form method="POST" action="{{ route('admin.system-users.destroy', $staff) }}" onsubmit="return confirm(@js(__('site.admin.confirm_remove_staff')))">
                                         @csrf
                                         @method('DELETE')
@@ -688,7 +690,9 @@
             <div>
                 <label for="staff_role" class="text-sm text-gray-400 font-bn">{{ __('site.admin.staff_role') }}</label>
                 <select id="staff_role" name="role" class="w-full bg-[#050B14] border border-white/10 rounded-lg px-3 py-2 text-white mt-1 focus:outline-none focus:border-emerald-500 font-bn">
-                    <option value="customer-care">{{ __('site.admin.role_customer_care') }}</option>
+                    @foreach($admin->assignableStaffRoles() as $assignableRole)
+                        <option value="{{ $assignableRole }}" @selected(old('role', \App\Models\User::ROLE_CUSTOMER_CARE) === $assignableRole)>{{ $roleLabels[$assignableRole] }}</option>
+                    @endforeach
                 </select>
                 @error('role')<p class="text-xs text-red-400 mt-1 font-bn">{{ $message }}</p>@enderror
             </div>

@@ -12,19 +12,20 @@ use Illuminate\Validation\Rule;
 class SystemUserController extends Controller
 {
     /**
-     * Create a customer-care system user.
+     * Create a system user with one of the roles the admin may assign.
      */
     public function store(Request $request): RedirectResponse
     {
         $actor = $request->user();
+        $assignableRoles = $actor->assignableStaffRoles();
 
-        abort_unless($actor->canManageSystemUsers(), 403);
+        abort_if($assignableRoles === [], 403);
 
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')],
             'password' => ['required', 'string', 'min:8'],
-            'role' => ['nullable', Rule::in([User::ROLE_CUSTOMER_CARE])],
+            'role' => ['nullable', Rule::in($assignableRoles)],
         ], [
             'name.required' => __('site.auth.messages.name_required'),
             'email.required' => __('site.auth.messages.email_required'),
@@ -49,7 +50,7 @@ class SystemUserController extends Controller
             'email' => $validated['email'],
             'password' => $validated['password'],
             'mode' => 'admin',
-            'role' => User::ROLE_CUSTOMER_CARE,
+            'role' => $validated['role'] ?? User::ROLE_CUSTOMER_CARE,
         ]);
 
         $this->log($request, 'staff_created', $staff->name);
@@ -60,12 +61,16 @@ class SystemUserController extends Controller
     }
 
     /**
-     * Remove a customer-care system user.
+     * Remove a system user. Developer accounts stay protected.
      */
     public function destroy(Request $request, User $user): RedirectResponse
     {
         abort_unless($request->user()->canManageSystemUsers(), 403);
-        abort_unless($user->isAdmin() && $user->role === User::ROLE_CUSTOMER_CARE, 403);
+        abort_if($user->is($request->user()), 403);
+        abort_unless(
+            $user->isAdmin() && in_array($user->role, [User::ROLE_SUB_ADMIN, User::ROLE_CUSTOMER_CARE], true),
+            403
+        );
 
         $name = $user->name;
 

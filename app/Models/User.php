@@ -36,8 +36,25 @@ class User extends Authenticatable
      */
     public function canManageSystemUsers(): bool
     {
-        return $this->isAdmin()
-            && in_array($this->role, [self::ROLE_DEVELOPER, self::ROLE_SUB_ADMIN], true);
+        return $this->assignableStaffRoles() !== [];
+    }
+
+    /**
+     * The system user roles this admin is allowed to assign.
+     *
+     * @return list<string>
+     */
+    public function assignableStaffRoles(): array
+    {
+        if (! $this->isAdmin()) {
+            return [];
+        }
+
+        return match ($this->role) {
+            self::ROLE_DEVELOPER => [self::ROLE_DEVELOPER, self::ROLE_SUB_ADMIN, self::ROLE_CUSTOMER_CARE],
+            self::ROLE_SUB_ADMIN => [self::ROLE_CUSTOMER_CARE],
+            default => [],
+        };
     }
 
     /**

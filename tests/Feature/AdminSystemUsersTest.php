@@ -87,17 +87,43 @@ test('forbids client users from creating system users', function () {
     ])->assertForbidden();
 });
 
-test('rejects a role higher than customer care', function () {
+test('lets a developer create a developer account', function () {
     $developer = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
 
-    $response = $this->actingAs($developer)->post(route('admin.system-users.store'), [
+    $this->actingAs($developer)->post(route('admin.system-users.store'), [
+        'name' => 'Wannabe Dev',
+        'email' => 'dev@example.com',
+        'password' => 'secret1234',
+        'role' => User::ROLE_DEVELOPER,
+    ])->assertRedirect(route('dashboard', ['page' => 'system-users']));
+
+    expect(User::where('email', 'dev@example.com')->value('role'))->toBe(User::ROLE_DEVELOPER);
+});
+
+test('lets a developer create a sub admin account', function () {
+    $developer = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
+
+    $this->actingAs($developer)->post(route('admin.system-users.store'), [
+        'name' => 'Sub Admin One',
+        'email' => 'sub-admin@example.com',
+        'password' => 'secret1234',
+        'role' => User::ROLE_SUB_ADMIN,
+    ])->assertRedirect(route('dashboard', ['page' => 'system-users']));
+
+    expect(User::where('email', 'sub-admin@example.com')->value('role'))->toBe(User::ROLE_SUB_ADMIN);
+});
+
+test('forbids a sub admin from assigning a developer role', function () {
+    $subAdmin = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_SUB_ADMIN]);
+
+    $response = $this->actingAs($subAdmin)->post(route('admin.system-users.store'), [
         'name' => 'Wannabe Dev',
         'email' => 'dev@example.com',
         'password' => 'secret1234',
         'role' => User::ROLE_DEVELOPER,
     ]);
 
-    $response->assertSessionHasErrors(['role' => 'শুধুমাত্র Customer Care অ্যাকাউন্ট তৈরি করা যায়।']);
+    $response->assertSessionHasErrors(['role' => 'আপনি এই রোল অ্যাসাইন করতে পারবেন না।']);
     expect(User::where('email', 'dev@example.com')->exists())->toBeFalse();
 });
 
@@ -128,6 +154,47 @@ test('removes a customer care system user and logs the action', function () {
 
     expect(User::find($staff->id))->toBeNull();
     expect(AdminActivity::where('action', 'staff_removed')->where('subject', 'সাকিব')->exists())->toBeTrue();
+});
+
+test('offers every assignable role to a developer', function () {
+    $developer = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
+
+    $response = $this->actingAs($developer)->get(route('dashboard', ['page' => 'system-users']));
+
+    $response->assertSee('<option value="developer"', false);
+    $response->assertSee('<option value="sub-admin"', false);
+    $response->assertSee('<option value="customer-care"', false);
+});
+
+test('offers only customer care to a sub admin', function () {
+    $subAdmin = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_SUB_ADMIN]);
+
+    $response = $this->actingAs($subAdmin)->get(route('dashboard', ['page' => 'system-users']));
+
+    $response->assertSee('<option value="customer-care"', false);
+    $response->assertDontSee('<option value="developer"', false);
+    $response->assertDontSee('<option value="sub-admin"', false);
+});
+
+test('removes a sub admin system user', function () {
+    $developer = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
+    $subAdmin = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_SUB_ADMIN]);
+
+    $this->actingAs($developer)
+        ->delete(route('admin.system-users.destroy', $subAdmin))
+        ->assertRedirect(route('dashboard', ['page' => 'system-users']));
+
+    expect(User::find($subAdmin->id))->toBeNull();
+});
+
+test('does not remove your own account', function () {
+    $developer = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
+
+    $this->actingAs($developer)
+        ->delete(route('admin.system-users.destroy', $developer))
+        ->assertForbidden();
+
+    expect(User::find($developer->id))->not->toBeNull();
 });
 
 test('does not remove a developer account', function () {
