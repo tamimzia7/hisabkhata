@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'অ্যাডমিন প্যানেল — ' . __('site.common.brand'))
+@section('title', __('site.admin.title', ['brand' => __('site.common.brand')]))
 
 @section('content')
 @php
