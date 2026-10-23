@@ -24,8 +24,8 @@ Route::middleware('auth')->group(function () {
 Route::get('/lang/{locale}', function ($locale) {
     if (in_array($locale, ['en', 'bn'])) {
         session(['locale' => $locale]);
-        app()->setLocale($locale);
+        session()->save();
     }
 
-    return back();
+    return redirect()->back();
 })->name('lang.switch');
