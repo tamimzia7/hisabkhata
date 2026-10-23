@@ -21,7 +21,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });
 
-Route::middleware('auth')->get('/lang/{locale}', function ($locale) {
+// Language switching must work for guests too (home, login, register).
+Route::get('/lang/{locale}', function (string $locale) {
     if (in_array($locale, ['en', 'bn'])) {
         session(['locale' => $locale]);
         session()->save();
