@@ -133,13 +133,19 @@
             </a>
         </nav>
 
-        <div class="p-4 border-t border-white/5 flex items-center gap-3">
-            <div class="w-9 h-9 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-[#06130D] font-bold shrink-0">
-                {{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
+        <div class="p-4 border-t border-white/5 space-y-3">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-[#06130D] font-bold shrink-0">
+                    {{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-white font-bn truncate">{{ auth()->user()->name }}</p>
+                    <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
+                </div>
             </div>
-            <div class="flex-1 min-w-0">
-                <p class="text-sm font-bold text-white font-bn truncate">{{ auth()->user()->name }}</p>
-                <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
+            <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-400 font-bn">ভাষা</span>
+                @include('partials.language-switcher')
             </div>
         </div>
     </aside>
@@ -155,6 +161,7 @@
                 <h2 class="text-base sm:text-lg font-bold font-bn text-white truncate" x-text="pageTitle()">ড্যাশবোর্ড ওভারভিউ</h2>
             </div>
             <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                @include('partials.language-switcher')
                 <a href="{{ route('home') }}" class="hidden sm:inline text-sm text-emerald-400 hover:text-white font-bn transition">ওয়েবসাইট দেখুন ↗</a>
                 <a href="{{ route('home') }}" class="sm:hidden text-emerald-400 p-2" aria-label="ওয়েবসাইট দেখুন">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
