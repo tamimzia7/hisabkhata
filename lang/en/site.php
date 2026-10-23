@@ -275,6 +275,26 @@ return [
         'language' => 'Language: Bangla / English',
     ],
 
+    'admin' => [
+        'title' => 'Admin Panel — :brand',
+        'cms' => 'ADMIN CMS',
+        'core_system' => 'CORE SYSTEM',
+        'content_cms' => 'CONTENT (CMS)',
+        'dashboard' => 'Dashboard',
+        'users' => 'User Management',
+        'subscriptions' => 'Subscriptions',
+        'pricing_plans' => 'Pricing Plans',
+        'page_content' => 'Page Content',
+        'blog_articles' => 'Blog / Articles',
+        'testimonials' => 'Testimonials',
+        'view_site' => 'View Website',
+        'logout' => 'Logout',
+        'language' => 'Language',
+        'dashboard_overview' => 'Dashboard Overview',
+        'user_management' => 'User Management',
+        'subscription_management' => 'Subscription Management',
+    ],
+
     'auth' => [
         'login_title' => 'Login — HisabKhata',
         'register_title' => 'Register — HisabKhata',

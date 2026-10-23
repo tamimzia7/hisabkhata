@@ -8,15 +8,15 @@
     toastMsg: window.__flashToast || '',
     showToast: Boolean(window.__flashToast),
     pageTitle() {
-        const titles = {
-            'admin-dashboard': 'ড্যাশবোর্ড ওভারভিউ',
-            'admin-users': 'ইউজার ম্যানেজমেন্ট',
-            'admin-subscriptions': 'সাবস্ক্রিপশন ম্যানেজমেন্ট',
-            'admin-pricing': 'প্রাইসিং প্ল্যান',
-            'admin-content': 'পেজ কনটেন্ট (CMS)',
-            'admin-blog': 'ব্লগ ও আর্টিকেল',
-            'admin-reviews': 'টেস্টিমোনিয়াল',
-        };
+                const titles = {
+                    'admin-dashboard': @js(__('site.admin.dashboard_overview')),
+                    'admin-users': @js(__('site.admin.user_management')),
+                    'admin-subscriptions': @js(__('site.admin.subscription_management')),
+                    'admin-pricing': @js(__('site.admin.pricing_plans')),
+                    'admin-content': @js(__('site.admin.page_content')),
+                    'admin-blog': @js(__('site.admin.blog_articles')),
+                    'admin-reviews': @js(__('site.admin.testimonials')),
+                };
         return titles[this.page] ?? '';
     },
 }">
@@ -26,7 +26,7 @@
 <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
 <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
-<title>@yield('title', 'অ্যাডমিন প্যানেল — ' . __('site.common.brand'))</title>
+<title>@yield('title', __('site.admin.title', ['brand' => __('site.common.brand')]))</title>
 <meta name="description" content="Admin CMS — {{ __('site.common.brand') }}">
 <script>window.__flashToast = @js(session('toast'));</script>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -92,7 +92,7 @@
             <img src="{{ asset('favicon.svg') }}" alt="{{ __('site.common.brand') }}" class="w-9 h-9 rounded-lg">
             <div class="min-w-0">
                 <h1 class="font-bold font-bn text-white truncate">{{ __('site.common.brand') }}</h1>
-                <p class="text-[10px] tracking-widest text-emerald-400 font-bold">ADMIN CMS</p>
+                <p class="text-[10px] tracking-widest text-emerald-400 font-bold">{{ __('site.admin.cms') }}</p>
             </div>
             <button @click="sidebarOpen = false" class="lg:hidden ml-auto text-gray-400 hover:text-white p-1" aria-label="Close menu">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"/></svg>
@@ -100,36 +100,36 @@
         </div>
 
         <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto admin-scroll">
-            <div class="px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 mt-2 font-bn">কোর সিস্টেম</div>
+            <div class="px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 mt-2 font-bn">{{ __('site.admin.core_system') }}</div>
             <a href="#" @click.prevent="page = 'admin-dashboard'; sidebarOpen = false" :class="page === 'admin-dashboard' ? 'nav-active' : 'text-gray-400'" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-bn text-sm">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-                ড্যাশবোর্ড
+                {{ __('site.admin.dashboard') }}
             </a>
             <a href="#" @click.prevent="page = 'admin-users'; sidebarOpen = false" :class="page === 'admin-users' ? 'nav-active' : 'text-gray-400'" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-bn text-sm">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                ইউজার ম্যানেজমেন্ট
+                {{ __('site.admin.users') }}
             </a>
             <a href="#" @click.prevent="page = 'admin-subscriptions'; sidebarOpen = false" :class="page === 'admin-subscriptions' ? 'nav-active' : 'text-gray-400'" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-bn text-sm">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-                সাবস্ক্রিপশন
+                {{ __('site.admin.subscriptions') }}
             </a>
 
-            <div class="px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 mt-6 font-bn">কনটেন্ট (CMS)</div>
+            <div class="px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 mt-6 font-bn">{{ __('site.admin.content_cms') }}</div>
             <a href="#" @click.prevent="page = 'admin-pricing'; sidebarOpen = false" :class="page === 'admin-pricing' ? 'nav-active' : 'text-gray-400'" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-bn text-sm">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                প্রাইসিং প্ল্যান
+                {{ __('site.admin.pricing_plans') }}
             </a>
             <a href="#" @click.prevent="page = 'admin-content'; sidebarOpen = false" :class="page === 'admin-content' ? 'nav-active' : 'text-gray-400'" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-bn text-sm">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                পেজ কনটেন্ট
+                {{ __('site.admin.page_content') }}
             </a>
             <a href="#" @click.prevent="page = 'admin-blog'; sidebarOpen = false" :class="page === 'admin-blog' ? 'nav-active' : 'text-gray-400'" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-bn text-sm">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15"/></svg>
-                ব্লগ / আর্টিকেল
+                {{ __('site.admin.blog_articles') }}
             </a>
             <a href="#" @click.prevent="page = 'admin-reviews'; sidebarOpen = false" :class="page === 'admin-reviews' ? 'nav-active' : 'text-gray-400'" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-bn text-sm">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-                টেস্টিমোনিয়াল
+                {{ __('site.admin.testimonials') }}
             </a>
         </nav>
 
@@ -144,7 +144,7 @@
                 </div>
             </div>
             <div class="flex items-center justify-between">
-                <span class="text-xs text-gray-400 font-bn">ভাষা</span>
+                <span class="text-xs text-gray-400 font-bn">{{ __('site.admin.language') }}</span>
                 @include('partials.language-switcher')
             </div>
         </div>
@@ -162,14 +162,14 @@
             </div>
             <div class="flex items-center gap-2 sm:gap-3 shrink-0">
                 @include('partials.language-switcher')
-                <a href="{{ route('home') }}" class="hidden sm:inline text-sm text-emerald-400 hover:text-white font-bn transition">ওয়েবসাইট দেখুন ↗</a>
-                <a href="{{ route('home') }}" class="sm:hidden text-emerald-400 p-2" aria-label="ওয়েবসাইট দেখুন">
+                <a href="{{ route('home') }}" class="hidden sm:inline text-sm text-emerald-400 hover:text-white font-bn transition">{{ __('site.admin.view_site') }} ↗</a>
+                <a href="{{ route('home') }}" class="sm:hidden text-emerald-400 p-2" aria-label="{{ __('site.admin.view_site') }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
                 </a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="bg-red-500/10 text-red-400 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bn hover:bg-red-500/20 transition">লগআউট</button>
+                    <button type="submit" class="bg-red-500/10 text-red-400 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bn hover:bg-red-500/20 transition">{{ __('site.admin.logout') }}</button>
                 </form>
             </div>
         </header>

@@ -275,6 +275,26 @@ return [
         'language' => 'ভাষা: বাংলা / English',
     ],
 
+    'admin' => [
+        'title' => 'অ্যাডমিন প্যানেল — :brand',
+        'cms' => 'ADMIN CMS',
+        'core_system' => 'কোর সিস্টেম',
+        'content_cms' => 'কনটেন্ট (CMS)',
+        'dashboard' => 'ড্যাশবোর্ড',
+        'users' => 'ইউজার ম্যানেজমেন্ট',
+        'subscriptions' => 'সাবস্ক্রিপশন',
+        'pricing_plans' => 'প্রাইসিং প্ল্যান',
+        'page_content' => 'পেজ কনটেন্ট',
+        'blog_articles' => 'ব্লগ / আর্টিকেল',
+        'testimonials' => 'টেস্টিমোনিয়াল',
+        'view_site' => 'ওয়েবসাইট দেখুন',
+        'logout' => 'লগআউট',
+        'language' => 'ভাষা',
+        'dashboard_overview' => 'ড্যাশবোর্ড ওভারভিউ',
+        'user_management' => 'ইউজার ম্যানেজমেন্ট',
+        'subscription_management' => 'সাবস্ক্রিপশন ম্যানেজমেন্ট',
+    ],
+
     'auth' => [
         'login_title' => 'লগইন — হিসাবখাতা',
         'register_title' => 'রেজিস্ট্রেশন — হিসাবখাতা',
