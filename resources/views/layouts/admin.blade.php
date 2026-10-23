@@ -158,7 +158,7 @@
                 <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden glass w-9 h-9 rounded-lg flex items-center justify-center shrink-0" aria-label="Open menu">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
-                <h2 class="text-base sm:text-lg font-bold font-bn text-white truncate" x-text="pageTitle()">ড্যাশবোর্ড ওভারভিউ</h2>
+                <h2 class="text-base sm:text-lg font-bold font-bn text-white truncate" x-text="pageTitle()">{{ __('site.admin.dashboard_overview') }}</h2>
             </div>
             <div class="flex items-center gap-2 sm:gap-3 shrink-0">
                 @include('partials.language-switcher')
