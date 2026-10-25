@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Admin User',
             'email' => 'admin@hisabkhata.com',
             'mode' => 'admin',
+            'role' => User::ROLE_DEVELOPER,
         ]);
     }
 }

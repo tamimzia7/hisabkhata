@@ -184,10 +184,6 @@
                     <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
                 </div>
             </button>
-            <div class="flex items-center justify-between">
-                <span class="text-xs text-gray-400 font-bn">{{ __('site.admin.language') }}</span>
-                @include('partials.language-switcher')
-            </div>
         </div>
     </aside>
 
@@ -202,6 +198,7 @@
                 <h2 class="text-base sm:text-lg font-bold font-bn text-white truncate" x-text="pageTitle()">{{ __('site.admin.dashboard_overview') }}</h2>
             </div>
             <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                @include('partials.language-switcher')
                 <div x-show="page === 'system-users'" x-cloak class="hidden sm:flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-lg border border-white/10">
                     <span class="text-xs text-gray-400 font-bn">{{ __('site.admin.role_colon') }}</span>
                     <span class="text-xs text-emerald-400 font-bold font-bn">{{ __('site.admin.role_'.(auth()->user()->role ?: 'unknown')) }}</span>
