@@ -23,6 +23,8 @@ class DashboardController extends Controller
         'admin-dashboard',
         'system-users',
         'system-activity',
+        'developer-access',
+        'roles-permission',
         'client-users',
         'client-settings',
         'admin-subscriptions',
@@ -111,6 +113,7 @@ class DashboardController extends Controller
             'recentUsers' => User::latest()->take(2)->get(),
             'clientUsers' => User::where('mode', '!=', 'admin')->latest()->get(),
             'systemUsers' => User::where('mode', 'admin')->orderBy('id')->get(),
+            'permissionMatrix' => User::permissionMatrix(),
             'activities' => AdminActivity::with('user')->latest()->take(20)->get(),
             'clientSettings' => [
                 'free_trial' => Setting::boolean('client.free_trial', true),

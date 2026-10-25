@@ -15,6 +15,8 @@
             'admin-dashboard': @js(__('site.admin.dashboard_overview')),
             'system-users': @js(__('site.admin.system_users')),
             'system-activity': @js(__('site.admin.system_user_activity')),
+            'developer-access': @js(__('site.admin.developer_access_control')),
+            'roles-permission': @js(__('site.admin.roles_permission')),
             'client-users': @js(__('site.admin.client_users')),
             'client-settings': @js(__('site.admin.client_settings')),
             'admin-subscriptions': @js(__('site.admin.subscription_management')),
@@ -149,7 +151,7 @@
             </a>
 
             <!-- 1. USER MANAGEMENT -->
-            <div x-data="{ open: @js(in_array($adminPage ?? '', ['system-users', 'system-activity'], true)) }">
+            <div x-data="{ open: @js(in_array($adminPage ?? '', ['system-users', 'system-activity', 'developer-access', 'roles-permission'], true)) }">
                 <button @click="open = !open" :class="open ? 'text-white' : 'text-gray-400'" class="nav-parent w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-bn text-sm">
                     <span class="flex items-center gap-3">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
@@ -160,6 +162,8 @@
                 <div x-show="open" class="ml-6 mt-1 space-y-1 border-l border-white/10 pl-2">
                     <a href="#" @click.prevent="page = 'system-users'; sidebarOpen = false" :class="page === 'system-users' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.system_users') }}</a>
                     <a href="#" @click.prevent="page = 'system-activity'; sidebarOpen = false" :class="page === 'system-activity' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.system_user_activity') }}</a>
+                    <a href="#" @click.prevent="page = 'developer-access'; sidebarOpen = false" :class="page === 'developer-access' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.developer_access_control') }}</a>
+                    <a href="#" @click.prevent="page = 'roles-permission'; sidebarOpen = false" :class="page === 'roles-permission' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.roles_permission') }}</a>
                 </div>
             </div>
 

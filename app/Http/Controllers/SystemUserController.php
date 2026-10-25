@@ -19,7 +19,7 @@ class SystemUserController extends Controller
         $actor = $request->user();
         $assignableRoles = $actor->assignableStaffRoles();
 
-        abort_if($assignableRoles === [], 403);
+        abort_unless($actor->canCreateSystemUsers(), 403);
 
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255'],
@@ -61,11 +61,38 @@ class SystemUserController extends Controller
     }
 
     /**
+     * Change the role of a system user, controlling developer access.
+     */
+    public function update(Request $request, User $user): RedirectResponse
+    {
+        $actor = $request->user();
+
+        abort_unless($actor->role === User::ROLE_DEVELOPER, 403);
+        abort_if($user->is($actor), 403);
+        abort_unless($user->isAdmin(), 403);
+
+        $validated = $request->validate([
+            'role' => ['required', Rule::in(User::ROLES)],
+        ], [
+            'role.required' => __('site.admin.role_not_allowed'),
+            'role.in' => __('site.admin.role_not_allowed'),
+        ]);
+
+        $user->update(['role' => $validated['role']]);
+
+        $this->log($request, 'role_changed', $user->name);
+
+        return redirect()
+            ->route('dashboard', ['page' => 'developer-access'])
+            ->with('toast', __('site.admin.role_changed'));
+    }
+
+    /**
      * Remove a system user. Developer accounts stay protected.
      */
     public function destroy(Request $request, User $user): RedirectResponse
     {
-        abort_unless($request->user()->canManageSystemUsers(), 403);
+        abort_unless($request->user()->canRemoveSystemUsers(), 403);
         abort_if($user->is($request->user()), 403);
         abort_unless(
             $user->isAdmin() && in_array($user->role, [User::ROLE_SUB_ADMIN, User::ROLE_CUSTOMER_CARE], true),

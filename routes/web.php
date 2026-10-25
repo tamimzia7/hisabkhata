@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\ClientSettingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\SystemUserController;
 use Illuminate\Support\Facades\Route;
 
@@ -24,7 +25,10 @@ Route::middleware('auth')->group(function () {
     Route::put('/admin/profile', [DashboardController::class, 'updateProfile'])->name('admin.profile.update');
 
     Route::post('/admin/system-users', [SystemUserController::class, 'store'])->name('admin.system-users.store');
+    Route::put('/admin/system-users/{user}', [SystemUserController::class, 'update'])->name('admin.system-users.update');
     Route::delete('/admin/system-users/{user}', [SystemUserController::class, 'destroy'])->name('admin.system-users.destroy');
+
+    Route::post('/admin/roles-permission', [RolePermissionController::class, 'update'])->name('admin.roles-permission.update');
 
     Route::put('/admin/client-settings', [ClientSettingController::class, 'update'])->name('admin.client-settings.update');
 

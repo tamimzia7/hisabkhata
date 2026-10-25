@@ -26,7 +26,8 @@
         'sub-admin' => 'text-purple-400 bg-purple-500/10',
         'customer-care' => 'text-orange-400 bg-orange-500/10',
     ];
-    $staffCanManage = $admin->canManageSystemUsers();
+    $staffCanManage = $admin->canCreateSystemUsers();
+    $staffCanRemove = $admin->canRemoveSystemUsers();
 @endphp
 
 <!-- ================= 1. DASHBOARD ================= -->
@@ -153,7 +154,7 @@
                             <td class="px-4 sm:px-6 py-4"><span class="text-emerald-400 font-bn text-xs">{{ __('site.admin.active') }}</span></td>
                             <td class="px-4 sm:px-6 py-4 text-gray-400 text-xs font-bn">{{ $staff->created_at?->format('d M Y') }}</td>
                             <td class="px-4 sm:px-6 py-4 text-right whitespace-nowrap">
-                                @if($staffCanManage && ! $staff->is($admin) && in_array($staff->role, [\App\Models\User::ROLE_SUB_ADMIN, \App\Models\User::ROLE_CUSTOMER_CARE], true))
+                                @if($staffCanRemove && ! $staff->is($admin) && in_array($staff->role, [\App\Models\User::ROLE_SUB_ADMIN, \App\Models\User::ROLE_CUSTOMER_CARE], true))
                                     <form method="POST" action="{{ route('admin.system-users.destroy', $staff) }}" onsubmit="return confirm(@js(__('site.admin.confirm_remove_staff')))">
                                         @csrf
                                         @method('DELETE')
@@ -206,7 +207,145 @@
     </div>
 </div>
 
-<!-- ================= 4. CLIENT USERS ================= -->
+<!-- ================= 4. DEVELOPER ACCESS CONTROL ================= -->
+<div x-show="page === 'developer-access'" x-cloak x-transition.opacity class="space-y-5 sm:space-y-6 max-w-6xl">
+    @if($admin->role === \App\Models\User::ROLE_DEVELOPER)
+        <p class="text-sm text-gray-400 font-bn">{{ __('site.admin.developer_access_note') }}</p>
+
+        <div class="glass rounded-xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[760px] text-sm text-left">
+                    <thead class="bg-white/5 text-xs text-gray-400 uppercase">
+                        <tr>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.name') }}</th>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.email_address') }}</th>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.role') }}</th>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.joining') }}</th>
+                            <th class="px-4 sm:px-6 py-4 font-bn text-right">{{ __('site.admin.access_control') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        @forelse($systemUsers as $staff)
+                            <tr class="hover:bg-white/5 transition">
+                                <td class="px-4 sm:px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center font-bold shrink-0">
+                                            {{ mb_strtoupper(mb_substr($staff->name, 0, 1)) }}
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="font-bold text-white font-bn truncate">
+                                                {{ $staff->name }}
+                                                @if($staff->is($admin))
+                                                    <span class="text-xs text-gray-500 font-bn">({{ __('site.admin.you') }})</span>
+                                                @endif
+                                            </p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 sm:px-6 py-4 text-gray-400 text-xs truncate">{{ $staff->email }}</td>
+                                <td class="px-4 sm:px-6 py-4">
+                                    <span class="px-2 py-1 rounded text-xs font-bn font-bold {{ $roleStyles[$staff->role] ?? 'text-gray-400 bg-white/5' }}">
+                                        {{ $roleLabels[$staff->role] ?? __('site.admin.role_unknown') }}
+                                    </span>
+                                </td>
+                                <td class="px-4 sm:px-6 py-4 text-gray-400 text-xs font-bn">{{ $staff->created_at?->format('d M Y') }}</td>
+                                <td class="px-4 sm:px-6 py-4 text-right whitespace-nowrap">
+                                    @if($staff->is($admin))
+                                        <span class="text-xs text-gray-500 font-bn">{{ __('site.admin.you') }}</span>
+                                    @else
+                                        <form method="POST" action="{{ route('admin.system-users.update', $staff) }}" onsubmit="return confirm(@js(__('site.admin.confirm_role_change')))" class="inline-flex items-center gap-2">
+                                            @csrf
+                                            @method('PUT')
+                                            <select name="role" class="bg-[#050B14] border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500 font-bn">
+                                                @foreach(\App\Models\User::ROLES as $roleOption)
+                                                    <option value="{{ $roleOption }}" @selected($staff->role === $roleOption)>{{ $roleLabels[$roleOption] }}</option>
+                                                @endforeach
+                                            </select>
+                                            <button type="submit" class="text-xs px-3 py-1.5 rounded-lg border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 font-bn transition">{{ __('site.admin.update_access') }}</button>
+                                        </form>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="5" class="px-6 py-6 text-center text-gray-400 font-bn">{{ __('site.admin.no_system_users') }}</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @else
+        <div class="glass rounded-xl p-5 sm:p-6 border-l-4 border-orange-500">
+            <p class="text-sm text-orange-400 font-bn">{{ __('site.admin.developer_access_restricted') }}</p>
+        </div>
+    @endif
+</div>
+
+<!-- ================= 5. ROLES & PERMISSION ================= -->
+@php
+    $permissionLabels = [
+        'create_staff' => __('site.admin.perm_create_staff'),
+        'remove_staff' => __('site.admin.perm_remove_staff'),
+    ];
+    $assignableRoleMap = [
+        \App\Models\User::ROLE_DEVELOPER => \App\Models\User::ROLES,
+        \App\Models\User::ROLE_SUB_ADMIN => [\App\Models\User::ROLE_CUSTOMER_CARE],
+        \App\Models\User::ROLE_CUSTOMER_CARE => [],
+    ];
+    $canEditPermissions = $admin->role === \App\Models\User::ROLE_DEVELOPER;
+@endphp
+<div x-show="page === 'roles-permission'" x-cloak x-transition.opacity class="space-y-5 sm:space-y-6 max-w-6xl">
+    <p class="text-sm text-gray-400 font-bn">{{ __('site.admin.permissions_note') }}</p>
+
+    <div class="glass rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+            <form method="POST" action="{{ route('admin.roles-permission.update') }}">
+                @csrf
+                <table class="w-full min-w-[680px] text-sm text-left">
+                    <thead class="bg-white/5 text-xs text-gray-400 uppercase">
+                        <tr>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.perm_role') }}</th>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.perm_assignable_roles') }}</th>
+                            @foreach($permissionLabels as $permissionLabel)
+                                <th class="px-4 sm:px-6 py-4 font-bn text-center">{{ $permissionLabel }}</th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        @foreach($roleLabels as $role => $roleLabel)
+                            <tr class="hover:bg-white/5 transition">
+                                <td class="px-4 sm:px-6 py-4">
+                                    <span class="px-2 py-1 rounded text-xs font-bn font-bold {{ $roleStyles[$role] ?? 'text-gray-400 bg-white/5' }}">{{ $roleLabel }}</span>
+                                </td>
+                                <td class="px-4 sm:px-6 py-4">
+                                    @forelse($assignableRoleMap[$role] ?? [] as $assignableRole)
+                                        <span class="px-2 py-1 rounded text-[11px] font-bn font-bold {{ $roleStyles[$assignableRole] ?? 'text-gray-400 bg-white/5' }}">{{ $roleLabels[$assignableRole] ?? $assignableRole }}</span>
+                                    @empty
+                                        <span class="text-xs text-gray-500 font-bn">{{ __('site.admin.perm_none') }}</span>
+                                    @endforelse
+                                </td>
+                                @foreach($permissionLabels as $permissionKey => $permissionLabel)
+                                    <td class="px-4 sm:px-6 py-4 text-center">
+                                        <input type="checkbox" name="permissions[{{ $role }}][]" value="{{ $permissionKey }}" @checked($permissionMatrix[$role][$permissionKey] ?? false) @disabled(! $canEditPermissions) class="w-4 h-4 accent-emerald-500 align-middle">
+                                    </td>
+                                @endforeach
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+
+                <div class="px-4 sm:px-6 py-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    @if($canEditPermissions)
+                        <button type="submit" class="btn-emerald px-5 py-2.5 rounded-lg text-sm font-bold font-bn">{{ __('site.admin.save_permissions') }}</button>
+                    @else
+                        <p class="text-sm text-orange-400 font-bn">{{ __('site.admin.permissions_restricted') }}</p>
+                    @endif
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ================= 6. CLIENT USERS ================= -->
 <div x-show="page === 'client-users'" x-cloak x-transition.opacity x-data="{ search: '' }" class="space-y-4">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
         <p class="text-sm text-gray-400 font-bn">{{ __('site.admin.client_users_note') }}</p>
