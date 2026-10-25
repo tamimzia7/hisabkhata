@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" x-data="{
-    dark: true,
+    dark: JSON.parse(localStorage.getItem('theme-dark') ?? 'true'),
+    toggleDark() { this.dark = !this.dark; localStorage.setItem('theme-dark', JSON.stringify(this.dark)); },
     toastMsg: window.__flashToast || '',
     showToast: Boolean(window.__flashToast),
 }" :class="dark ? 'dark' : ''">

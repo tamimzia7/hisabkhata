@@ -53,6 +53,7 @@
                 <p class="text-sm text-gray-400 font-bn">{{ __('site.dashboard.welcome', ['name' => $user->name]) }}</p>
             </div>
             <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <button @click="toggleDark()" class="w-9 h-9 glass rounded-full flex items-center justify-center hover:scale-110 transition shrink-0" aria-label="Toggle theme"><span x-show="!dark">🌙</span><span x-show="dark">☀️</span></button>
                 @include('partials.language-switcher')
                 <form method="POST" action="{{ route('logout') }}" class="md:hidden">
                     @csrf

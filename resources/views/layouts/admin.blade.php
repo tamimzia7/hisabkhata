@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" x-data="{
+    dark: JSON.parse(localStorage.getItem('theme-dark') ?? 'true'),
+    toggleDark() { this.dark = !this.dark; localStorage.setItem('theme-dark', JSON.stringify(this.dark)); },
     page: @js($adminPage ?? 'admin-dashboard'),
     subTab: 'transactions',
     sidebarOpen: false,
@@ -24,7 +26,7 @@
         };
         return titles[this.page] ?? '';
     },
-}">
+}" :class="dark ? 'dark' : ''">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -85,6 +87,35 @@
     .admin-scroll::-webkit-scrollbar-track { background: transparent; }
     .admin-scroll::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 10px; }
     [x-cloak] { display: none !important; }
+
+    /* ---------- LIGHT MODE ---------- */
+    html:not(.dark) {
+        --brand-bg: #F1F5F9;
+        --brand-surface: #FFFFFF;
+        --brand-emerald: #059669;
+        --brand-emerald-light: #10B981;
+        --brand-emerald-dark: #047857;
+    }
+    html:not(.dark) body { color: #0F172A; }
+    html:not(.dark) .glass { background: rgba(255, 255, 255, 0.75); border-color: rgba(16, 185, 129, 0.25); box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9); }
+    html:not(.dark) .glass-strong { background: rgba(255, 255, 255, 0.92); border-color: rgba(16, 185, 129, 0.3); box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1); }
+    html:not(.dark) .text-white { color: #0F172A; }
+    html:not(.dark) .text-gray-300 { color: #475569; }
+    html:not(.dark) .text-gray-400 { color: #64748B; }
+    html:not(.dark) .text-gray-500 { color: #64748B; }
+    html:not(.dark) .text-emerald-300,html:not(.dark) .text-emerald-400 { color: #047857; }
+    html:not(.dark) .text-teal-400 { color: #0D9488; }
+    html:not(.dark) .text-orange-400 { color: #EA580C; }
+    html:not(.dark) .text-red-400 { color: #DC2626; }
+    html:not(.dark) .bg-white\/5 { background-color: rgba(15, 23, 42, 0.05); }
+    html:not(.dark) .bg-black\/40 { background-color: rgba(15, 23, 42, 0.06); }
+    html:not(.dark) .border-white\/5,html:not(.dark) .border-white\/10 { border-color: rgba(15, 23, 42, 0.1); }
+    html:not(.dark) input,html:not(.dark) select,html:not(.dark) textarea { background: #fff; color: #0F172A; border-color: rgba(15, 23, 42, 0.12); }
+    html:not(.dark) input::placeholder,html:not(.dark) select,html:not(.dark) textarea::placeholder { color: #94A3B8; }
+    html:not(.dark) .nav-parent:hover,html:not(.dark) .nav-item:hover,html:not(.dark) .nav-child:hover { background: rgba(15, 23, 42, 0.04); color: #0F172A; }
+    html:not(.dark) .nav-child.active { background: rgba(16, 185, 129, 0.1); color: #047857; border-left-color: #10B981; }
+    html:not(.dark) .admin-scroll::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.2); }
+    html:not(.dark) .bg-red-500\/10 { background-color: rgba(220, 38, 38, 0.08); }
 </style>
 @stack('styles')
 </head>
@@ -198,6 +229,7 @@
                 <h2 class="text-base sm:text-lg font-bold font-bn text-white truncate" x-text="pageTitle()">{{ __('site.admin.dashboard_overview') }}</h2>
             </div>
             <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                <button @click="toggleDark()" class="glass w-9 h-9 rounded-lg flex items-center justify-center shrink-0 hover:scale-110 transition" aria-label="Toggle theme"><span x-show="!dark">🌙</span><span x-show="dark">☀️</span></button>
                 @include('partials.language-switcher')
                 <div x-show="page === 'system-users'" x-cloak class="hidden sm:flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-lg border border-white/10">
                     <span class="text-xs text-gray-400 font-bn">{{ __('site.admin.role_colon') }}</span>

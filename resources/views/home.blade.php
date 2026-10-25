@@ -28,7 +28,7 @@
                 <a href="#faq" class="text-sm text-gray-300 hover:text-emerald-300 px-4 py-2 rounded-lg hover:bg-emerald-500/5 transition font-bn">{{ __('site.nav.faq') }}</a>
             </div>
             <div class="hidden lg:flex items-center gap-3">
-                <button @click="dark = !dark" class="w-10 h-10 glass rounded-full flex items-center justify-center hover:scale-110 transition"><span x-show="!dark">🌙</span><span x-show="dark">☀️</span></button>
+                <button @click="toggleDark()" class="w-10 h-10 glass rounded-full flex items-center justify-center hover:scale-110 transition"><span x-show="!dark">🌙</span><span x-show="dark">☀️</span></button>
                 @include('partials.language-switcher')
                 @guest
                     <a href="{{ route('login') }}" class="text-sm font-semibold text-gray-300 hover:text-white px-4 py-2 font-bn">{{ __('site.nav.login') }}</a>
