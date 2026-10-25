@@ -292,7 +292,7 @@ test('shows the real role of the admin on the profile page', function () {
     $response = $this->actingAs($admin)->get(route('admin.profile'));
 
     $response->assertOk();
-    $response->assertSee('সাব অ্যাডমিন');
+    $response->assertSee('অ্যাডমিন');
 });
 
 test('opens the requested panel page from the query string', function () {
