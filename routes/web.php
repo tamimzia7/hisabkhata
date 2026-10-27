@@ -23,6 +23,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/admin/profile', [DashboardController::class, 'profile'])->name('admin.profile');
     Route::put('/admin/profile', [DashboardController::class, 'updateProfile'])->name('admin.profile.update');
+    Route::delete('/admin/profile/avatar', [DashboardController::class, 'destroyAvatar'])->name('admin.profile.avatar.destroy');
+    Route::delete('/admin/profile', [DashboardController::class, 'destroyProfile'])->name('admin.profile.destroy');
 
     Route::post('/admin/system-users', [SystemUserController::class, 'store'])->name('admin.system-users.store');
     Route::put('/admin/system-users/{user}', [SystemUserController::class, 'update'])->name('admin.system-users.update');

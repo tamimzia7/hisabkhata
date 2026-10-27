@@ -9,8 +9,9 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'email', 'password', 'mode', 'role'])]
+#[Fillable(['name', 'email', 'phone', 'bio', 'avatar_path', 'password', 'mode', 'role'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -43,6 +44,16 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->mode === 'admin';
+    }
+
+    /**
+     * The public URL of the user's avatar, if one has been uploaded.
+     */
+    public function avatarUrl(): ?string
+    {
+        return filled($this->avatar_path)
+            ? Storage::disk('public')->url($this->avatar_path)
+            : null;
     }
 
     /**

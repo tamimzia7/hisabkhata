@@ -211,9 +211,13 @@
 
         <div class="p-4 border-t border-white/5 space-y-3">
             <button @click="page = 'admin-profile'; sidebarOpen = false" class="w-full flex items-center gap-3 rounded-lg p-1 -m-1 hover:bg-white/5 transition text-left" :title="@js(__('site.admin.profile'))">
-                <div class="w-9 h-9 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-[#050B14] font-bold shrink-0">
-                    {{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
-                </div>
+                @if(auth()->user()->avatarUrl())
+                    <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="w-9 h-9 rounded-full object-cover shrink-0">
+                @else
+                    <div class="w-9 h-9 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-[#050B14] font-bold shrink-0">
+                        {{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
+                    </div>
+                @endif
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-bold text-white font-bn truncate">{{ auth()->user()->name }}</p>
                     <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>

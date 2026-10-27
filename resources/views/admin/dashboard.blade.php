@@ -732,12 +732,24 @@
     <div class="grid md:grid-cols-5 gap-4 sm:gap-6">
         <div class="glass rounded-xl p-5 sm:p-6 md:col-span-2">
             <div class="flex flex-col items-center text-center">
-                <div class="w-20 h-20 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-[#050B14] text-3xl font-bold shrink-0">
-                    {{ mb_strtoupper(mb_substr($admin->name, 0, 1)) }}
-                </div>
+                @if($admin->avatarUrl())
+                    <img src="{{ $admin->avatarUrl() }}" alt="{{ $admin->name }}" class="w-20 h-20 rounded-full object-cover ring-2 ring-emerald-500/40 shrink-0">
+                @else
+                    <div class="w-20 h-20 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-[#050B14] text-3xl font-bold shrink-0">
+                        {{ mb_strtoupper(mb_substr($admin->name, 0, 1)) }}
+                    </div>
+                @endif
                 <h3 class="mt-4 text-lg font-bold text-white font-bn truncate max-w-full">{{ $admin->name }}</h3>
                 <p class="text-sm text-gray-400 truncate max-w-full">{{ $admin->email }}</p>
                 <span class="mt-3 text-xs px-2.5 py-1 rounded {{ $roleStyles[$admin->role] ?? 'text-gray-400 bg-white/5' }} font-bn">{{ $roleLabels[$admin->role] ?? __('site.admin.role_unknown') }}</span>
+
+                @if($admin->avatarUrl())
+                    <form method="POST" action="{{ route('admin.profile.avatar.destroy') }}" class="mt-3" onsubmit="return confirm(@js(__('site.admin.remove_photo')).concat('?'))">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="text-xs text-red-400 border border-red-400/30 px-3 py-1 rounded hover:bg-red-400/10 font-bn transition">{{ __('site.admin.remove_photo') }}</button>
+                    </form>
+                @endif
             </div>
             <div class="mt-5 pt-4 border-t border-white/10 space-y-3">
                 <div class="flex justify-between items-center gap-3">
@@ -745,27 +757,79 @@
                     <span class="text-xs text-white font-bn truncate">{{ $roleLabels[$admin->role] ?? __('site.admin.role_unknown') }}</span>
                 </div>
                 <div class="flex justify-between items-center gap-3">
+                    <span class="text-xs text-gray-400 font-bn shrink-0">{{ __('site.admin.phone') }}</span>
+                    <span class="text-xs text-white font-bn truncate">{{ filled($admin->phone) ? $admin->phone : '—' }}</span>
+                </div>
+                <div class="flex justify-between items-center gap-3">
                     <span class="text-xs text-gray-400 font-bn shrink-0">{{ __('site.admin.member_since') }}</span>
                     <span class="text-xs text-white font-bn truncate">{{ $admin->created_at?->format('d M Y') }}</span>
                 </div>
+                @if(filled($admin->bio))
+                    <div class="pt-3 border-t border-white/10">
+                        <p class="text-xs text-gray-400 font-bn mb-1">{{ __('site.admin.bio') }}</p>
+                        <p class="text-sm text-gray-300 font-bn break-words">{{ $admin->bio }}</p>
+                    </div>
+                @endif
             </div>
         </div>
 
         <div class="glass-strong rounded-xl p-5 sm:p-6 md:col-span-3">
             <h3 class="text-lg font-bold text-white font-bn mb-4 border-b border-white/10 pb-2">{{ __('site.admin.edit_profile') }}</h3>
-            <form method="POST" action="{{ route('admin.profile.update') }}" class="space-y-4">
+            <form method="POST" action="{{ route('admin.profile.update') }}" enctype="multipart/form-data" class="space-y-4">
                 @csrf
                 @method('PUT')
-                <div>
-                    <label for="name" class="block text-sm text-gray-400 mb-1 font-bn">{{ __('site.admin.full_name') }}</label>
-                    <input id="name" name="name" type="text" value="{{ old('name', $admin->name) }}" class="w-full bg-[#050B14] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 font-bn">
-                    @error('name')<p class="text-xs text-red-400 mt-1 font-bn">{{ $message }}</p>@enderror
+
+                <div x-data="{ avatarPreview: null }">
+                    <label class="block text-sm text-gray-400 mb-1 font-bn">{{ __('site.admin.profile_photo') }}</label>
+                    <div class="flex items-center gap-3">
+                        <div class="w-14 h-14 rounded-full overflow-hidden shrink-0 bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-[#050B14] text-xl font-bold">
+                            <template x-if="avatarPreview">
+                                <img :src="avatarPreview" alt="" class="w-full h-full object-cover">
+                            </template>
+                            <template x-if="!avatarPreview">
+                                @if($admin->avatarUrl())
+                                    <img src="{{ $admin->avatarUrl() }}" alt="" class="w-full h-full object-cover">
+                                @else
+                                    <span>{{ mb_strtoupper(mb_substr($admin->name, 0, 1)) }}</span>
+                                @endif
+                            </template>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <input id="avatar" name="avatar" type="file" accept="image/jpeg,image/png,image/webp"
+                                @change="avatarPreview = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : null"
+                                class="block w-full text-xs text-gray-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-500/15 file:text-emerald-400 hover:file:bg-emerald-500/25 file:font-bn file:cursor-pointer">
+                            <p class="text-xs text-gray-500 mt-1 font-bn">{{ __('site.admin.photo_hint') }}</p>
+                        </div>
+                    </div>
+                    @error('avatar')<p class="text-xs text-red-400 mt-1 font-bn">{{ $message }}</p>@enderror
                 </div>
-                <div>
-                    <label for="email" class="block text-sm text-gray-400 mb-1 font-bn">{{ __('site.admin.email_address') }}</label>
-                    <input id="email" name="email" type="email" value="{{ old('email', $admin->email) }}" class="w-full bg-[#050B14] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 font-bn">
-                    @error('email')<p class="text-xs text-red-400 mt-1 font-bn">{{ $message }}</p>@enderror
+
+                <div class="pt-2 border-t border-white/10">
+                    <p class="text-xs text-gray-500 font-bn mb-3">{{ __('site.admin.profile_details') }}</p>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="name" class="block text-sm text-gray-400 mb-1 font-bn">{{ __('site.admin.full_name') }}</label>
+                            <input id="name" name="name" type="text" value="{{ old('name', $admin->name) }}" class="w-full bg-[#050B14] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 font-bn">
+                            @error('name')<p class="text-xs text-red-400 mt-1 font-bn">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm text-gray-400 mb-1 font-bn">{{ __('site.admin.email_address') }}</label>
+                            <input id="email" name="email" type="email" value="{{ old('email', $admin->email) }}" class="w-full bg-[#050B14] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 font-bn">
+                            @error('email')<p class="text-xs text-red-400 mt-1 font-bn">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label for="phone" class="block text-sm text-gray-400 mb-1 font-bn">{{ __('site.admin.phone') }}</label>
+                            <input id="phone" name="phone" type="text" value="{{ old('phone', $admin->phone) }}" placeholder="{{ __('site.admin.phone_placeholder') }}" class="w-full bg-[#050B14] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 font-bn">
+                            @error('phone')<p class="text-xs text-red-400 mt-1 font-bn">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label for="bio" class="block text-sm text-gray-400 mb-1 font-bn">{{ __('site.admin.bio') }}</label>
+                            <textarea id="bio" name="bio" rows="3" placeholder="{{ __('site.admin.bio_placeholder') }}" class="w-full bg-[#050B14] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 font-bn">{{ old('bio', $admin->bio) }}</textarea>
+                            @error('bio')<p class="text-xs text-red-400 mt-1 font-bn">{{ $message }}</p>@enderror
+                        </div>
+                    </div>
                 </div>
+
                 <div class="pt-2 border-t border-white/10">
                     <p class="text-xs text-gray-500 font-bn mb-3">{{ __('site.admin.password_note') }}</p>
                     <div class="space-y-4">
@@ -793,6 +857,22 @@
                 </div>
             </form>
         </div>
+    </div>
+
+    <div class="glass rounded-xl p-5 sm:p-6 border border-red-500/20">
+        <h3 class="text-lg font-bold text-red-400 font-bn mb-2">{{ __('site.admin.delete_account') }}</h3>
+        <p class="text-sm text-gray-400 font-bn mb-4">{{ __('site.admin.delete_account_note') }}</p>
+        <form method="POST" action="{{ route('admin.profile.destroy') }}" class="flex flex-col sm:flex-row gap-3 sm:items-end"
+            onsubmit="return confirm(@js(__('site.admin.delete_account_confirm')))">
+            @csrf
+            @method('DELETE')
+            <div class="flex-1">
+                <label for="delete_password" class="block text-sm text-gray-400 mb-1 font-bn">{{ __('site.admin.current_password') }}</label>
+                <input id="delete_password" name="delete_password" type="password" autocomplete="current-password" class="w-full bg-[#050B14] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-red-500 font-bn">
+                @error('delete_password')<p class="text-xs text-red-400 mt-1 font-bn">{{ $message }}</p>@enderror
+            </div>
+            <button type="submit" class="bg-red-500/15 text-red-400 border border-red-500/30 px-5 py-2 rounded-lg font-bold font-bn text-sm hover:bg-red-500/25 transition shrink-0">{{ __('site.admin.delete_account_button') }}</button>
+        </form>
     </div>
 </div>
 
