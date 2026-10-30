@@ -5,6 +5,11 @@
     page: @js($adminPage ?? 'admin-dashboard'),
     subTab: 'transactions',
     sidebarOpen: false,
+    collapsed: JSON.parse(localStorage.getItem('admin-sidebar-collapsed') ?? 'false'),
+    toggleCollapsed() {
+        this.collapsed = !this.collapsed;
+        localStorage.setItem('admin-sidebar-collapsed', JSON.stringify(this.collapsed));
+    },
     modalOpen: false,
     modalTitle: '',
     staffModalOpen: @js(old('form') === 'staff'),
@@ -118,6 +123,23 @@
     html:not(.dark) .nav-child.active { background: rgba(16, 185, 129, 0.1); color: #047857; border-left-color: #10B981; }
     html:not(.dark) .admin-scroll::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.2); }
     html:not(.dark) .bg-red-500\/10 { background-color: rgba(220, 38, 38, 0.08); }
+
+    /* ---------- COLLAPSED SIDEBAR (DESKTOP) ---------- */
+    @media (min-width: 1024px) {
+        .sidebar-collapsed .nav-label,
+        .sidebar-collapsed .nav-chevron,
+        .sidebar-collapsed .nav-sublist,
+        .sidebar-collapsed .nav-section-label { display: none !important; }
+        .sidebar-collapsed .nav-item,
+        .sidebar-collapsed .nav-parent,
+        .sidebar-collapsed .sidebar-header,
+        .sidebar-collapsed .sidebar-user { justify-content: center; }
+        .sidebar-collapsed .nav-item,
+        .sidebar-collapsed .nav-parent { padding-left: 0; padding-right: 0; }
+        .sidebar-collapsed .sidebar-header { padding-left: 0; padding-right: 0; }
+        .sidebar-collapsed .sidebar-footer { padding-left: 0; padding-right: 0; }
+    }
+
 </style>
 @stack('styles')
 </head>
@@ -129,11 +151,11 @@
         class="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm lg:hidden" x-cloak></div>
 
     <!-- ================= SIDEBAR ================= -->
-    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
-        class="fixed inset-y-0 left-0 z-40 w-64 admin-bg border-r border-white/5 flex-shrink-0 flex flex-col transform -translate-x-full transition-transform duration-300 lg:static lg:translate-x-0">
-        <div class="px-5 py-5 border-b border-white/5 flex items-center gap-3">
-            <img src="{{ asset('favicon.svg') }}" alt="{{ __('site.common.brand') }}" class="w-9 h-9 rounded-lg">
-            <div class="min-w-0">
+    <aside :class="[sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0', collapsed ? 'lg:w-20 sidebar-collapsed' : 'lg:w-64']"
+        class="fixed inset-y-0 left-0 z-40 w-64 admin-bg border-r border-white/5 flex-shrink-0 flex flex-col transform -translate-x-full transition-all duration-300 lg:static lg:translate-x-0">
+        <div class="sidebar-header px-5 py-5 border-b border-white/5 flex items-center gap-3">
+            <img src="{{ asset('favicon.svg') }}" alt="{{ __('site.common.brand') }}" class="w-9 h-9 rounded-lg shrink-0">
+            <div class="nav-label min-w-0">
                 <h1 class="font-bold font-bn text-white truncate">{{ __('site.common.brand') }}</h1>
                 <p class="text-[10px] tracking-widest text-emerald-400 font-bold">{{ __('site.admin.cms') }}</p>
             </div>
@@ -145,21 +167,22 @@
         <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto admin-scroll">
             <a href="#" @click.prevent="page = 'admin-dashboard'; sidebarOpen = false"
                 :class="page === 'admin-dashboard' ? 'nav-active' : 'text-gray-400'"
+                title="{{ __('site.admin.dashboard') }}"
                 class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-bn text-sm">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-                {{ __('site.admin.dashboard') }}
+                <span class="nav-label">{{ __('site.admin.dashboard') }}</span>
             </a>
 
             <!-- 1. USER MANAGEMENT -->
             <div x-data="{ open: @js(in_array($adminPage ?? '', ['system-users', 'system-activity', 'developer-access', 'roles-permission'], true)) }">
-                <button @click="open = !open" :class="open ? 'text-white' : 'text-gray-400'" class="nav-parent w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-bn text-sm">
+                <button @click="collapsed ? (toggleCollapsed(), open = true) : (open = !open)" :class="open ? 'text-white' : 'text-gray-400'" title="{{ __('site.admin.user_management') }}" class="nav-parent w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-bn text-sm">
                     <span class="flex items-center gap-3">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                        {{ __('site.admin.user_management') }}
+                        <span class="nav-label">{{ __('site.admin.user_management') }}</span>
                     </span>
-                    <svg :class="open ? 'rotate-180' : ''" class="w-4 h-4 transition-transform text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    <svg :class="open ? 'rotate-180' : ''" class="nav-chevron w-4 h-4 transition-transform text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="open" class="ml-6 mt-1 space-y-1 border-l border-white/10 pl-2">
+                <div x-show="open" class="nav-sublist ml-6 mt-1 space-y-1 border-l border-white/10 pl-2">
                     <a href="#" @click.prevent="page = 'system-users'; sidebarOpen = false" :class="page === 'system-users' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.system_users') }}</a>
                     <a href="#" @click.prevent="page = 'system-activity'; sidebarOpen = false" :class="page === 'system-activity' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.system_user_activity') }}</a>
                     <a href="#" @click.prevent="page = 'developer-access'; sidebarOpen = false" :class="page === 'developer-access' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.developer_access_control') }}</a>
@@ -169,14 +192,14 @@
 
             <!-- 2. CLIENT MANAGEMENT -->
             <div x-data="{ open: @js(in_array($adminPage ?? '', ['client-users', 'client-settings', 'admin-subscriptions'], true)) }">
-                <button @click="open = !open" :class="open ? 'text-white' : 'text-gray-400'" class="nav-parent w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-bn text-sm">
+                <button @click="collapsed ? (toggleCollapsed(), open = true) : (open = !open)" :class="open ? 'text-white' : 'text-gray-400'" title="{{ __('site.admin.client_management') }}" class="nav-parent w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-bn text-sm">
                     <span class="flex items-center gap-3">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                        {{ __('site.admin.client_management') }}
+                        <span class="nav-label">{{ __('site.admin.client_management') }}</span>
                     </span>
-                    <svg :class="open ? 'rotate-180' : ''" class="w-4 h-4 transition-transform text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    <svg :class="open ? 'rotate-180' : ''" class="nav-chevron w-4 h-4 transition-transform text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="open" class="ml-6 mt-1 space-y-1 border-l border-white/10 pl-2">
+                <div x-show="open" class="nav-sublist ml-6 mt-1 space-y-1 border-l border-white/10 pl-2">
                     <a href="#" @click.prevent="page = 'client-users'; sidebarOpen = false" :class="page === 'client-users' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.client_users') }}</a>
                     <a href="#" @click.prevent="page = 'client-settings'; sidebarOpen = false" :class="page === 'client-settings' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.client_settings') }}</a>
                     <a href="#" @click.prevent="page = 'admin-subscriptions'; sidebarOpen = false" :class="page === 'admin-subscriptions' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.subscriptions') }}</a>
@@ -185,14 +208,14 @@
 
             <!-- 3. CONTENT CMS -->
             <div x-data="{ open: @js(in_array($adminPage ?? '', ['admin-pricing', 'admin-content', 'admin-blog', 'admin-reviews'], true)) }">
-                <button @click="open = !open" :class="open ? 'text-white' : 'text-gray-400'" class="nav-parent w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-bn text-sm">
+                <button @click="collapsed ? (toggleCollapsed(), open = true) : (open = !open)" :class="open ? 'text-white' : 'text-gray-400'" title="{{ __('site.admin.content_cms') }}" class="nav-parent w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-bn text-sm">
                     <span class="flex items-center gap-3">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15"/></svg>
-                        {{ __('site.admin.content_cms') }}
+                        <span class="nav-label">{{ __('site.admin.content_cms') }}</span>
                     </span>
-                    <svg :class="open ? 'rotate-180' : ''" class="w-4 h-4 transition-transform text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    <svg :class="open ? 'rotate-180' : ''" class="nav-chevron w-4 h-4 transition-transform text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="open" class="ml-6 mt-1 space-y-1 border-l border-white/10 pl-2">
+                <div x-show="open" class="nav-sublist ml-6 mt-1 space-y-1 border-l border-white/10 pl-2">
                     <a href="#" @click.prevent="page = 'admin-pricing'; sidebarOpen = false" :class="page === 'admin-pricing' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.pricing_plans') }}</a>
                     <a href="#" @click.prevent="page = 'admin-content'; sidebarOpen = false" :class="page === 'admin-content' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.page_content') }}</a>
                     <a href="#" @click.prevent="page = 'admin-blog'; sidebarOpen = false" :class="page === 'admin-blog' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.blog_articles') }}</a>
@@ -200,17 +223,18 @@
                 </div>
             </div>
 
-            <div class="px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 mt-6 font-bn">{{ __('site.admin.account') }}</div>
+            <div class="nav-section-label px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 mt-6 font-bn">{{ __('site.admin.account') }}</div>
             <a href="#" @click.prevent="page = 'admin-profile'; sidebarOpen = false"
                 :class="page === 'admin-profile' ? 'nav-active' : 'text-gray-400'"
+                title="{{ __('site.admin.profile') }}"
                 class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-bn text-sm">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                {{ __('site.admin.profile') }}
+                <span class="nav-label">{{ __('site.admin.profile') }}</span>
             </a>
         </nav>
 
-        <div class="p-4 border-t border-white/5 space-y-3">
-            <button @click="page = 'admin-profile'; sidebarOpen = false" class="w-full flex items-center gap-3 rounded-lg p-1 -m-1 hover:bg-white/5 transition text-left" :title="@js(__('site.admin.profile'))">
+        <div class="sidebar-footer p-4 border-t border-white/5 space-y-3">
+            <button @click="page = 'admin-profile'; sidebarOpen = false" class="sidebar-user w-full flex items-center gap-3 rounded-lg p-1 -m-1 hover:bg-white/5 transition text-left" :title="@js(__('site.admin.profile'))">
                 @if(auth()->user()->avatarUrl())
                     <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="w-9 h-9 rounded-full object-cover shrink-0">
                 @else
@@ -218,7 +242,7 @@
                         {{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
                     </div>
                 @endif
-                <div class="flex-1 min-w-0">
+                <div class="nav-label flex-1 min-w-0">
                     <p class="text-sm font-bold text-white font-bn truncate">{{ auth()->user()->name }}</p>
                     <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
                 </div>
@@ -233,6 +257,11 @@
             <div class="flex items-center gap-2 sm:gap-3 min-w-0">
                 <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden glass w-9 h-9 rounded-lg flex items-center justify-center shrink-0" aria-label="{{ __('site.admin.open_menu') }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <button @click="toggleCollapsed()" class="hidden lg:flex glass w-9 h-9 rounded-lg items-center justify-center shrink-0 hover:scale-110 transition"
+                    :title="collapsed ? @js(__('site.admin.expand_sidebar')) : @js(__('site.admin.collapse_sidebar'))"
+                    :aria-label="collapsed ? @js(__('site.admin.expand_sidebar')) : @js(__('site.admin.collapse_sidebar'))">
+                    <svg :class="collapsed ? 'rotate-180' : ''" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
                 </button>
                 <h2 class="text-base sm:text-lg font-bold font-bn text-white truncate" x-text="pageTitle()">{{ __('site.admin.dashboard_overview') }}</h2>
             </div>

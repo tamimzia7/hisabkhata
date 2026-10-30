@@ -443,6 +443,8 @@ return [
         'account' => 'ACCOUNT',
         'open_menu' => 'Open menu',
         'close_menu' => 'Close menu',
+        'collapse_sidebar' => 'Collapse sidebar',
+        'expand_sidebar' => 'Expand sidebar',
         'create_only_customer_care' => 'Your account level allows creating Developer accounts only.',
         'create_any_staff' => 'You can create Admin and Developer accounts.',
         'no_staff_permission' => 'You do not have permission to create new users.',
