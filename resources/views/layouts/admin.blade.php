@@ -15,23 +15,40 @@
     staffModalOpen: @js(old('form') === 'staff'),
     toastMsg: window.__flashToast || '',
     showToast: Boolean(window.__flashToast),
+    pageTitles: {
+        'admin-dashboard': @js(__('site.admin.dashboard_overview')),
+        'system-users': @js(__('site.admin.system_users')),
+        'system-activity': @js(__('site.admin.system_user_activity')),
+        'developer-access': @js(__('site.admin.developer_access_control')),
+        'roles-permission': @js(__('site.admin.roles_permission')),
+        'client-users': @js(__('site.admin.client_users')),
+        'client-settings': @js(__('site.admin.client_settings')),
+        'admin-subscriptions': @js(__('site.admin.subscription_management')),
+        'admin-pricing': @js(__('site.admin.pricing_plans')),
+        'admin-content': @js(__('site.admin.page_content')),
+        'admin-blog': @js(__('site.admin.blog_articles')),
+        'admin-reviews': @js(__('site.admin.testimonials')),
+        'admin-profile': @js(__('site.admin.admin_profile')),
+    },
     pageTitle() {
-        const titles = {
-            'admin-dashboard': @js(__('site.admin.dashboard_overview')),
-            'system-users': @js(__('site.admin.system_users')),
-            'system-activity': @js(__('site.admin.system_user_activity')),
-            'developer-access': @js(__('site.admin.developer_access_control')),
-            'roles-permission': @js(__('site.admin.roles_permission')),
-            'client-users': @js(__('site.admin.client_users')),
-            'client-settings': @js(__('site.admin.client_settings')),
-            'admin-subscriptions': @js(__('site.admin.subscription_management')),
-            'admin-pricing': @js(__('site.admin.pricing_plans')),
-            'admin-content': @js(__('site.admin.page_content')),
-            'admin-blog': @js(__('site.admin.blog_articles')),
-            'admin-reviews': @js(__('site.admin.testimonials')),
-            'admin-profile': @js(__('site.admin.admin_profile')),
-        };
-        return titles[this.page] ?? '';
+        return this.pageTitles[this.page] ?? '';
+    },
+    setPage(name) {
+        this.page = name;
+        this.sidebarOpen = false;
+
+        const url = new URL(@js(route('dashboard', absolute: false)), window.location.origin);
+        if (name !== 'admin-dashboard') {
+            url.searchParams.set('page', name);
+        }
+
+        window.history.pushState({ page: name }, '', url);
+    },
+    init() {
+        window.history.replaceState({ page: this.page }, '');
+        window.addEventListener('popstate', (event) => {
+            this.page = event.state?.page ?? 'admin-dashboard';
+        });
     },
 }" :class="dark ? 'dark' : ''">
 <head>
@@ -165,7 +182,7 @@
         </div>
 
         <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto admin-scroll">
-            <a href="#" @click.prevent="page = 'admin-dashboard'; sidebarOpen = false"
+            <a href="#" @click.prevent="setPage('admin-dashboard')"
                 :class="page === 'admin-dashboard' ? 'nav-active' : 'text-gray-400'"
                 title="{{ __('site.admin.dashboard') }}"
                 class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-bn text-sm">
@@ -183,10 +200,10 @@
                     <svg :class="open ? 'rotate-180' : ''" class="nav-chevron w-4 h-4 transition-transform text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
                 <div x-show="open" class="nav-sublist ml-6 mt-1 space-y-1 border-l border-white/10 pl-2">
-                    <a href="#" @click.prevent="page = 'system-users'; sidebarOpen = false" :class="page === 'system-users' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.system_users') }}</a>
-                    <a href="#" @click.prevent="page = 'system-activity'; sidebarOpen = false" :class="page === 'system-activity' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.system_user_activity') }}</a>
-                    <a href="#" @click.prevent="page = 'developer-access'; sidebarOpen = false" :class="page === 'developer-access' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.developer_access_control') }}</a>
-                    <a href="#" @click.prevent="page = 'roles-permission'; sidebarOpen = false" :class="page === 'roles-permission' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.roles_permission') }}</a>
+                    <a href="#" @click.prevent="setPage('system-users')" :class="page === 'system-users' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.system_users') }}</a>
+                    <a href="#" @click.prevent="setPage('system-activity')" :class="page === 'system-activity' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.system_user_activity') }}</a>
+                    <a href="#" @click.prevent="setPage('developer-access')" :class="page === 'developer-access' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.developer_access_control') }}</a>
+                    <a href="#" @click.prevent="setPage('roles-permission')" :class="page === 'roles-permission' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.roles_permission') }}</a>
                 </div>
             </div>
 
@@ -200,9 +217,9 @@
                     <svg :class="open ? 'rotate-180' : ''" class="nav-chevron w-4 h-4 transition-transform text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
                 <div x-show="open" class="nav-sublist ml-6 mt-1 space-y-1 border-l border-white/10 pl-2">
-                    <a href="#" @click.prevent="page = 'client-users'; sidebarOpen = false" :class="page === 'client-users' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.client_users') }}</a>
-                    <a href="#" @click.prevent="page = 'client-settings'; sidebarOpen = false" :class="page === 'client-settings' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.client_settings') }}</a>
-                    <a href="#" @click.prevent="page = 'admin-subscriptions'; sidebarOpen = false" :class="page === 'admin-subscriptions' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.subscriptions') }}</a>
+                    <a href="#" @click.prevent="setPage('client-users')" :class="page === 'client-users' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.client_users') }}</a>
+                    <a href="#" @click.prevent="setPage('client-settings')" :class="page === 'client-settings' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.client_settings') }}</a>
+                    <a href="#" @click.prevent="setPage('admin-subscriptions')" :class="page === 'admin-subscriptions' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.subscriptions') }}</a>
                 </div>
             </div>
 
@@ -216,15 +233,15 @@
                     <svg :class="open ? 'rotate-180' : ''" class="nav-chevron w-4 h-4 transition-transform text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
                 <div x-show="open" class="nav-sublist ml-6 mt-1 space-y-1 border-l border-white/10 pl-2">
-                    <a href="#" @click.prevent="page = 'admin-pricing'; sidebarOpen = false" :class="page === 'admin-pricing' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.pricing_plans') }}</a>
-                    <a href="#" @click.prevent="page = 'admin-content'; sidebarOpen = false" :class="page === 'admin-content' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.page_content') }}</a>
-                    <a href="#" @click.prevent="page = 'admin-blog'; sidebarOpen = false" :class="page === 'admin-blog' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.blog_articles') }}</a>
-                    <a href="#" @click.prevent="page = 'admin-reviews'; sidebarOpen = false" :class="page === 'admin-reviews' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.testimonials') }}</a>
+                    <a href="#" @click.prevent="setPage('admin-pricing')" :class="page === 'admin-pricing' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.pricing_plans') }}</a>
+                    <a href="#" @click.prevent="setPage('admin-content')" :class="page === 'admin-content' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.page_content') }}</a>
+                    <a href="#" @click.prevent="setPage('admin-blog')" :class="page === 'admin-blog' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.blog_articles') }}</a>
+                    <a href="#" @click.prevent="setPage('admin-reviews')" :class="page === 'admin-reviews' ? 'nav-child active' : 'nav-child text-gray-400'" class="block px-3 py-2 rounded-r-lg text-sm font-bn">{{ __('site.admin.testimonials') }}</a>
                 </div>
             </div>
 
             <div class="nav-section-label px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 mt-6 font-bn">{{ __('site.admin.account') }}</div>
-            <a href="#" @click.prevent="page = 'admin-profile'; sidebarOpen = false"
+            <a href="#" @click.prevent="setPage('admin-profile')"
                 :class="page === 'admin-profile' ? 'nav-active' : 'text-gray-400'"
                 title="{{ __('site.admin.profile') }}"
                 class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-bn text-sm">
@@ -234,7 +251,7 @@
         </nav>
 
         <div class="sidebar-footer p-4 border-t border-white/5 space-y-3">
-            <button @click="page = 'admin-profile'; sidebarOpen = false" class="sidebar-user w-full flex items-center gap-3 rounded-lg p-1 -m-1 hover:bg-white/5 transition text-left" :title="@js(__('site.admin.profile'))">
+            <button @click="setPage('admin-profile')" class="sidebar-user w-full flex items-center gap-3 rounded-lg p-1 -m-1 hover:bg-white/5 transition text-left" :title="@js(__('site.admin.profile'))">
                 @if(auth()->user()->avatarUrl())
                     <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="w-9 h-9 rounded-full object-cover shrink-0">
                 @else

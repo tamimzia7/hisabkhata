@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -57,10 +58,19 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $name = Auth::user()?->name;
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        AdminActivity::create([
+            'user_id' => Auth::id(),
+            'action' => 'logged_out',
+            'subject' => $name,
+            'ip_address' => request()->ip() ?: null,
+        ]);
 
         return redirect()->route('home')->with('toast', __('site.auth.messages.logout_success'));
     }

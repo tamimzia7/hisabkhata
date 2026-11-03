@@ -486,6 +486,8 @@ return [
         'activity_staff_removed' => 'removed the system user :subject.',
         'activity_role_changed' => 'changed the access level for :subject.',
         'activity_permission_updated' => 'updated the role permissions.',
+        'activity_logged_in' => 'logged in to the admin panel.',
+        'activity_logged_out' => 'logged out of the admin panel.',
         'developer_access_control' => 'Developer Access Control',
         'roles_permission' => 'Roles & Permission',
         'developer_access_note' => 'Promote or demote system users to control who has developer access. Only developer accounts can change access levels.',

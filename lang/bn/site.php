@@ -486,6 +486,8 @@ return [
         'activity_staff_removed' => 'সিস্টেম ইউজার :subject রিমুভ করেছেন।',
         'activity_role_changed' => ':subject-এর অ্যাক্সেস লেভেল পরিবর্তন করেছেন।',
         'activity_permission_updated' => 'রোল পারমিশন আপডেট করেছেন।',
+        'activity_logged_in' => 'অ্যাডমিন প্যানেলে লগইন করেছেন।',
+        'activity_logged_out' => 'অ্যাডমিন প্যানেলে লগআউট করেছেন।',
         'developer_access_control' => 'ডেভেলপার অ্যাক্সেস কন্ট্রোল',
         'roles_permission' => 'রোল ও পারমিশন',
         'developer_access_note' => 'কারা ডেভেলপার অ্যাক্সেস পাবে তা নিয়ন্ত্রণ করতে সিস্টেম ইউজারদের পদোন্নতি বা অবনমন করুন। শুধুমাত্র ডেভেলপার অ্যাকাউন্টই অ্যাক্সেস লেভেল পরিবর্তন করতে পারে।',

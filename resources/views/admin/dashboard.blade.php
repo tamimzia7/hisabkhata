@@ -59,7 +59,7 @@
         <div class="glass rounded-xl overflow-hidden">
             <div class="px-4 sm:px-5 py-4 border-b border-white/5 flex justify-between items-center bg-white/5 gap-3">
                 <h3 class="font-bold font-bn">{{ __('site.admin.new_registrations') }}</h3>
-                <a href="#" @click.prevent="page = 'client-users'" class="text-sm text-emerald-400 font-bn hover:underline shrink-0">{{ __('site.admin.see_all') }}</a>
+                <a href="#" @click.prevent="setPage('client-users')" class="text-sm text-emerald-400 font-bn hover:underline shrink-0">{{ __('site.admin.see_all') }}</a>
             </div>
             <div class="divide-y divide-white/5">
                 @forelse($recentUsers as $user)
@@ -86,7 +86,7 @@
         <div class="glass rounded-xl overflow-hidden">
             <div class="px-4 sm:px-5 py-4 border-b border-white/5 flex justify-between items-center bg-white/5 gap-3">
                 <h3 class="font-bold font-bn">{{ __('site.admin.recent_payments') }}</h3>
-                <a href="#" @click.prevent="page = 'admin-subscriptions'" class="text-sm text-emerald-400 font-bn hover:underline shrink-0">{{ __('site.admin.see_all') }}</a>
+                <a href="#" @click.prevent="setPage('admin-subscriptions')" class="text-sm text-emerald-400 font-bn hover:underline shrink-0">{{ __('site.admin.see_all') }}</a>
             </div>
             <div class="divide-y divide-white/5">
                 <div class="p-4 flex items-center justify-between gap-3 hover:bg-white/5 transition">
@@ -269,7 +269,7 @@
                     <div class="flex-1 min-w-0">
                         <p class="text-sm text-white font-bn">
                             <strong>{{ $activity->user?->name ?? __('site.admin.system_log') }}</strong>
-                            {{ __('site.admin.activity_'.$activity->action, ['subject' => $activity->subject]) }}
+                            {{ __('site.admin.activity_'.$activity->action, ['subject' => $activity->subject ?? '']) }}
                         </p>
                         <p class="text-xs text-gray-500 mt-1 font-bn">
                             {{ $activity->created_at?->format('d M Y, H:i') }}
