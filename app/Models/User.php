@@ -9,41 +9,97 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'email', 'phone', 'bio', 'avatar_path', 'password', 'mode', 'role'])]
+#[Fillable(['name', 'email', 'phone', 'bio', 'avatar_path', 'password', 'role'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    public const ROLE_DEVELOPER = 'developer';
+    public const ROLE_SUPER_ADMIN = 'super-admin';
 
-    public const ROLE_SUB_ADMIN = 'sub-admin';
+    public const ROLE_ADMIN = 'admin';
+
+    public const ROLE_DEVELOPER = 'developer';
 
     public const ROLE_CUSTOMER_CARE = 'customer-care';
 
+    public const ROLE_STUDENT = 'student';
+
+    public const ROLE_FAMILY = 'family';
+
+    public const ROLE_SHOP = 'shop';
+
     /**
-     * Every role that exists in the admin panel.
+     * Roles that may sign in to the admin panel.
      *
      * @var list<string>
      */
-    public const ROLES = [self::ROLE_DEVELOPER, self::ROLE_SUB_ADMIN, self::ROLE_CUSTOMER_CARE];
+    public const SYSTEM_ROLES = [
+        self::ROLE_SUPER_ADMIN,
+        self::ROLE_ADMIN,
+        self::ROLE_DEVELOPER,
+        self::ROLE_CUSTOMER_CARE,
+    ];
 
     /**
-     * Every permission that can be toggled for a role.
+     * Roles used by client accounts.
+     *
+     * @var list<string>
+     */
+    public const CLIENT_ROLES = [
+        self::ROLE_STUDENT,
+        self::ROLE_FAMILY,
+        self::ROLE_SHOP,
+    ];
+
+    /**
+     * Every role that exists in the application.
+     *
+     * @var list<string>
+     */
+    public const ROLES = [
+        self::ROLE_SUPER_ADMIN,
+        self::ROLE_ADMIN,
+        self::ROLE_DEVELOPER,
+        self::ROLE_CUSTOMER_CARE,
+        self::ROLE_STUDENT,
+        self::ROLE_FAMILY,
+        self::ROLE_SHOP,
+    ];
+
+    /**
+     * Every permission that can be toggled for a system role.
      *
      * @var list<string>
      */
     public const PERMISSIONS = ['create_staff', 'remove_staff'];
 
     /**
+     * Determine whether the user is a client account.
+     */
+    public function isClient(): bool
+    {
+        return in_array($this->role, self::CLIENT_ROLES, true);
+    }
+
+    /**
+     * Determine whether the user is a system (admin panel) user.
+     */
+    public function isSystemUser(): bool
+    {
+        return in_array($this->role, self::SYSTEM_ROLES, true);
+    }
+
+    /**
      * Determine whether the user is an admin panel user.
      */
     public function isAdmin(): bool
     {
-        return $this->mode === 'admin';
+        return $this->isSystemUser();
     }
 
     /**
@@ -93,7 +149,7 @@ class User extends Authenticatable
     }
 
     /**
-     * The permission state for every role.
+     * The permission state for every system role.
      *
      * @return array<string, array<string, bool>>
      */
@@ -101,7 +157,7 @@ class User extends Authenticatable
     {
         $matrix = [];
 
-        foreach (self::ROLES as $role) {
+        foreach (self::SYSTEM_ROLES as $role) {
             foreach (self::PERMISSIONS as $permission) {
                 $matrix[$role][$permission] = Setting::boolean(
                     self::permissionKey($role, $permission),
@@ -122,28 +178,29 @@ class User extends Authenticatable
     }
 
     /**
-     * The default state of a permission before an admin changes it.
+     * The default state of a permission before a super admin changes it.
      */
     private static function defaultPermission(string $role, string $permission): bool
     {
         return in_array($permission, self::PERMISSIONS, true)
-            && in_array($role, [self::ROLE_DEVELOPER, self::ROLE_SUB_ADMIN], true);
+            && in_array($role, [self::ROLE_SUPER_ADMIN, self::ROLE_ADMIN, self::ROLE_DEVELOPER], true);
     }
 
     /**
-     * The system user roles this admin is allowed to assign.
+     * The system user roles this user is allowed to assign.
      *
      * @return list<string>
      */
     public function assignableStaffRoles(): array
     {
-        if (! $this->isAdmin()) {
+        if (! $this->isSystemUser()) {
             return [];
         }
 
         return match ($this->role) {
-            self::ROLE_DEVELOPER => [self::ROLE_DEVELOPER, self::ROLE_SUB_ADMIN, self::ROLE_CUSTOMER_CARE],
-            self::ROLE_SUB_ADMIN => [self::ROLE_CUSTOMER_CARE],
+            self::ROLE_SUPER_ADMIN => self::SYSTEM_ROLES,
+            self::ROLE_ADMIN => [self::ROLE_DEVELOPER, self::ROLE_CUSTOMER_CARE],
+            self::ROLE_DEVELOPER => [self::ROLE_CUSTOMER_CARE],
             default => [],
         };
     }
@@ -159,5 +216,61 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /** {@inheritDoc} */
+    public function routeNotificationForBroadcast($notification)
+    {
+        return $this->email;
+    }
+
+    /** {@inheritDoc} */
+    public function shouldBroadcastOn($notification)
+    {
+        return Auth::guard('web')->check() ? Auth::guard('web')->user()->id : $this->id;
+    }
+
+    /** {@inheritDoc} */
+    public function broadcastOn($notification)
+    {
+        return collect([$this->routeNotificationForBroadcast($notification)])
+            ->filter()
+            ->map(fn ($channel) => (new $channel)->onReplyTo($this));
+    }
+
+    /** {@inheritDoc} */
+    public function broadcastAs($notification)
+    {
+        return $notification::class;
+    }
+
+    /** {@inheritDoc} */
+    public function broadcastWith($notification)
+    {
+        return $this->notifications->map(function ($notification) {
+            return $notification->data;
+        })->all();
+    }
+
+    /** {@inheritDoc} */
+    public function notify($notification, $channels = ['database'])
+    {
+        $notification->setNotifiable($this);
+
+        foreach ($channels as $channel) {
+            if (method_exists($notification, $channel)) {
+                $notification->$channel($this);
+            }
+        }
+
+        parent::notify($notification, $channels);
+    }
+
+    /** {@inheritDoc} */
+    public function notifications()
+    {
+        return parent::notifications()
+            ->where('notifiable_id', $this->getKey())
+            ->where('notifiable_type', get_class($this));
     }
 }

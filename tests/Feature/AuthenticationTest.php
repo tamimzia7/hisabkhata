@@ -27,7 +27,7 @@ test('registers a user, logs them in, and redirects to the dashboard', function 
         'name' => 'রাফি আহমেদ',
         'email' => 'rafi@example.com',
         'password' => 'secret1234',
-        'mode' => 'student',
+        'role' => User::ROLE_STUDENT,
     ]);
 
     $response->assertRedirect(route('dashboard'));
@@ -36,7 +36,7 @@ test('registers a user, logs them in, and redirects to the dashboard', function 
 
     $user = User::where('email', 'rafi@example.com')->firstOrFail();
 
-    expect($user->mode)->toBe('student');
+    expect($user->role)->toBe(User::ROLE_STUDENT);
     expect(Hash::check('secret1234', $user->password))->toBeTrue();
 });
 
@@ -47,7 +47,7 @@ test('rejects registration when the email is already taken', function () {
         'name' => 'Someone',
         'email' => 'taken@example.com',
         'password' => 'secret1234',
-        'mode' => 'personal',
+        'role' => User::ROLE_FAMILY,
     ]);
 
     $response->assertSessionHasErrors(['email' => 'এই ইমেইল দিয়ে আগে থেকেই অ্যাকাউন্ট আছে।']);
@@ -55,15 +55,15 @@ test('rejects registration when the email is already taken', function () {
     expect(User::count())->toBe(1);
 });
 
-test('rejects registration with an unsupported mode', function () {
+test('rejects registration with an unsupported role', function () {
     $response = $this->post('/register', [
         'name' => 'Someone',
         'email' => 'someone@example.com',
         'password' => 'secret1234',
-        'mode' => 'admin',
+        'role' => User::ROLE_ADMIN,
     ]);
 
-    $response->assertSessionHasErrors(['mode' => 'আপনার ধরন নির্বাচন করুন।']);
+    $response->assertSessionHasErrors(['role' => 'আপনার ধরন নির্বাচন করুন।']);
     $this->assertGuest();
     expect(User::count())->toBe(0);
 });
@@ -73,7 +73,7 @@ test('rejects registration with a password shorter than eight characters', funct
         'name' => 'Someone',
         'email' => 'someone@example.com',
         'password' => 'short',
-        'mode' => 'business',
+        'role' => User::ROLE_SHOP,
     ]);
 
     $response->assertSessionHasErrors(['password' => 'পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।']);
@@ -138,7 +138,7 @@ test('redirects authenticated users away from the login page', function () {
 });
 
 test('shows the student dashboard to a student user', function () {
-    $user = User::factory()->create(['mode' => 'student']);
+    $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     $response = $this->actingAs($user)->get('/dashboard');
 
@@ -149,7 +149,7 @@ test('shows the student dashboard to a student user', function () {
 });
 
 test('shows the admin panel to an admin user', function () {
-    $user = User::factory()->create(['mode' => 'admin']);
+    $user = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 
     $response = $this->actingAs($user)->get('/dashboard');
 

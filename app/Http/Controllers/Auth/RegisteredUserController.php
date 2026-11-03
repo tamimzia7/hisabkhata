@@ -29,7 +29,7 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')],
             'password' => ['required', 'string', 'min:8'],
-            'mode' => ['required', Rule::in(['student', 'personal', 'business'])],
+            'role' => ['required', Rule::in(User::CLIENT_ROLES)],
         ], [
             'name.required' => __('site.auth.messages.name_required'),
             'email.required' => __('site.auth.messages.email_required'),
@@ -37,8 +37,8 @@ class RegisteredUserController extends Controller
             'email.unique' => __('site.auth.messages.email_taken'),
             'password.required' => __('site.auth.messages.password_required'),
             'password.min' => __('site.auth.messages.password_min'),
-            'mode.required' => __('site.auth.messages.mode_required'),
-            'mode.in' => __('site.auth.messages.mode_required'),
+            'role.required' => __('site.auth.messages.role_required'),
+            'role.in' => __('site.auth.messages.role_required'),
         ]);
 
         $user = User::create($validated);

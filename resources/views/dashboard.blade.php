@@ -29,7 +29,7 @@
             <div class="glass rounded-xl p-3 mb-3">
                 <div class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.logged_in_as') }}</div>
                 <div class="text-sm font-bold font-bn">{{ $user->name }}</div>
-                <div class="text-[10px] text-emerald-400 uppercase">{{ $user->mode }}</div>
+                <div class="text-[10px] text-emerald-400 uppercase">{{ __('site.auth.'.$user->role) }}</div>
             </div>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
@@ -44,9 +44,9 @@
         <div class="flex flex-wrap items-start sm:items-center justify-between mb-5 sm:mb-6 gap-3">
             <div class="min-w-0">
                 <h1 class="text-xl sm:text-2xl md:text-3xl font-bold font-display font-bn">
-                    @if($user->mode === 'admin') {{ __('site.dashboard.heading_admin') }}
-                    @elseif($user->mode === 'personal') {{ __('site.dashboard.heading_personal') }}
-                    @elseif($user->mode === 'business') {{ __('site.dashboard.heading_business') }}
+                    @if($user->isSystemUser()) {{ __('site.dashboard.heading_admin') }}
+                    @elseif($user->role === \App\Models\User::ROLE_FAMILY) {{ __('site.dashboard.heading_family') }}
+                    @elseif($user->role === \App\Models\User::ROLE_SHOP) {{ __('site.dashboard.heading_shop') }}
                     @else {{ __('site.dashboard.heading_student') }}
                     @endif
                 </h1>
@@ -64,7 +64,7 @@
         </div>
 
         <!-- ===== ADMIN ===== -->
-        @if($user->mode === 'admin')
+        @if($user->isSystemUser())
             <div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-6">
                     <div class="glass-strong rounded-xl p-3 sm:p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.total_users') }}</p><p class="text-lg sm:text-2xl font-bold text-emerald-400">{{ __('site.dashboard.values.total_users') }}</p></div>
@@ -76,12 +76,12 @@
                     <div class="lg:col-span-2 glass-strong rounded-2xl p-4 sm:p-5">
                         <h3 class="font-bold mb-4 font-bn">{{ __('site.dashboard.user_list') }}</h3>
                         <div class="overflow-x-auto"><table class="w-full min-w-[480px] text-sm">
-                            <thead class="text-gray-400 text-left"><tr><th class="py-2 font-bn">{{ __('site.dashboard.name') }}</th><th class="font-bn">{{ __('site.dashboard.mode') }}</th><th class="font-bn">{{ __('site.dashboard.payment') }}</th></tr></thead>
+                            <thead class="text-gray-400 text-left"><tr><th class="py-2 font-bn">{{ __('site.dashboard.name') }}</th><th class="font-bn">{{ __('site.dashboard.role') }}</th><th class="font-bn">{{ __('site.dashboard.payment') }}</th></tr></thead>
                             <tbody>
-                                @foreach([[__('site.dashboard.admin_user_1'), 'student', true], [__('site.dashboard.admin_user_2'), 'personal', true], [__('site.dashboard.admin_user_3'), 'business', false]] as [$name, $mode, $paid])
+                                @foreach([[__('site.dashboard.admin_user_1'), 'student', true], [__('site.dashboard.admin_user_2'), 'family', true], [__('site.dashboard.admin_user_3'), 'shop', false]] as [$name, $role, $paid])
                                     <tr class="border-t border-white/5">
                                         <td class="py-2 font-bn">{{ $name }}</td>
-                                        <td class="font-bn">{{ $mode }}</td>
+                                        <td class="font-bn">{{ __('site.auth.'.$role) }}</td>
                                         <td><span class="text-xs font-bn {{ $paid ? 'text-emerald-400' : 'text-orange-400' }}">{{ $paid ? __('site.dashboard.paid') : __('site.dashboard.due') }}</span></td>
                                     </tr>
                                 @endforeach
@@ -101,7 +101,7 @@
         @endif
 
         <!-- ===== STUDENT / MEAL ===== -->
-        @if($user->mode === 'student')
+        @if($user->role === \App\Models\User::ROLE_STUDENT)
             <div>
                 <div class="grid grid-cols-3 gap-2 sm:gap-3 mb-6">
                     <div class="glass-strong rounded-xl p-3 sm:p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.total_meals') }}</p><p class="text-lg sm:text-2xl font-bold text-emerald-400">{{ __('site.dashboard.values.total_meals') }}</p></div>
@@ -135,8 +135,8 @@
             </div>
         @endif
 
-        <!-- ===== PERSONAL ===== -->
-        @if($user->mode === 'personal')
+        <!-- ===== FAMILY ===== -->
+        @if($user->role === \App\Models\User::ROLE_FAMILY)
             <div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-6">
                     <div class="glass-strong rounded-xl p-3 sm:p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.income') }}</p><p class="text-lg sm:text-2xl font-bold text-emerald-400">{{ __('site.dashboard.values.income') }}</p></div>
@@ -172,8 +172,8 @@
             </div>
         @endif
 
-        <!-- ===== BUSINESS ===== -->
-        @if($user->mode === 'business')
+        <!-- ===== SHOP ===== -->
+        @if($user->role === \App\Models\User::ROLE_SHOP)
             <div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-6">
                     <div class="glass-strong rounded-xl p-3 sm:p-4"><p class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.today_sales') }}</p><p class="text-lg sm:text-2xl font-bold text-emerald-400">{{ __('site.dashboard.values.today_sales') }}</p></div>

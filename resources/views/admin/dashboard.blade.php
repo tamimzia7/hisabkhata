@@ -4,27 +4,23 @@
 
 @section('content')
 @php
-    $modeLabels = [
-        'student' => __('site.admin.mode_student'),
-        'personal' => __('site.admin.mode_personal'),
-        'business' => __('site.admin.mode_business'),
-        'admin' => __('site.admin.mode_admin'),
-    ];
-    $modeStyles = [
-        'student' => 'text-emerald-400 bg-emerald-500/10',
-        'personal' => 'text-teal-400 bg-teal-500/10',
-        'business' => 'text-amber-400 bg-amber-500/10',
-        'admin' => 'text-lime-400 bg-lime-500/10',
-    ];
     $roleLabels = [
+        'super-admin' => __('site.admin.role_super_admin'),
+        'admin' => __('site.admin.role_admin'),
         'developer' => __('site.admin.role_developer'),
-        'sub-admin' => __('site.admin.role_sub_admin'),
         'customer-care' => __('site.admin.role_customer_care'),
+        'student' => __('site.admin.role_student'),
+        'family' => __('site.admin.role_family'),
+        'shop' => __('site.admin.role_shop'),
     ];
     $roleStyles = [
-        'developer' => 'text-teal-400 bg-teal-500/10',
-        'sub-admin' => 'text-purple-400 bg-purple-500/10',
+        'super-admin' => 'text-teal-400 bg-teal-500/10',
+        'admin' => 'text-purple-400 bg-purple-500/10',
+        'developer' => 'text-sky-400 bg-sky-500/10',
         'customer-care' => 'text-orange-400 bg-orange-500/10',
+        'student' => 'text-emerald-400 bg-emerald-500/10',
+        'family' => 'text-cyan-400 bg-cyan-500/10',
+        'shop' => 'text-amber-400 bg-amber-500/10',
     ];
     $staffCanManage = $admin->canCreateSystemUsers();
     $staffCanRemove = $admin->canRemoveSystemUsers();
@@ -70,11 +66,11 @@
                             </div>
                             <div class="min-w-0">
                                 <p class="text-sm font-bold font-bn truncate">{{ $user->name }}</p>
-                                <p class="text-xs text-gray-400 font-bn">{{ __('site.admin.mode_suffix', ['mode' => $modeLabels[$user->mode] ?? $user->mode]) }}</p>
+                                <p class="text-xs text-gray-400 font-bn">{{ $roleLabels[$user->role] ?? __('site.admin.role_unknown') }}</p>
                             </div>
                         </div>
-                        <span class="text-xs px-2 py-1 rounded font-bn shrink-0 {{ $modeStyles[$user->mode] ?? 'text-gray-400 bg-white/5' }}">
-                            {{ $modeLabels[$user->mode] ?? $user->mode }}
+                        <span class="text-xs px-2 py-1 rounded font-bn shrink-0 {{ $roleStyles[$user->role] ?? 'text-gray-400 bg-white/5' }}">
+                            {{ $roleLabels[$user->role] ?? __('site.admin.role_unknown') }}
                         </span>
                     </div>
                 @empty
@@ -137,7 +133,7 @@
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         @if($staffCanManage)
             <p class="text-sm text-gray-400 font-bn">
-                {{ $admin->role === \App\Models\User::ROLE_DEVELOPER ? __('site.admin.create_any_staff') : __('site.admin.create_only_customer_care') }}
+                {{ count($admin->assignableStaffRoles()) > 1 ? __('site.admin.create_any_staff') : __('site.admin.create_only_customer_care') }}
             </p>
             <button @click="staffModalOpen = true" class="btn-emerald px-5 py-2.5 rounded-lg text-sm font-bold font-bn shrink-0">{{ __('site.admin.new_system_user') }}</button>
         @else
@@ -211,11 +207,11 @@
                             <td class="px-4 sm:px-6 py-4 text-right whitespace-nowrap">
                                 @if($staff->is($admin))
                                     <span class="text-xs text-gray-500 font-bn">{{ __('site.admin.you') }}</span>
-                                @elseif($admin->role === \App\Models\User::ROLE_DEVELOPER)
+                                @elseif($admin->role === \App\Models\User::ROLE_SUPER_ADMIN)
                                     <form method="POST" action="{{ route('admin.system-users.update', $staff) }}" onsubmit="return confirm(@js(__('site.admin.confirm_role_change')))" class="inline-flex">
                                         @csrf
                                         @method('PUT')
-                                        <input type="hidden" name="role" value="{{ $staff->role === \App\Models\User::ROLE_CUSTOMER_CARE ? \App\Models\User::ROLE_SUB_ADMIN : \App\Models\User::ROLE_CUSTOMER_CARE }}">
+                                        <input type="hidden" name="role" value="{{ $staff->role === \App\Models\User::ROLE_CUSTOMER_CARE ? \App\Models\User::ROLE_ADMIN : \App\Models\User::ROLE_CUSTOMER_CARE }}">
                                         <input type="hidden" name="return_to" value="system-users">
                                         <button type="submit" @class(['relative w-11 h-6 rounded-full transition shrink-0', $staff->role === \App\Models\User::ROLE_CUSTOMER_CARE ? 'bg-white/10' : 'bg-emerald-500']) :aria-pressed="@js($staff->role !== \App\Models\User::ROLE_CUSTOMER_CARE)" :title="@js($staff->role !== \App\Models\User::ROLE_CUSTOMER_CARE ? __('site.admin.access_click_to_revoke') : __('site.admin.access_click_to_grant'))" aria-label="{{ __('site.admin.access_control') }}">
                                             <span @class(['absolute top-1 left-0 w-4 h-4 bg-white rounded-full transition-transform', $staff->role === \App\Models\User::ROLE_CUSTOMER_CARE ? 'translate-x-1' : 'translate-x-6'])></span>
@@ -228,7 +224,7 @@
                                 @endif
                             </td>
                             <td class="px-4 sm:px-6 py-4 text-right whitespace-nowrap">
-                                @if($staffCanRemove && ! $staff->is($admin) && in_array($staff->role, [\App\Models\User::ROLE_SUB_ADMIN, \App\Models\User::ROLE_CUSTOMER_CARE], true))
+                                @if($staffCanRemove && ! $staff->is($admin) && in_array($staff->role, [\App\Models\User::ROLE_ADMIN, \App\Models\User::ROLE_DEVELOPER, \App\Models\User::ROLE_CUSTOMER_CARE], true))
                                     <form method="POST" action="{{ route('admin.system-users.destroy', $staff) }}" onsubmit="return confirm(@js(__('site.admin.confirm_remove_staff')))">
                                         @csrf
                                         @method('DELETE')
@@ -316,14 +312,14 @@
             this.visible = count;
         },
     }" x-init="apply()">
-    @if($admin->role === \App\Models\User::ROLE_DEVELOPER)
+    @if($admin->role === \App\Models\User::ROLE_SUPER_ADMIN)
         <p class="text-sm text-gray-400 font-bn">{{ __('site.admin.developer_access_note') }}</p>
 
         <div class="flex flex-col sm:flex-row sm:items-center gap-3">
             <input x-model="search" @input="apply()" type="text" placeholder="{{ __('site.admin.staff_search_placeholder') }}" class="glass bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm w-full sm:w-64 text-white focus:outline-none focus:border-emerald-500 font-bn">
             <select x-model="roleFilter" @change="apply()" class="bg-[#050B14] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-bn">
                 <option value="all">{{ __('site.admin.filter_all_roles') }}</option>
-                @foreach(\App\Models\User::ROLES as $roleOption)
+                @foreach(\App\Models\User::SYSTEM_ROLES as $roleOption)
                     <option value="{{ $roleOption }}">{{ $roleLabels[$roleOption] }}</option>
                 @endforeach
             </select>
@@ -380,7 +376,7 @@
                                         <form method="POST" action="{{ route('admin.system-users.update', $staff) }}" onsubmit="return confirm(@js(__('site.admin.confirm_role_change')))" class="inline-flex">
                                             @csrf
                                             @method('PUT')
-                                            <input type="hidden" name="role" value="{{ $staff->role === \App\Models\User::ROLE_CUSTOMER_CARE ? \App\Models\User::ROLE_SUB_ADMIN : \App\Models\User::ROLE_CUSTOMER_CARE }}">
+                                            <input type="hidden" name="role" value="{{ $staff->role === \App\Models\User::ROLE_CUSTOMER_CARE ? \App\Models\User::ROLE_ADMIN : \App\Models\User::ROLE_CUSTOMER_CARE }}">
                                             <button type="submit" @class(['relative w-11 h-6 rounded-full transition shrink-0', $staff->role === \App\Models\User::ROLE_CUSTOMER_CARE ? 'bg-white/10' : 'bg-emerald-500']) :aria-pressed="@js($staff->role !== \App\Models\User::ROLE_CUSTOMER_CARE)" :title="@js($staff->role !== \App\Models\User::ROLE_CUSTOMER_CARE ? __('site.admin.access_click_to_revoke') : __('site.admin.access_click_to_grant'))" aria-label="{{ __('site.admin.access_control') }}">
                                                 <span @class(['absolute top-1 left-0 w-4 h-4 bg-white rounded-full transition-transform', $staff->role === \App\Models\User::ROLE_CUSTOMER_CARE ? 'translate-x-1' : 'translate-x-6'])></span>
                                             </button>
@@ -414,11 +410,12 @@
         'remove_staff' => __('site.admin.perm_remove_staff'),
     ];
     $assignableRoleMap = [
-        \App\Models\User::ROLE_DEVELOPER => \App\Models\User::ROLES,
-        \App\Models\User::ROLE_SUB_ADMIN => [\App\Models\User::ROLE_CUSTOMER_CARE],
+        \App\Models\User::ROLE_SUPER_ADMIN => \App\Models\User::SYSTEM_ROLES,
+        \App\Models\User::ROLE_ADMIN => [\App\Models\User::ROLE_DEVELOPER, \App\Models\User::ROLE_CUSTOMER_CARE],
+        \App\Models\User::ROLE_DEVELOPER => [\App\Models\User::ROLE_CUSTOMER_CARE],
         \App\Models\User::ROLE_CUSTOMER_CARE => [],
     ];
-    $canEditPermissions = $admin->role === \App\Models\User::ROLE_DEVELOPER;
+    $canEditPermissions = $admin->role === \App\Models\User::ROLE_SUPER_ADMIN;
 @endphp
 <div x-show="page === 'roles-permission'" x-cloak x-transition.opacity class="space-y-5 sm:space-y-6 max-w-6xl">
     <p class="text-sm text-gray-400 font-bn">{{ __('site.admin.permissions_note') }}</p>
@@ -438,10 +435,10 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/5">
-                        @foreach($roleLabels as $role => $roleLabel)
+                        @foreach(\App\Models\User::SYSTEM_ROLES as $role)
                             <tr class="hover:bg-white/5 transition">
                                 <td class="px-4 sm:px-6 py-4">
-                                    <span class="px-2 py-1 rounded text-xs font-bn font-bold {{ $roleStyles[$role] ?? 'text-gray-400 bg-white/5' }}">{{ $roleLabel }}</span>
+                                    <span class="px-2 py-1 rounded text-xs font-bn font-bold {{ $roleStyles[$role] ?? 'text-gray-400 bg-white/5' }}">{{ $roleLabels[$role] }}</span>
                                 </td>
                                 <td class="px-4 sm:px-6 py-4">
                                     @forelse($assignableRoleMap[$role] ?? [] as $assignableRole)
@@ -506,7 +503,7 @@
                                 </div>
                             </td>
                             <td class="px-4 sm:px-6 py-4">
-                                <span class="px-2 py-1 rounded text-xs font-bn {{ $modeStyles[$user->mode] ?? 'text-gray-400 bg-white/5' }}">{{ $modeLabels[$user->mode] ?? $user->mode }}</span>
+                                <span class="px-2 py-1 rounded text-xs font-bn {{ $roleStyles[$user->role] ?? 'text-gray-400 bg-white/5' }}">{{ $roleLabels[$user->role] ?? __('site.admin.role_unknown') }}</span>
                             </td>
                             <td class="px-4 sm:px-6 py-4">
                                 <span class="px-2 py-1 rounded text-xs font-bn {{ $user->email_verified_at ? 'text-emerald-400 bg-emerald-500/10' : 'text-amber-400 bg-amber-500/10' }}">

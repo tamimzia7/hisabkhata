@@ -29,17 +29,17 @@
         </div>
         <p class="text-gray-400 text-sm mb-6 font-bn">{{ __('site.auth.register_subtitle') }}</p>
 
-        <form method="POST" action="{{ route('register') }}" class="space-y-4" x-data="{ regMode: @js(old('mode', 'student')) }">
+        <form method="POST" action="{{ route('register') }}" class="space-y-4" x-data="{ regRole: @js(old('role', 'student')) }">
             @csrf
             <div>
                 <label class="text-sm text-gray-300 font-bn">{{ __('site.auth.type') }}</label>
                 <div class="grid grid-cols-3 gap-2 mt-2">
-                    <button type="button" @click="regMode='student'" :class="regMode==='student' ? 'ring-2 ring-emerald-400 bg-emerald-500/20' : ''" class="glass rounded-xl p-2 sm:p-3 text-center transition"><div class="text-xl sm:text-2xl mb-1">🎓</div><div class="text-[10px] sm:text-xs leading-tight font-semibold font-bn">{{ __('site.auth.student') }}</div></button>
-                    <button type="button" @click="regMode='personal'" :class="regMode==='personal' ? 'ring-2 ring-emerald-400 bg-emerald-500/20' : ''" class="glass rounded-xl p-2 sm:p-3 text-center transition"><div class="text-xl sm:text-2xl mb-1">🏠</div><div class="text-[10px] sm:text-xs leading-tight font-semibold font-bn">{{ __('site.auth.family') }}</div></button>
-                    <button type="button" @click="regMode='business'" :class="regMode==='business' ? 'ring-2 ring-emerald-400 bg-emerald-500/20' : ''" class="glass rounded-xl p-2 sm:p-3 text-center transition"><div class="text-xl sm:text-2xl mb-1">🏪</div><div class="text-[10px] sm:text-xs leading-tight font-semibold font-bn">{{ __('site.auth.shop') }}</div></button>
+                    <button type="button" @click="regRole='student'" :class="regRole==='student' ? 'ring-2 ring-emerald-400 bg-emerald-500/20' : ''" class="glass rounded-xl p-2 sm:p-3 text-center transition"><div class="text-xl sm:text-2xl mb-1">🎓</div><div class="text-[10px] sm:text-xs leading-tight font-semibold font-bn">{{ __('site.auth.student') }}</div></button>
+                    <button type="button" @click="regRole='family'" :class="regRole==='family' ? 'ring-2 ring-emerald-400 bg-emerald-500/20' : ''" class="glass rounded-xl p-2 sm:p-3 text-center transition"><div class="text-xl sm:text-2xl mb-1">🏠</div><div class="text-[10px] sm:text-xs leading-tight font-semibold font-bn">{{ __('site.auth.family') }}</div></button>
+                    <button type="button" @click="regRole='shop'" :class="regRole==='shop' ? 'ring-2 ring-emerald-400 bg-emerald-500/20' : ''" class="glass rounded-xl p-2 sm:p-3 text-center transition"><div class="text-xl sm:text-2xl mb-1">🏪</div><div class="text-[10px] sm:text-xs leading-tight font-semibold font-bn">{{ __('site.auth.shop') }}</div></button>
                 </div>
-                <input type="hidden" name="mode" :value="regMode">
-                @error('mode')
+                <input type="hidden" name="role" :value="regRole">
+                @error('role')
                     <p class="text-red-400 text-xs mt-1.5 font-bn">{{ $message }}</p>
                 @enderror
             </div>

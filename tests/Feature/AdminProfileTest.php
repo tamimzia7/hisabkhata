@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 uses(RefreshDatabase::class);
 
 test('shows the profile page to an admin user', function () {
-    $admin = User::factory()->create(['mode' => 'admin']);
+    $admin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 
     $response = $this->actingAs($admin)->get(route('admin.profile'));
 
@@ -20,7 +20,7 @@ test('shows the profile page to an admin user', function () {
 });
 
 test('forbids non-admin users from the profile page', function () {
-    $user = User::factory()->create(['mode' => 'student']);
+    $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     $response = $this->actingAs($user)->get(route('admin.profile'));
 
@@ -34,7 +34,7 @@ test('redirects guests from the profile page to login', function () {
 });
 
 test('updates the admin name and email', function () {
-    $admin = User::factory()->create(['mode' => 'admin']);
+    $admin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 
     $response = $this->actingAs($admin)->put(route('admin.profile.update'), [
         'name' => 'নতুন নাম',
@@ -51,7 +51,7 @@ test('updates the admin name and email', function () {
 });
 
 test('changes the password when the current password is correct', function () {
-    $admin = User::factory()->create(['mode' => 'admin', 'password' => 'old-secret-1']);
+    $admin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN, 'password' => 'old-secret-1']);
 
     $response = $this->actingAs($admin)->put(route('admin.profile.update'), [
         'name' => $admin->name,
@@ -70,7 +70,7 @@ test('changes the password when the current password is correct', function () {
 });
 
 test('rejects a password change with an incorrect current password', function () {
-    $admin = User::factory()->create(['mode' => 'admin', 'password' => 'old-secret-1']);
+    $admin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN, 'password' => 'old-secret-1']);
 
     $response = $this->actingAs($admin)->from(route('admin.profile'))->put(route('admin.profile.update'), [
         'name' => $admin->name,
@@ -90,7 +90,7 @@ test('rejects a password change with an incorrect current password', function ()
 });
 
 test('keeps the password when none is provided', function () {
-    $admin = User::factory()->create(['mode' => 'admin', 'password' => 'old-secret-1']);
+    $admin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN, 'password' => 'old-secret-1']);
 
     $response = $this->actingAs($admin)->put(route('admin.profile.update'), [
         'name' => 'শুধু নাম',
@@ -106,7 +106,7 @@ test('keeps the password when none is provided', function () {
 });
 
 test('rejects an email already used by another account', function () {
-    $admin = User::factory()->create(['mode' => 'admin']);
+    $admin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
     User::factory()->create(['email' => 'taken@example.com']);
 
     $response = $this->actingAs($admin)->from(route('admin.profile'))->put(route('admin.profile.update'), [
@@ -118,7 +118,7 @@ test('rejects an email already used by another account', function () {
 });
 
 test('updates the profile phone and bio', function () {
-    $admin = User::factory()->create(['mode' => 'admin']);
+    $admin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 
     $response = $this->actingAs($admin)->put(route('admin.profile.update'), [
         'name' => $admin->name,
@@ -138,7 +138,7 @@ test('updates the profile phone and bio', function () {
 test('uploads a profile photo and removes it again', function () {
     Storage::fake('public');
 
-    $admin = User::factory()->create(['mode' => 'admin']);
+    $admin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 
     $this->actingAs($admin)->put(route('admin.profile.update'), [
         'name' => $admin->name,
@@ -163,7 +163,7 @@ test('uploads a profile photo and removes it again', function () {
 test('removes the old photo when a new one is uploaded', function () {
     Storage::fake('public');
 
-    $admin = User::factory()->create(['mode' => 'admin']);
+    $admin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
     $oldPath = UploadedFile::fake()->image('old.jpg')->store('avatars', 'public');
     $admin->update(['avatar_path' => $oldPath]);
 
@@ -182,7 +182,7 @@ test('removes the old photo when a new one is uploaded', function () {
 test('rejects an invalid profile photo', function () {
     Storage::fake('public');
 
-    $admin = User::factory()->create(['mode' => 'admin']);
+    $admin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 
     $this->actingAs($admin)->from(route('admin.profile'))->put(route('admin.profile.update'), [
         'name' => $admin->name,
@@ -196,7 +196,7 @@ test('rejects an invalid profile photo', function () {
 test('deletes the admin account with the correct password', function () {
     Storage::fake('public');
 
-    $admin = User::factory()->create(['mode' => 'admin', 'password' => 'secret-pass-1']);
+    $admin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN, 'password' => 'secret-pass-1']);
     $admin->update(['avatar_path' => UploadedFile::fake()->image('avatar.jpg')->store('avatars', 'public')]);
     $path = $admin->avatar_path;
 
@@ -213,7 +213,7 @@ test('deletes the admin account with the correct password', function () {
 });
 
 test('rejects account deletion with a wrong password', function () {
-    $admin = User::factory()->create(['mode' => 'admin', 'password' => 'secret-pass-1']);
+    $admin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN, 'password' => 'secret-pass-1']);
 
     $response = $this->actingAs($admin)
         ->from(route('admin.profile'))
@@ -230,7 +230,7 @@ test('rejects account deletion with a wrong password', function () {
 });
 
 test('forbids non-admin users from removing the avatar or deleting the account', function () {
-    $user = User::factory()->create(['mode' => 'student']);
+    $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     $this->actingAs($user)->delete(route('admin.profile.avatar.destroy'))->assertForbidden();
     $this->actingAs($user)->delete(route('admin.profile.destroy'), ['delete_password' => 'password'])->assertForbidden();

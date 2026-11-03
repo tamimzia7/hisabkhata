@@ -49,7 +49,6 @@ class SystemUserController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => $validated['password'],
-            'mode' => 'admin',
             'role' => $validated['role'] ?? User::ROLE_CUSTOMER_CARE,
         ]);
 
@@ -67,12 +66,12 @@ class SystemUserController extends Controller
     {
         $actor = $request->user();
 
-        abort_unless($actor->role === User::ROLE_DEVELOPER, 403);
+        abort_unless($actor->role === User::ROLE_SUPER_ADMIN, 403);
         abort_if($user->is($actor), 403);
-        abort_unless($user->isAdmin(), 403);
+        abort_unless($user->isSystemUser(), 403);
 
         $validated = $request->validate([
-            'role' => ['required', Rule::in(User::ROLES)],
+            'role' => ['required', Rule::in(User::SYSTEM_ROLES)],
             'return_to' => ['nullable', Rule::in(['developer-access', 'system-users'])],
         ], [
             'role.required' => __('site.admin.role_not_allowed'),
@@ -96,7 +95,7 @@ class SystemUserController extends Controller
         abort_unless($request->user()->canRemoveSystemUsers(), 403);
         abort_if($user->is($request->user()), 403);
         abort_unless(
-            $user->isAdmin() && in_array($user->role, [User::ROLE_SUB_ADMIN, User::ROLE_CUSTOMER_CARE], true),
+            $user->isSystemUser() && in_array($user->role, [User::ROLE_ADMIN, User::ROLE_DEVELOPER, User::ROLE_CUSTOMER_CARE], true),
             403
         );
 

@@ -9,9 +9,9 @@ use Illuminate\Support\Facades\Hash;
 uses(RefreshDatabase::class);
 
 test('loads system users and client users from the database', function () {
-    $admin = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
-    $staff = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_CUSTOMER_CARE]);
-    $client = User::factory()->create(['mode' => 'student']);
+    $admin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
+    $staff = User::factory()->create(['role' => User::ROLE_CUSTOMER_CARE]);
+    $client = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     $response = $this->actingAs($admin)->get(route('dashboard', ['page' => 'system-users']));
 
@@ -22,7 +22,7 @@ test('loads system users and client users from the database', function () {
 });
 
 test('shows the no-permission notice to a customer care admin', function () {
-    $staff = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_CUSTOMER_CARE]);
+    $staff = User::factory()->create(['role' => User::ROLE_CUSTOMER_CARE]);
 
     $response = $this->actingAs($staff)->get(route('dashboard', ['page' => 'system-users']));
 
@@ -32,7 +32,7 @@ test('shows the no-permission notice to a customer care admin', function () {
 });
 
 test('lets a developer create a customer care system user', function () {
-    $developer = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
+    $developer = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 
     $response = $this->actingAs($developer)->post(route('admin.system-users.store'), [
         'name' => 'সাকিব হাসান',
@@ -46,7 +46,6 @@ test('lets a developer create a customer care system user', function () {
 
     $staff = User::where('email', 'sakib@example.com')->firstOrFail();
 
-    expect($staff->mode)->toBe('admin');
     expect($staff->role)->toBe(User::ROLE_CUSTOMER_CARE);
     expect(Hash::check('secret1234', $staff->password))->toBeTrue();
 
@@ -54,7 +53,7 @@ test('lets a developer create a customer care system user', function () {
 });
 
 test('lets a sub admin create a customer care system user', function () {
-    $subAdmin = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_SUB_ADMIN]);
+    $subAdmin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
     $this->actingAs($subAdmin)->post(route('admin.system-users.store'), [
         'name' => 'Support One',
@@ -66,7 +65,7 @@ test('lets a sub admin create a customer care system user', function () {
 });
 
 test('forbids a customer care admin from creating system users', function () {
-    $staff = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_CUSTOMER_CARE]);
+    $staff = User::factory()->create(['role' => User::ROLE_CUSTOMER_CARE]);
 
     $this->actingAs($staff)->post(route('admin.system-users.store'), [
         'name' => 'Nope',
@@ -78,7 +77,7 @@ test('forbids a customer care admin from creating system users', function () {
 });
 
 test('forbids client users from creating system users', function () {
-    $client = User::factory()->create(['mode' => 'student']);
+    $client = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     $this->actingAs($client)->post(route('admin.system-users.store'), [
         'name' => 'Nope',
@@ -88,7 +87,7 @@ test('forbids client users from creating system users', function () {
 });
 
 test('lets a developer create a developer account', function () {
-    $developer = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
+    $developer = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 
     $this->actingAs($developer)->post(route('admin.system-users.store'), [
         'name' => 'Wannabe Dev',
@@ -101,34 +100,47 @@ test('lets a developer create a developer account', function () {
 });
 
 test('lets a developer create a sub admin account', function () {
-    $developer = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
+    $developer = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 
     $this->actingAs($developer)->post(route('admin.system-users.store'), [
         'name' => 'Sub Admin One',
         'email' => 'sub-admin@example.com',
         'password' => 'secret1234',
-        'role' => User::ROLE_SUB_ADMIN,
+        'role' => User::ROLE_ADMIN,
     ])->assertRedirect(route('dashboard', ['page' => 'system-users']));
 
-    expect(User::where('email', 'sub-admin@example.com')->value('role'))->toBe(User::ROLE_SUB_ADMIN);
+    expect(User::where('email', 'sub-admin@example.com')->value('role'))->toBe(User::ROLE_ADMIN);
 });
 
-test('forbids a sub admin from assigning a developer role', function () {
-    $subAdmin = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_SUB_ADMIN]);
+test('forbids an admin from assigning a super admin role', function () {
+    $subAdmin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
     $response = $this->actingAs($subAdmin)->post(route('admin.system-users.store'), [
         'name' => 'Wannabe Dev',
         'email' => 'dev@example.com',
         'password' => 'secret1234',
-        'role' => User::ROLE_DEVELOPER,
+        'role' => User::ROLE_SUPER_ADMIN,
     ]);
 
     $response->assertSessionHasErrors(['role' => 'আপনি এই রোল অ্যাসাইন করতে পারবেন না।']);
     expect(User::where('email', 'dev@example.com')->exists())->toBeFalse();
 });
 
+test('lets an admin assign a developer role', function () {
+    $subAdmin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+    $this->actingAs($subAdmin)->post(route('admin.system-users.store'), [
+        'name' => 'New Developer',
+        'email' => 'new-dev@example.com',
+        'password' => 'secret1234',
+        'role' => User::ROLE_DEVELOPER,
+    ])->assertRedirect(route('dashboard', ['page' => 'system-users']));
+
+    expect(User::where('email', 'new-dev@example.com')->value('role'))->toBe(User::ROLE_DEVELOPER);
+});
+
 test('rejects a duplicate email when creating a system user', function () {
-    $developer = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
+    $developer = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
     User::factory()->create(['email' => 'taken@example.com']);
 
     $response = $this->actingAs($developer)->post(route('admin.system-users.store'), [
@@ -144,8 +156,8 @@ test('rejects a duplicate email when creating a system user', function () {
 });
 
 test('removes a customer care system user and logs the action', function () {
-    $developer = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
-    $staff = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_CUSTOMER_CARE, 'name' => 'সাকিব']);
+    $developer = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
+    $staff = User::factory()->create(['role' => User::ROLE_CUSTOMER_CARE, 'name' => 'সাকিব']);
 
     $response = $this->actingAs($developer)->delete(route('admin.system-users.destroy', $staff));
 
@@ -156,29 +168,42 @@ test('removes a customer care system user and logs the action', function () {
     expect(AdminActivity::where('action', 'staff_removed')->where('subject', 'সাকিব')->exists())->toBeTrue();
 });
 
-test('offers every assignable role to a developer', function () {
-    $developer = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
+test('offers every assignable role to a super admin', function () {
+    $developer = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 
     $response = $this->actingAs($developer)->get(route('dashboard', ['page' => 'system-users']));
 
+    $response->assertSee('<option value="super-admin"', false);
+    $response->assertSee('<option value="admin"', false);
     $response->assertSee('<option value="developer"', false);
-    $response->assertSee('<option value="sub-admin"', false);
     $response->assertSee('<option value="customer-care"', false);
 });
 
-test('offers only customer care to a sub admin', function () {
-    $subAdmin = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_SUB_ADMIN]);
+test('offers developer and customer care to an admin', function () {
+    $subAdmin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
     $response = $this->actingAs($subAdmin)->get(route('dashboard', ['page' => 'system-users']));
 
     $response->assertSee('<option value="customer-care"', false);
+    $response->assertSee('<option value="developer"', false);
+    $response->assertDontSee('<option value="super-admin"', false);
+    $response->assertDontSee('<option value="admin"', false);
+});
+
+test('offers only customer care to a developer', function () {
+    $developer = User::factory()->create(['role' => User::ROLE_DEVELOPER]);
+
+    $response = $this->actingAs($developer)->get(route('dashboard', ['page' => 'system-users']));
+
+    $response->assertSee('<option value="customer-care"', false);
     $response->assertDontSee('<option value="developer"', false);
-    $response->assertDontSee('<option value="sub-admin"', false);
+    $response->assertDontSee('<option value="admin"', false);
+    $response->assertDontSee('<option value="super-admin"', false);
 });
 
 test('removes a sub admin system user', function () {
-    $developer = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
-    $subAdmin = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_SUB_ADMIN]);
+    $developer = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
+    $subAdmin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
     $this->actingAs($developer)
         ->delete(route('admin.system-users.destroy', $subAdmin))
@@ -188,7 +213,7 @@ test('removes a sub admin system user', function () {
 });
 
 test('does not remove your own account', function () {
-    $developer = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
+    $developer = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 
     $this->actingAs($developer)
         ->delete(route('admin.system-users.destroy', $developer))
@@ -197,9 +222,9 @@ test('does not remove your own account', function () {
     expect(User::find($developer->id))->not->toBeNull();
 });
 
-test('does not remove a developer account', function () {
-    $developer = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
-    $otherDeveloper = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
+test('does not remove a super admin account', function () {
+    $developer = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
+    $otherDeveloper = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 
     $this->actingAs($developer)
         ->delete(route('admin.system-users.destroy', $otherDeveloper))
@@ -209,7 +234,7 @@ test('does not remove a developer account', function () {
 });
 
 test('shows logged admin activity on the activity page', function () {
-    $developer = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
+    $developer = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 
     AdminActivity::create([
         'user_id' => $developer->id,
@@ -227,7 +252,7 @@ test('shows logged admin activity on the activity page', function () {
 });
 
 test('saves the client app settings', function () {
-    $admin = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
+    $admin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 
     $response = $this->actingAs($admin)->put(route('admin.client-settings.update'), [
         'free_trial' => '0',
@@ -242,7 +267,7 @@ test('saves the client app settings', function () {
 });
 
 test('shows the saved client settings when the panel loads', function () {
-    $admin = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
+    $admin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
     Setting::putBoolean('client.free_trial', false);
     Setting::putBoolean('client.manual_access', true);
 
@@ -256,7 +281,7 @@ test('shows the saved client settings when the panel loads', function () {
 });
 
 test('forbids client users from saving client app settings', function () {
-    $client = User::factory()->create(['mode' => 'personal']);
+    $client = User::factory()->create(['role' => User::ROLE_FAMILY]);
 
     $this->actingAs($client)->put(route('admin.client-settings.update'), [
         'free_trial' => '1',
@@ -264,7 +289,7 @@ test('forbids client users from saving client app settings', function () {
 });
 
 test('renders the nested admin navigation', function () {
-    $admin = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
+    $admin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 
     $response = $this->actingAs($admin)->get(route('dashboard'));
 
@@ -276,18 +301,18 @@ test('renders the nested admin navigation', function () {
 });
 
 test('renders the panel in english', function () {
-    $admin = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
+    $admin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 
     $response = $this->actingAs($admin)
         ->withSession(['locale' => 'en'])
         ->get(route('dashboard', ['page' => 'client-users']));
 
     $response->assertOk();
-    $response->assertSee('People using the app (student, personal, business).');
+    $response->assertSee('People using the app (student, family, shop).');
 });
 
 test('shows the real role of the admin on the profile page', function () {
-    $admin = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_SUB_ADMIN]);
+    $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
     $response = $this->actingAs($admin)->get(route('admin.profile'));
 
@@ -296,7 +321,7 @@ test('shows the real role of the admin on the profile page', function () {
 });
 
 test('opens the requested panel page from the query string', function () {
-    $admin = User::factory()->create(['mode' => 'admin', 'role' => User::ROLE_DEVELOPER]);
+    $admin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 
     $response = $this->actingAs($admin)->get(route('dashboard', ['page' => 'client-users']));
 

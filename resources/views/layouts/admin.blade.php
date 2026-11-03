@@ -283,11 +283,14 @@
                 <h2 class="text-base sm:text-lg font-bold font-bn text-white truncate" x-text="pageTitle()">{{ __('site.admin.dashboard_overview') }}</h2>
             </div>
             <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                @if(\Illuminate\Support\Facades\Route::has('notifications.get'))
+                    <x-notifications::bell :count="$notificationCount ?? 0" />
+                @endif
                 <button @click="toggleDark()" class="glass w-9 h-9 rounded-lg flex items-center justify-center shrink-0 hover:scale-110 transition" aria-label="Toggle theme"><span x-show="!dark">🌙</span><span x-show="dark">☀️</span></button>
                 @include('partials.language-switcher')
                 <div x-show="page === 'system-users'" x-cloak class="hidden sm:flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-lg border border-white/10">
                     <span class="text-xs text-gray-400 font-bn">{{ __('site.admin.role_colon') }}</span>
-                    <span class="text-xs text-emerald-400 font-bold font-bn">{{ __('site.admin.role_'.(auth()->user()->role ?: 'unknown')) }}</span>
+                    <span class="text-xs text-emerald-400 font-bold font-bn">{{ __('site.admin.role_'.str_replace('-', '_', auth()->user()->role ?: 'unknown')) }}</span>
                 </div>
                 <a href="{{ route('home') }}" class="hidden sm:inline text-sm text-emerald-400 hover:text-white font-bn transition">{{ __('site.admin.view_site') }} ↗</a>
                 <a href="{{ route('home') }}" class="sm:hidden text-emerald-400 p-2" aria-label="{{ __('site.admin.view_site') }}">

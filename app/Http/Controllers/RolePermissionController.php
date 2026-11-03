@@ -18,7 +18,7 @@ class RolePermissionController extends Controller
     {
         $actor = $request->user();
 
-        abort_unless($actor->role === User::ROLE_DEVELOPER, 403);
+        abort_unless($actor->role === User::ROLE_SUPER_ADMIN, 403);
 
         $validated = $request->validate([
             'permissions' => ['nullable', 'array'],
@@ -28,7 +28,7 @@ class RolePermissionController extends Controller
 
         $permissions = $validated['permissions'] ?? [];
 
-        foreach (User::ROLES as $role) {
+        foreach (User::SYSTEM_ROLES as $role) {
             $granted = (array) ($permissions[$role] ?? []);
 
             foreach (User::PERMISSIONS as $permission) {
