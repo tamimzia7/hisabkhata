@@ -41,7 +41,15 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'))->with('toast', __('site.auth.messages.login_success'));
+        $admin = Auth::user();
+        AdminActivity::create([
+            'user_id' => $admin->getKey(),
+            'action' => 'logged_in',
+            'subject' => $admin->name,
+            'ip_address' => $request->ip() ?: null,
+        ]);
+
+        return redirect()->route('dashboard')->with('toast', __('site.auth.messages.login_success'));
     }
 
     /**
