@@ -1,3 +1,4 @@
+@php($unreadNotificationCount = auth()->check() ? auth()->user()->unreadNotifications()->count() : 0)
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" x-data="{
     dark: JSON.parse(localStorage.getItem('theme-dark') ?? 'true'),
@@ -21,6 +22,7 @@
         'system-activity': @js(__('site.admin.system_user_activity')),
         'developer-access': @js(__('site.admin.developer_access_control')),
         'roles-permission': @js(__('site.admin.roles_permission')),
+        'notifications': @js(__('notifications.title')),
         'client-users': @js(__('site.admin.client_users')),
         'client-settings': @js(__('site.admin.client_settings')),
         'admin-subscriptions': @js(__('site.admin.subscription_management')),
@@ -190,6 +192,8 @@
                 <span class="nav-label">{{ __('site.admin.dashboard') }}</span>
             </a>
 
+            <x-notifications.sidebar-link :count="$unreadNotificationCount" variant="admin" />
+
             <!-- 1. USER MANAGEMENT -->
             <div x-data="{ open: @js(in_array($adminPage ?? '', ['system-users', 'system-activity', 'developer-access', 'roles-permission'], true)) }">
                 <button @click="collapsed ? (toggleCollapsed(), open = true) : (open = !open)" :class="open ? 'text-white' : 'text-gray-400'" title="{{ __('site.admin.user_management') }}" class="nav-parent w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-bn text-sm">
@@ -283,9 +287,7 @@
                 <h2 class="text-base sm:text-lg font-bold font-bn text-white truncate" x-text="pageTitle()">{{ __('site.admin.dashboard_overview') }}</h2>
             </div>
             <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-                @if(\Illuminate\Support\Facades\Route::has('notifications.get'))
-                    <x-notifications::bell :count="$notificationCount ?? 0" />
-                @endif
+                <x-notifications.bell :count="$unreadNotificationCount" />
                 <button @click="toggleDark()" class="glass w-9 h-9 rounded-lg flex items-center justify-center shrink-0 hover:scale-110 transition" aria-label="Toggle theme"><span x-show="!dark">🌙</span><span x-show="dark">☀️</span></button>
                 @include('partials.language-switcher')
                 <div x-show="page === 'system-users'" x-cloak class="hidden sm:flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-lg border border-white/10">

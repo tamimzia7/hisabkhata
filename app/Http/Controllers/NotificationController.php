@@ -2,145 +2,205 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Notification;
-use App\Models\User;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class NotificationController extends Controller
 {
+    /**
+     * Show the authenticated user's notifications page.
+     */
     public function index(Request $request): View
     {
-        $this->authorize('viewAny', Notification::class);
+        $user = $request->user();
 
-        $query = Notification::query()
-            ->where('notifiable_id', $request->user()->getKey())
-            ->where('notifiable_type', User::class)
-            ->latest();
+        $filter = (string) $request->query('filter', 'all');
 
-        $filter = $request->get('filter', 'all');
+        if (! in_array($filter, ['all', 'unread', 'read'], true)) {
+            $filter = 'all';
+        }
+
+        $query = $user->notifications()->latest();
+
         if ($filter === 'unread') {
             $query->whereNull('read_at');
         } elseif ($filter === 'read') {
             $query->whereNotNull('read_at');
         }
 
-        $notifications = $query->paginate(20);
+        $notifications = $query->paginate(20)->withQueryString();
 
-        return view('notifications.index', [
-            'notifications' => $notifications,
-            'filter' => $filter,
-            'counts' => [
-                'all' => Notification::where('notifiable_id', $request->user()->getKey())
-                    ->where('notifiable_type', User::class)
-                    ->count(),
-                'unread' => Notification::where('notifiable_id', $request->user()->getKey())
-                    ->where('notifiable_type', User::class)
-                    ->whereNull('read_at')
-                    ->count(),
-                'read' => Notification::where('notifiable_id', $request->user()->getKey())
-                    ->where('notifiable_type', User::class)
-                    ->whereNotNull('read_at')
-                    ->count(),
+        $counts = [
+            'all' => $user->notifications()->count(),
+            'unread' => $user->unreadNotifications()->count(),
+            'read' => $user->notifications()->whereNotNull('read_at')->count(),
+        ];
+
+        return view(
+            $user->isSystemUser() ? 'admin.notifications.index' : 'notifications.index',
+            [
+                'notifications' => $notifications,
+                'filter' => $filter,
+                'counts' => $counts,
+                'adminPage' => $user->isSystemUser() ? 'notifications' : null,
             ],
-        ]);
+        );
     }
 
-    public function mark(Request $request): JsonResponse
+    /**
+     * Return the latest notifications for the navbar dropdown.
+     */
+    public function feed(Request $request): JsonResponse
     {
-        $request->validate(['notification_id' => ['required', 'string', 'uuid']]);
+        $user = $request->user();
 
-        $notification = Notification::where('notifiable_id', $request->user()->getKey())
-            ->where('notifiable_type', User::class)
-            ->where('id', $request->input('notification_id'))
+        $notifications = $user->notifications()
+            ->latest()
+            ->limit(10)
+            ->get()
+            ->map(fn ($notification): array => [
+                'id' => $notification->id,
+                'title' => $notification->data['title'] ?? __('notifications.unknown'),
+                'body' => $notification->data['body'] ?? '',
+                'url' => filled($notification->data['action_url'] ?? null)
+                    ? route('notifications.open', $notification->id)
+                    : null,
+                'read' => $notification->read_at !== null,
+                'created_at' => $notification->created_at?->toIso8601String(),
+                'created_at_human' => $notification->created_at?->diffForHumans(),
+            ]);
+
+        return response()
+            ->json([
+                'unread' => $user->unreadNotifications()->count(),
+                'notifications' => $notifications,
+            ])
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate');
+    }
+
+    /**
+     * Mark a single notification as read.
+     */
+    public function mark(Request $request): JsonResponse|RedirectResponse
+    {
+        $validated = $request->validate([
+            'notification_id' => ['required', 'uuid'],
+        ]);
+
+        $notification = $request->user()
+            ->notifications()
+            ->whereKey($validated['notification_id'])
             ->first();
 
         if (! $notification) {
-            return response()->json(['ok' => false, 'error' => 'not_found'], 404);
+            if ($request->expectsJson()) {
+                return response()->json(['ok' => false, 'error' => 'not_found'], 404);
+            }
+
+            return back()->with('toast', __('notifications.not_found'));
         }
 
         $notification->markAsRead();
 
-        return response()->json(['ok' => true]);
-    }
-
-    public function bulkMarkRead(Request $request): JsonResponse
-    {
-        $this->authorize('update', Notification::class);
-
-        $request->validate(['ids' => ['required', 'array']]);
-
-        $ids = $request->input('ids');
-
-        Notification::where('notifiable_id', $request->user()->getKey())
-            ->where('notifiable_type', User::class)
-            ->whereIn('id', $ids)
-            ->each->markAsRead();
-
-        return response()->json(['ok' => true]);
-    }
-
-    public function markAllRead(Request $request): JsonResponse
-    {
-        $this->authorize('update', Notification::class);
-
-        Notification::where('notifiable_id', $request->user()->getKey())
-            ->where('notifiable_type', User::class)
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
-
-        return response()->json(['ok' => true]);
-    }
-
-    public function delete(Request $request, Notification $notification): RedirectResponse
-    {
-        $this->authorize('delete', $notification);
-
-        if ($notification->notifiable_id !== $request->user()->getKey()) {
-            throw new AuthorizationException;
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok' => true,
+                'unread' => $request->user()->unreadNotifications()->count(),
+            ]);
         }
 
-        $notification->delete();
-
-        return back();
+        return back()->with('toast', __('notifications.marked_read'));
     }
 
-    public function destroy(Request $request): RedirectResponse
+    /**
+     * Open a notification, mark it read, and redirect to its destination.
+     */
+    public function open(Request $request, string $notification): RedirectResponse
     {
-        $this->authorize('delete', Notification::class);
+        $record = $request->user()
+            ->notifications()
+            ->whereKey($notification)
+            ->firstOrFail();
 
-        $request->validate(['ids' => ['required', 'array']]);
+        $record->markAsRead();
 
-        Notification::where('notifiable_id', $request->user()->getKey())
-            ->where('notifiable_type', User::class)
-            ->whereIn('id', $request->input('ids'))
+        $actionUrl = $record->data['action_url'] ?? null;
+
+        if (is_string($actionUrl) && $this->isSafeInternalUrl($actionUrl)) {
+            return redirect()->to($actionUrl);
+        }
+
+        return redirect()->route('dashboard');
+    }
+
+    /**
+     * Mark every notification for the authenticated user as read.
+     */
+    public function markAllRead(Request $request): JsonResponse|RedirectResponse
+    {
+        $request->user()->unreadNotifications()->update(['read_at' => now()]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok' => true,
+                'unread' => 0,
+            ]);
+        }
+
+        return back()->with('toast', __('notifications.all_marked_read'));
+    }
+
+    /**
+     * Delete a single notification owned by the authenticated user.
+     */
+    public function destroy(Request $request, string $notification): JsonResponse|RedirectResponse
+    {
+        $record = $request->user()
+            ->notifications()
+            ->whereKey($notification)
+            ->firstOrFail();
+
+        $record->delete();
+
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true]);
+        }
+
+        return back()->with('toast', __('notifications.deleted'));
+    }
+
+    /**
+     * Delete several notifications owned by the authenticated user.
+     */
+    public function destroySelected(Request $request): JsonResponse|RedirectResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['uuid'],
+        ]);
+
+        $request->user()
+            ->notifications()
+            ->whereIn('id', $validated['ids'])
             ->delete();
 
-        return back();
-    }
-
-    public function getNext(Request $request): JsonResponse
-    {
-        $notification = Notification::where('notifiable_id', $request->user()->getKey())
-            ->where('notifiable_type', User::class)
-            ->whereNull('read_at')
-            ->latest()
-            ->first();
-
-        if (! $notification) {
-            return response()->json(['next' => null]);
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true]);
         }
 
-        $notification->markAsRead();
+        return back()->with('toast', __('notifications.deleted'));
+    }
 
-        return response()->json([
-            'next' => [
-                'id' => $notification->id,
-                'data' => $notification->data,
-                'read' => true,
-            ],
-        ]);
+    /**
+     * Only allow local, single-slash destinations.
+     */
+    private function isSafeInternalUrl(string $url): bool
+    {
+        return str_starts_with($url, '/')
+            && ! str_starts_with($url, '//')
+            && ! str_contains($url, '\\')
+            && ! str_contains($url, '://');
     }
 }

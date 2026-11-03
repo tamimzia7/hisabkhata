@@ -4,6 +4,7 @@
 
 @section('content')
 @php($user = auth()->user())
+@php($unreadNotificationCount = $user->unreadNotifications()->count())
 <div class="min-h-screen flex relative z-10" x-data="{
     members: @js(__('site.dashboard.data.members')),
     newMemberName: '',
@@ -13,31 +14,7 @@
     newInvoiceCustomer:'', newInvoiceAmount:'',
     toast(msg) { toastMsg = msg; showToast = true; setTimeout(() => showToast = false, 2500); }
 }">
-    <!-- Sidebar -->
-    <aside class="hidden md:flex w-64 flex-col glass-strong m-3 rounded-2xl p-4 sticky top-3 h-[calc(100vh-24px)]">
-        <a href="{{ route('home') }}" class="flex items-center gap-2 mb-6 px-2">
-            <div class="w-9 h-9 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center font-bold text-black">৳</div>
-            <div><div class="text-sm font-bold font-bn">{{ __('site.common.brand') }}</div><div class="text-[9px] tracking-widest text-emerald-400">DASHBOARD</div></div>
-        </a>
-        <nav class="space-y-1 text-sm font-bn">
-            <a href="{{ route('dashboard') }}" class="block px-3 py-2 rounded-lg bg-emerald-500/20 text-emerald-300">{{ __('site.dashboard.dashboard') }}</a>
-            <a href="#" @click.prevent class="block px-3 py-2 rounded-lg text-gray-300 hover:bg-white/5">{{ __('site.dashboard.entries') }}</a>
-            <a href="#" @click.prevent class="block px-3 py-2 rounded-lg text-gray-300 hover:bg-white/5">{{ __('site.dashboard.reports') }}</a>
-            <a href="#" @click.prevent class="block px-3 py-2 rounded-lg text-gray-300 hover:bg-white/5">{{ __('site.dashboard.settings') }}</a>
-        </nav>
-        <div class="mt-auto">
-            <div class="glass rounded-xl p-3 mb-3">
-                <div class="text-xs text-gray-400 font-bn">{{ __('site.dashboard.logged_in_as') }}</div>
-                <div class="text-sm font-bold font-bn">{{ $user->name }}</div>
-                <div class="text-[10px] text-emerald-400 uppercase">{{ __('site.auth.'.$user->role) }}</div>
-            </div>
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="w-full glass rounded-lg py-2 text-sm text-red-300 hover:bg-red-500/10 font-bn">{{ __('site.dashboard.logout') }}</button>
-            </form>
-        </div>
-    </aside>
+    @include('partials.client-sidebar')
 
     <!-- Main -->
     <main class="flex-1 p-3 md:p-6 overflow-x-hidden">
@@ -53,6 +30,7 @@
                 <p class="text-sm text-gray-400 font-bn">{{ __('site.dashboard.welcome', ['name' => $user->name]) }}</p>
             </div>
             <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <x-notifications.bell :count="$unreadNotificationCount" />
                 <button @click="toggleDark()" class="w-9 h-9 glass rounded-full flex items-center justify-center hover:scale-110 transition shrink-0" aria-label="Toggle theme"><span x-show="!dark">🌙</span><span x-show="dark">☀️</span></button>
                 @include('partials.language-switcher')
                 <form method="POST" action="{{ route('logout') }}" class="md:hidden">

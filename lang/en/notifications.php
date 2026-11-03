@@ -5,6 +5,22 @@ return [
 
     'bell_label' => 'Notifications',
 
+    'sidebar_label' => 'Notifications',
+
+    'loading' => 'Loading…',
+
+    'back_to_dashboard' => 'Back to dashboard',
+
+    'marked_read' => 'Notification marked as read.',
+
+    'all_marked_read' => 'All notifications marked as read.',
+
+    'deleted' => 'Notification deleted.',
+
+    'not_found' => 'Notification not found.',
+
+    'confirm_delete' => 'Delete this notification?',
+
     'dashboard' => 'Notifications',
 
     'subtitle' => 'You have :unread unread notification(s).',

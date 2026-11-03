@@ -9,7 +9,6 @@ use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -45,7 +44,7 @@ class DashboardController extends Controller
     public function __invoke(Request $request): View
     {
         if (! $request->user()->isAdmin()) {
-            return view('dashboard', ['notificationCount' => $this->notificationCount()]);
+            return view('dashboard');
         }
 
         return $this->adminView($request, $this->requestedPage($request));
@@ -180,22 +179,6 @@ class DashboardController extends Controller
     }
 
     /**
-     * Count the authenticated user's unread notifications.
-     */
-    public function notificationCount(): int
-    {
-        if (! Auth::guard('web')->check()) {
-            return 0;
-        }
-
-        return (int) DB::table('notifications')
-            ->where('notifiable_id', Auth::guard('web')->id())
-            ->where('notifiable_type', User::class)
-            ->whereNull('read_at')
-            ->count();
-    }
-
-    /**
      * Build the admin panel view with the data for every panel page.
      */
     private function adminView(Request $request, string $page): View
@@ -203,7 +186,6 @@ class DashboardController extends Controller
         return view('admin.dashboard', [
             'admin' => $request->user(),
             'adminPage' => $page,
-            'notificationCount' => $this->notificationCount(),
             'recentUsers' => User::latest()->take(2)->get(),
             'clientUsers' => User::whereIn('role', User::CLIENT_ROLES)->latest()->get(),
             'systemUsers' => User::whereIn('role', User::SYSTEM_ROLES)->orderBy('id')->get(),

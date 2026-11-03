@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 #[Fillable(['name', 'email', 'phone', 'bio', 'avatar_path', 'password', 'role'])]
@@ -216,61 +215,5 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
-    }
-
-    /** {@inheritDoc} */
-    public function routeNotificationForBroadcast($notification)
-    {
-        return $this->email;
-    }
-
-    /** {@inheritDoc} */
-    public function shouldBroadcastOn($notification)
-    {
-        return Auth::guard('web')->check() ? Auth::guard('web')->user()->id : $this->id;
-    }
-
-    /** {@inheritDoc} */
-    public function broadcastOn($notification)
-    {
-        return collect([$this->routeNotificationForBroadcast($notification)])
-            ->filter()
-            ->map(fn ($channel) => (new $channel)->onReplyTo($this));
-    }
-
-    /** {@inheritDoc} */
-    public function broadcastAs($notification)
-    {
-        return $notification::class;
-    }
-
-    /** {@inheritDoc} */
-    public function broadcastWith($notification)
-    {
-        return $this->notifications->map(function ($notification) {
-            return $notification->data;
-        })->all();
-    }
-
-    /** {@inheritDoc} */
-    public function notify($notification, $channels = ['database'])
-    {
-        $notification->setNotifiable($this);
-
-        foreach ($channels as $channel) {
-            if (method_exists($notification, $channel)) {
-                $notification->$channel($this);
-            }
-        }
-
-        parent::notify($notification, $channels);
-    }
-
-    /** {@inheritDoc} */
-    public function notifications()
-    {
-        return parent::notifications()
-            ->where('notifiable_id', $this->getKey())
-            ->where('notifiable_type', get_class($this));
     }
 }
