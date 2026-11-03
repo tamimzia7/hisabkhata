@@ -212,15 +212,22 @@
         search: '',
         roleFilter: 'all',
         timeFilter: 'all',
+        dateFrom: '',
+        dateTo: '',
         visible: 0,
         apply() {
             const query = this.search.trim().toLowerCase();
             const cutoff = this.timeFilter === 'all' ? 0 : Date.now() - Number(this.timeFilter) * 86400000;
+            const fromTime = this.dateFrom ? new Date(this.dateFrom + 'T00:00:00').getTime() : 0;
+            const toTime = this.dateTo ? new Date(this.dateTo + 'T23:59:59.999').getTime() : Infinity;
             let count = 0;
             this.$refs.staffRows.querySelectorAll('tr[data-staff]').forEach((row) => {
                 const matchesSearch = query === '' || row.dataset.staff.includes(query);
                 const matchesRole = this.roleFilter === 'all' || row.dataset.role === this.roleFilter;
-                const matchesTime = cutoff === 0 || Number(row.dataset.joining) * 1000 >= cutoff;
+                const joiningTime = Number(row.dataset.joining) * 1000;
+                const matchesTime = (cutoff === 0 || joiningTime >= cutoff)
+                    && (fromTime === 0 || joiningTime >= fromTime)
+                    && (toTime === Infinity || joiningTime <= toTime);
                 const show = matchesSearch && matchesRole && matchesTime;
                 row.style.display = show ? '' : 'none';
                 if (show) {
@@ -247,6 +254,10 @@
                 <option value="30">{{ __('site.admin.filter_last_30_days') }}</option>
                 <option value="90">{{ __('site.admin.filter_last_90_days') }}</option>
             </select>
+            <div class="flex items-center gap-2">
+                <input x-model="dateFrom" @change="apply()" type="date" aria-label="{{ __('site.admin.filter_from') }}" title="{{ __('site.admin.filter_from') }}" class="bg-[#050B14] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-bn [color-scheme:dark]">
+                <input x-model="dateTo" @change="apply()" type="date" aria-label="{{ __('site.admin.filter_to') }}" title="{{ __('site.admin.filter_to') }}" class="bg-[#050B14] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-bn [color-scheme:dark]">
+            </div>
         </div>
 
         <div class="glass rounded-xl overflow-hidden">

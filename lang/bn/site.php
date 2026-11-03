@@ -466,6 +466,8 @@ return [
         'staff_search_placeholder' => 'সিস্টেম ইউজার সার্চ করুন...',
         'filter_all_roles' => 'সব রোল',
         'filter_all_time' => 'সব সময়',
+        'filter_from' => 'থেকে',
+        'filter_to' => 'পর্যন্ত',
         'filter_last_7_days' => 'শেষ ৭ দিন',
         'filter_last_30_days' => 'শেষ ৩০ দিন',
         'filter_last_90_days' => 'শেষ ৯০ দিন',

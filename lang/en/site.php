@@ -466,6 +466,8 @@ return [
         'staff_search_placeholder' => 'Search system users...',
         'filter_all_roles' => 'All roles',
         'filter_all_time' => 'All time',
+        'filter_from' => 'From',
+        'filter_to' => 'To',
         'filter_last_7_days' => 'Last 7 days',
         'filter_last_30_days' => 'Last 30 days',
         'filter_last_90_days' => 'Last 90 days',
