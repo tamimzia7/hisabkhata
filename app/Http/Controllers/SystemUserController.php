@@ -73,6 +73,7 @@ class SystemUserController extends Controller
 
         $validated = $request->validate([
             'role' => ['required', Rule::in(User::ROLES)],
+            'return_to' => ['nullable', Rule::in(['developer-access', 'system-users'])],
         ], [
             'role.required' => __('site.admin.role_not_allowed'),
             'role.in' => __('site.admin.role_not_allowed'),
@@ -83,7 +84,7 @@ class SystemUserController extends Controller
         $this->log($request, 'role_changed', $user->name);
 
         return redirect()
-            ->route('dashboard', ['page' => 'developer-access'])
+            ->route('dashboard', ['page' => $validated['return_to'] ?? 'developer-access'])
             ->with('toast', __('site.admin.role_changed'));
     }
 

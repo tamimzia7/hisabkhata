@@ -103,7 +103,37 @@
 </div>
 
 <!-- ================= 2. SYSTEM USERS ================= -->
-<div x-show="page === 'system-users'" x-cloak x-transition.opacity class="space-y-5 sm:space-y-6 max-w-6xl">
+<div x-show="page === 'system-users'" x-cloak x-transition.opacity class="space-y-5 sm:space-y-6 max-w-6xl" x-data="{
+        search: '',
+        roleFilter: 'all',
+        statusFilter: 'all',
+        timeFilter: 'all',
+        dateFrom: '',
+        dateTo: '',
+        visible: 0,
+        apply() {
+            const query = this.search.trim().toLowerCase();
+            const cutoff = this.timeFilter === 'all' ? 0 : Date.now() - Number(this.timeFilter) * 86400000;
+            const fromTime = this.dateFrom ? new Date(this.dateFrom + 'T00:00:00').getTime() : 0;
+            const toTime = this.dateTo ? new Date(this.dateTo + 'T23:59:59.999').getTime() : Infinity;
+            let count = 0;
+            this.$refs.sysUserRows.querySelectorAll('tr[data-staff]').forEach((row) => {
+                const matchesSearch = query === '' || row.dataset.staff.includes(query);
+                const matchesRole = this.roleFilter === 'all' || row.dataset.role === this.roleFilter;
+                const matchesStatus = this.statusFilter === 'all' || row.dataset.status === this.statusFilter;
+                const joiningTime = Number(row.dataset.joining) * 1000;
+                const matchesTime = (cutoff === 0 || joiningTime >= cutoff)
+                    && (fromTime === 0 || joiningTime >= fromTime)
+                    && (toTime === Infinity || joiningTime <= toTime);
+                const show = matchesSearch && matchesRole && matchesStatus && matchesTime;
+                row.style.display = show ? '' : 'none';
+                if (show) {
+                    count++;
+                }
+            });
+            this.visible = count;
+        },
+    }" x-init="apply()">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         @if($staffCanManage)
             <p class="text-sm text-gray-400 font-bn">
@@ -115,21 +145,46 @@
         @endif
     </div>
 
+    <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3">
+        <input x-model="search" @input="apply()" type="text" placeholder="{{ __('site.admin.staff_search_placeholder') }}" class="glass bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm w-full sm:w-64 text-white focus:outline-none focus:border-emerald-500 font-bn">
+        <select x-model="roleFilter" @change="apply()" class="bg-[#050B14] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-bn">
+            <option value="all">{{ __('site.admin.filter_all_roles') }}</option>
+            @foreach($admin->assignableStaffRoles() as $roleOption)
+                <option value="{{ $roleOption }}">{{ $roleLabels[$roleOption] }}</option>
+            @endforeach
+        </select>
+        <select x-model="statusFilter" @change="apply()" class="bg-[#050B14] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-bn">
+            <option value="all">{{ __('site.admin.filter_all_status') }}</option>
+            <option value="active">{{ __('site.admin.active') }}</option>
+        </select>
+        <select x-model="timeFilter" @change="apply()" class="bg-[#050B14] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-bn">
+            <option value="all">{{ __('site.admin.filter_all_time') }}</option>
+            <option value="7">{{ __('site.admin.filter_last_7_days') }}</option>
+            <option value="30">{{ __('site.admin.filter_last_30_days') }}</option>
+            <option value="90">{{ __('site.admin.filter_last_90_days') }}</option>
+        </select>
+        <div class="flex items-center gap-2">
+            <input x-model="dateFrom" @change="apply()" type="date" aria-label="{{ __('site.admin.filter_from') }}" title="{{ __('site.admin.filter_from') }}" class="bg-[#050B14] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-bn [color-scheme:dark]">
+            <input x-model="dateTo" @change="apply()" type="date" aria-label="{{ __('site.admin.filter_to') }}" title="{{ __('site.admin.filter_to') }}" class="bg-[#050B14] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-bn [color-scheme:dark]">
+        </div>
+    </div>
+
     <div class="glass rounded-xl overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full min-w-[640px] text-sm text-left">
+            <table class="w-full min-w-[780px] text-sm text-left">
                 <thead class="bg-white/5 text-xs text-gray-400 uppercase">
                     <tr>
                         <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.name') }}</th>
                         <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.role') }}</th>
                         <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.status') }}</th>
                         <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.joining') }}</th>
+                        <th class="px-4 sm:px-6 py-4 font-bn text-right">{{ __('site.admin.access_control') }}</th>
                         <th class="px-4 sm:px-6 py-4 font-bn text-right">{{ __('site.admin.action') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-white/5">
+                <tbody class="divide-y divide-white/5" x-ref="sysUserRows">
                     @forelse($systemUsers as $staff)
-                        <tr class="hover:bg-white/5 transition">
+                        <tr class="hover:bg-white/5 transition" data-staff="@js(mb_strtolower($staff->name . ' ' . $staff->email))" data-role="{{ $staff->role }}" data-status="active" data-joining="{{ $staff->created_at?->timestamp ?? 0 }}">
                             <td class="px-4 sm:px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center font-bold shrink-0">
@@ -154,6 +209,25 @@
                             <td class="px-4 sm:px-6 py-4"><span class="text-emerald-400 font-bn text-xs">{{ __('site.admin.active') }}</span></td>
                             <td class="px-4 sm:px-6 py-4 text-gray-400 text-xs font-bn">{{ $staff->created_at?->format('d M Y') }}</td>
                             <td class="px-4 sm:px-6 py-4 text-right whitespace-nowrap">
+                                @if($staff->is($admin))
+                                    <span class="text-xs text-gray-500 font-bn">{{ __('site.admin.you') }}</span>
+                                @elseif($admin->role === \App\Models\User::ROLE_DEVELOPER)
+                                    <form method="POST" action="{{ route('admin.system-users.update', $staff) }}" onsubmit="return confirm(@js(__('site.admin.confirm_role_change')))" class="inline-flex">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="role" value="{{ $staff->role === \App\Models\User::ROLE_CUSTOMER_CARE ? \App\Models\User::ROLE_SUB_ADMIN : \App\Models\User::ROLE_CUSTOMER_CARE }}">
+                                        <input type="hidden" name="return_to" value="system-users">
+                                        <button type="submit" @class(['relative w-11 h-6 rounded-full transition shrink-0', $staff->role === \App\Models\User::ROLE_CUSTOMER_CARE ? 'bg-white/10' : 'bg-emerald-500']) :aria-pressed="@js($staff->role !== \App\Models\User::ROLE_CUSTOMER_CARE)" :title="@js($staff->role !== \App\Models\User::ROLE_CUSTOMER_CARE ? __('site.admin.access_click_to_revoke') : __('site.admin.access_click_to_grant'))" aria-label="{{ __('site.admin.access_control') }}">
+                                            <span @class(['absolute top-1 left-0 w-4 h-4 bg-white rounded-full transition-transform', $staff->role === \App\Models\User::ROLE_CUSTOMER_CARE ? 'translate-x-1' : 'translate-x-6'])></span>
+                                        </button>
+                                    </form>
+                                @else
+                                    <div class="relative inline-block w-11 h-6 rounded-full bg-white/10 opacity-50 cursor-not-allowed" title="{{ __('site.admin.developer_access_restricted') }}">
+                                        <span class="absolute top-1 left-1 w-4 h-4 bg-white rounded-full"></span>
+                                    </div>
+                                @endif
+                            </td>
+                            <td class="px-4 sm:px-6 py-4 text-right whitespace-nowrap">
                                 @if($staffCanRemove && ! $staff->is($admin) && in_array($staff->role, [\App\Models\User::ROLE_SUB_ADMIN, \App\Models\User::ROLE_CUSTOMER_CARE], true))
                                     <form method="POST" action="{{ route('admin.system-users.destroy', $staff) }}" onsubmit="return confirm(@js(__('site.admin.confirm_remove_staff')))">
                                         @csrf
@@ -166,8 +240,13 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="px-6 py-6 text-center text-gray-400 font-bn">{{ __('site.admin.no_system_users') }}</td></tr>
+                        <tr><td colspan="6" class="px-6 py-6 text-center text-gray-400 font-bn">{{ __('site.admin.no_system_users') }}</td></tr>
                     @endforelse
+                    @if($systemUsers->isNotEmpty())
+                        <tr x-show="visible === 0" x-cloak>
+                            <td colspan="6" class="px-6 py-6 text-center text-gray-400 font-bn">{{ __('site.admin.no_matching_users') }}</td>
+                        </tr>
+                    @endif
                 </tbody>
             </table>
         </div>
