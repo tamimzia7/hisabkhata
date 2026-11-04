@@ -80,7 +80,7 @@
 <script>window.__flashToast = @js(session('toast'));</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@100;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
     :root {
         --brand-bg: #050B14;
@@ -173,6 +173,12 @@
         .sidebar-collapsed .nav-parent { padding-left: 0; padding-right: 0; }
         .sidebar-collapsed .sidebar-header { padding-left: 0; padding-right: 0; }
         .sidebar-collapsed .sidebar-footer { padding-left: 0; padding-right: 0; }
+    }
+
+    /* Global typography standard: thin (100) text everywhere. */
+    html body,
+    html body * {
+        font-weight: 100 !important;
     }
 
 </style>

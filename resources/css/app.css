@@ -7,3 +7,9 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* Global typography standard: thin (100) text everywhere. */
+html body,
+html body * {
+    font-weight: 100 !important;
+}
