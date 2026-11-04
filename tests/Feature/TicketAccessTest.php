@@ -206,15 +206,18 @@ test('the sidebar exposes the tickets menu for every role', function () {
 
     $this->actingAs($client)->get(route('dashboard'))
         ->assertOk()
+        ->assertSee(__('tickets.support'))
         ->assertSee(route('tickets.index'), false)
         ->assertSee(route('tickets.create'), false);
 
     $this->actingAs($staff)->get(route('dashboard'))
         ->assertOk()
+        ->assertSee(__('tickets.support'))
         ->assertSee(route('tickets.index'), false);
 
     $this->actingAs($superAdmin)->get(route('dashboard'))
         ->assertOk()
+        ->assertSee(__('tickets.support'))
         ->assertSee(route('tickets.index'), false)
-        ->assertSee(route('tickets.index', ['status' => 'closed']), false);
+        ->assertSee(route('notifications.index'), false);
 });

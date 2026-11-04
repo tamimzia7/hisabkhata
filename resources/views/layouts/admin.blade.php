@@ -207,40 +207,36 @@
                 <span class="nav-label">{{ __('site.admin.dashboard') }}</span>
             </a>
 
-            <x-notifications.sidebar-link :count="$unreadNotificationCount" variant="admin" />
-
+            <!-- SUPPORT -->
             @php($ticketUnreadCount = \App\Models\Ticket::unreadTicketCountFor(auth()->user()))
 
-            @if(auth()->user()->role === \App\Models\User::ROLE_SUPER_ADMIN)
-                <div x-data="{ open: @js(request()->routeIs('tickets.*')) }">
-                    <button @click="collapsed ? (toggleCollapsed(), open = true) : (open = !open)" :class="open ? 'text-white' : 'text-gray-400'" title="{{ __('tickets.title') }}" class="nav-parent w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-bn text-sm">
-                        <span class="flex items-center gap-3">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
-                            <span class="nav-label">{{ __('tickets.title') }}</span>
-                        </span>
+            <div x-data="{ open: @js(request()->routeIs('tickets.*') || request()->routeIs('notifications.*')) }">
+                <button @click="collapsed ? (toggleCollapsed(), open = true) : (open = !open)"
+                        :class="open ? 'text-white' : 'text-gray-400'"
+                        title="{{ __('tickets.support') }}"
+                        class="nav-parent w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-bn text-sm">
+                    <span class="flex items-center gap-3">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 18v-6a9 9 0 0118 0v6"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>
+                        <span class="nav-label">{{ __('tickets.support') }}</span>
+                    </span>
+                    <svg :class="open ? 'rotate-180' : ''" class="nav-chevron w-4 h-4 transition-transform text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+
+                <div x-show="open" class="nav-sublist ml-6 mt-1 space-y-1 border-l border-white/10 pl-2">
+                    <a href="{{ route('tickets.index') }}"
+                       title="{{ __('tickets.title') }}"
+                       @if(request()->routeIs('tickets.*')) aria-current="page" @endif
+                       class="nav-child flex items-center gap-2 px-3 py-2 rounded-r-lg text-sm font-bn {{ request()->routeIs('tickets.*') ? 'active' : 'text-gray-400' }}">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+                        <span>{{ __('tickets.title') }}</span>
                         @if($ticketUnreadCount > 0)
-                            <span class="nav-label ml-auto mr-2 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-bold text-emerald-400 font-bn">{{ $ticketUnreadCount > 99 ? '99+' : localize_digits($ticketUnreadCount) }}</span>
+                            <span class="ml-auto rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-bold text-emerald-400 font-bn">{{ $ticketUnreadCount > 99 ? '99+' : localize_digits($ticketUnreadCount) }}</span>
                         @endif
-                        <svg :class="open ? 'rotate-180' : ''" class="nav-chevron w-4 h-4 transition-transform text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div x-show="open" class="nav-sublist ml-6 mt-1 space-y-1 border-l border-white/10 pl-2">
-                        <a href="{{ route('tickets.index') }}" class="block px-3 py-2 rounded-r-lg text-sm font-bn {{ request()->routeIs('tickets.index') && ! in_array(request()->query('status'), \App\Models\Ticket::STATUSES, true) ? 'nav-child active' : 'nav-child text-gray-400' }}">{{ __('tickets.all_tickets') }}</a>
-                        @foreach(['open' => __('tickets.open_tickets'), 'assigned' => __('tickets.assigned_tickets'), 'resolved' => __('tickets.resolved_tickets'), 'closed' => __('tickets.closed_tickets')] as $ticketFilter => $ticketFilterLabel)
-                            <a href="{{ route('tickets.index', ['status' => $ticketFilter]) }}" class="block px-3 py-2 rounded-r-lg text-sm font-bn {{ request()->routeIs('tickets.index') && request()->query('status') === $ticketFilter ? 'nav-child active' : 'nav-child text-gray-400' }}">{{ $ticketFilterLabel }}</a>
-                        @endforeach
-                    </div>
+                    </a>
+
+                    <x-notifications.sidebar-link :count="$unreadNotificationCount" variant="admin-child" />
                 </div>
-            @else
-                <a href="{{ route('tickets.index') }}"
-                    title="{{ __('tickets.assigned_tickets') }}"
-                    class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-bn text-sm {{ request()->routeIs('tickets.*') ? 'nav-active' : 'text-gray-400' }}">
-                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
-                    <span class="nav-label">{{ __('tickets.assigned_tickets') }}</span>
-                    @if($ticketUnreadCount > 0)
-                        <span class="nav-label ml-auto rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-bold text-emerald-400 font-bn">{{ $ticketUnreadCount > 99 ? '99+' : localize_digits($ticketUnreadCount) }}</span>
-                    @endif
-                </a>
-            @endif
+            </div>
 
             <!-- 1. USER MANAGEMENT -->
             <div x-data="{ open: @js(in_array($adminPage ?? '', ['system-users', 'system-activity', 'developer-access', 'roles-permission'], true)) }">
