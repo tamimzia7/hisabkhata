@@ -24,8 +24,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/create', [NotificationController::class, 'create'])->name('notifications.create');
     Route::get('/notifications/feed', [NotificationController::class, 'feed'])->name('notifications.get');
     Route::post('/notifications', [NotificationController::class, 'mark'])->name('notifications.mark');
+    Route::post('/notifications/send', [NotificationController::class, 'send'])->name('notifications.send');
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
     Route::delete('/notifications', [NotificationController::class, 'destroySelected'])->name('notifications.destroy-selected');
     Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');

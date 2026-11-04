@@ -2,9 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Notification;
+use App\Models\User;
+use App\Notifications\NotificationService;
+use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class NotificationController extends Controller
@@ -50,6 +57,89 @@ class NotificationController extends Controller
     }
 
     /**
+     * Show the full-page notification creation form.
+     */
+    public function create(): View
+    {
+        Gate::authorize('send', Notification::class);
+
+        return view('admin.notifications.create', [
+            'notifiableUsers' => User::query()->orderBy('name')->get(),
+            'adminPage' => 'notification-create',
+        ]);
+    }
+
+    /**
+     * Send a notification to all users or a selected set of users.
+     */
+    public function send(Request $request): RedirectResponse
+    {
+        $actor = $request->user();
+
+        Gate::authorize('send', Notification::class);
+
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:150'],
+            'body' => ['required', 'string', 'max:1000'],
+            'recipients' => ['required', Rule::in(['all', 'selected'])],
+            'recipient_ids' => ['bail', 'array', 'required_if:recipients,selected', 'min:1'],
+            'recipient_ids.*' => ['integer', Rule::exists('users', 'id')],
+            'action_url' => [
+                'nullable',
+                'string',
+                'max:500',
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    if (filled($value) && ! $this->isSafeInternalUrl((string) $value)) {
+                        $fail(__('notifications.send_action_url_invalid'));
+                    }
+                },
+            ],
+        ], [
+            'title.required' => __('notifications.send_title_required'),
+            'title.max' => __('notifications.send_title_max'),
+            'body.required' => __('notifications.send_message_required'),
+            'body.max' => __('notifications.send_message_max'),
+            'recipients.required' => __('notifications.send_recipients_required'),
+            'recipients.in' => __('notifications.send_recipients_invalid'),
+            'recipient_ids.required_if' => __('notifications.send_recipient_required'),
+            'recipient_ids.array' => __('notifications.send_recipient_invalid'),
+            'recipient_ids.min' => __('notifications.send_recipient_required'),
+            'recipient_ids.*.integer' => __('notifications.send_recipient_invalid'),
+            'recipient_ids.*.exists' => __('notifications.send_recipient_invalid'),
+            'action_url.max' => __('notifications.send_action_url_invalid'),
+        ]);
+
+        $recipientIds = collect($validated['recipient_ids'] ?? [])
+            ->map(fn (mixed $id): int => (int) $id)
+            ->unique()
+            ->values();
+
+        $recipients = $validated['recipients'] === 'all'
+            ? User::query()->get()
+            : User::query()->whereIn('id', $recipientIds)->get();
+
+        if ($recipients->isEmpty()) {
+            throw ValidationException::withMessages([
+                'recipient_ids' => __('notifications.send_recipient_required'),
+            ]);
+        }
+
+        app(NotificationService::class)->sendToUsers(
+            $recipients,
+            $validated['title'],
+            $validated['body'],
+            filled($validated['action_url'] ?? null) ? $validated['action_url'] : null,
+            'info',
+            null,
+            $actor,
+        );
+
+        return redirect()
+            ->route('notifications.index')
+            ->with('toast', __('notifications.send_sent', ['count' => $recipients->count()]));
+    }
+
+    /**
      * Return the latest notifications for the navbar dropdown.
      */
     public function feed(Request $request): JsonResponse
@@ -64,6 +154,10 @@ class NotificationController extends Controller
                 'id' => $notification->id,
                 'title' => $notification->data['title'] ?? __('notifications.unknown'),
                 'body' => $notification->data['body'] ?? '',
+                'sender_name' => $notification->data['sender_name'] ?? null,
+                'sender_label' => filled($notification->data['sender_name'] ?? null)
+                    ? __('notifications.sent_by', ['name' => $notification->data['sender_name']])
+                    : null,
                 'url' => filled($notification->data['action_url'] ?? null)
                     ? route('notifications.open', $notification->id)
                     : null,

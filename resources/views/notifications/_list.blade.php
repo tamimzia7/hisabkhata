@@ -15,14 +15,26 @@
             </p>
         </div>
 
-        @if($counts['unread'] > 0)
-            <form method="POST" action="{{ route('notifications.mark-all-read') }}">
-                @csrf
-                <button type="submit" class="glass px-4 py-2 rounded-lg text-sm font-bn text-white hover:bg-white/5 transition">
-                    {{ __('notifications.mark_all_read') }}
-                </button>
-            </form>
-        @endif
+        <div class="flex flex-wrap items-center gap-2">
+            @can('send', \App\Models\Notification::class)
+                <a href="{{ route('notifications.create') }}"
+                   class="btn-emerald inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold font-bn">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                    </svg>
+                    {{ __('notifications.send_button') }}
+                </a>
+            @endcan
+
+            @if($counts['unread'] > 0)
+                <form method="POST" action="{{ route('notifications.mark-all-read') }}">
+                    @csrf
+                    <button type="submit" class="glass px-4 py-2 rounded-lg text-sm font-bn text-white hover:bg-white/5 transition">
+                        {{ __('notifications.mark_all_read') }}
+                    </button>
+                </form>
+            @endif
+        </div>
     </div>
 
     <div class="glass rounded-xl overflow-hidden">
@@ -74,6 +86,12 @@
 
                                 @if(filled($body))
                                     <p class="text-sm text-gray-400 mt-1 font-bn">{{ $body }}</p>
+                                @endif
+
+                                @if(filled($notification->data['sender_name'] ?? null))
+                                    <p class="text-xs text-gray-500 mt-1 font-bn">
+                                        {{ __('notifications.sent_by', ['name' => $notification->data['sender_name']]) }}
+                                    </p>
                                 @endif
 
                                 <p class="text-xs text-gray-500 mt-1 font-bn">

@@ -24,6 +24,7 @@
         'developer-access': @js(__('site.admin.developer_access_control')),
         'roles-permission': @js(__('site.admin.roles_permission')),
         'notifications': @js(__('notifications.title')),
+        'notification-create': @js(__('notifications.create_title')),
         'admin-tickets': @js(__('tickets.title')),
         'client-users': @js(__('site.admin.client_users')),
         'client-settings': @js(__('site.admin.client_settings')),

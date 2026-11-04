@@ -18,8 +18,9 @@ class NotificationService
         ?string $actionUrl = null,
         string $level = 'info',
         ?string $icon = null,
+        ?User $sender = null,
     ): void {
-        $user->notify(new SystemNotification($title, $body, $actionUrl, $level, $icon));
+        $user->notify(new SystemNotification($title, $body, $actionUrl, $level, $icon, $sender));
     }
 
     /**
@@ -34,12 +35,13 @@ class NotificationService
         ?string $actionUrl = null,
         string $level = 'info',
         ?string $icon = null,
+        ?User $sender = null,
     ): int {
         $recipients = Collection::make($users);
 
         NotificationFacade::send(
             $recipients,
-            new SystemNotification($title, $body, $actionUrl, $level, $icon),
+            new SystemNotification($title, $body, $actionUrl, $level, $icon, $sender),
         );
 
         return $recipients->count();
@@ -57,10 +59,11 @@ class NotificationService
         ?string $actionUrl = null,
         string $level = 'info',
         ?string $icon = null,
+        ?User $sender = null,
     ): int {
         $recipients = User::query()->whereIn('role', $roles)->get();
 
-        return $this->sendToUsers($recipients, $title, $body, $actionUrl, $level, $icon);
+        return $this->sendToUsers($recipients, $title, $body, $actionUrl, $level, $icon, $sender);
     }
 
     /**
@@ -72,6 +75,7 @@ class NotificationService
         ?string $actionUrl = null,
         string $level = 'info',
         ?string $icon = null,
+        ?User $sender = null,
     ): int {
         return $this->sendToUsers(
             User::query()->get(),
@@ -80,6 +84,7 @@ class NotificationService
             $actionUrl,
             $level,
             $icon,
+            $sender,
         );
     }
 }

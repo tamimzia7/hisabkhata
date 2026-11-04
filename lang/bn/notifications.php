@@ -66,4 +66,66 @@ return [
     'mark_as_read_title' => 'পড়া চিহ্নিত করুন',
 
     'mark_as_unread_title' => 'অপড়া হিসেবে চিহ্নিত করুন',
+
+    'sent_by' => ':name পাঠিয়েছেন',
+
+    'cancel' => 'বাতিল',
+
+    'send_button' => 'বিজ্ঞপ্তি পাঠান',
+
+    'create_title' => 'বিজ্ঞপ্তি তৈরি করুন',
+
+    'create_subtitle' => 'বিজ্ঞপ্তি লিখে সব ব্যবহারকারী বা বাছাই করা ব্যবহারকারীদের কাছে পাঠান।',
+
+    'send_title' => 'বিজ্ঞপ্তি পাঠান',
+
+    'send_subtitle' => 'সব ব্যবহারকারী বা বাছাই করা ব্যবহারকারীদের কাছে বিজ্ঞপ্তি পাঠান।',
+
+    'send_field_title' => 'বিজ্ঞপ্তির শিরোনাম',
+
+    'send_title_placeholder' => 'যেমন: নির্ধারিত রক্ষণাবেক্ষণ',
+
+    'send_field_message' => 'বিজ্ঞপ্তির বার্তা',
+
+    'send_message_placeholder' => 'বিজ্ঞপ্তির বিস্তারিত লিখুন…',
+
+    'send_field_recipients' => 'প্রাপক',
+
+    'send_recipients_all' => 'সব ব্যবহারকারী',
+
+    'send_recipients_all_hint' => 'হিসাবখাতার সব নিবন্ধিত ব্যবহারকারী',
+
+    'send_recipients_selected' => 'বাছাই করা ব্যবহারকারী',
+
+    'send_recipients_selected_hint' => 'নিচ থেকে নির্দিষ্ট ব্যবহারকারী বাছাই করুন',
+
+    'send_search_users' => 'নাম বা ইমেইল দিয়ে খুঁজুন…',
+
+    'send_no_users' => 'আপনার খোঁজার সাথে কোনো ব্যবহারকারী মেলেনি।',
+
+    'send_field_action_url' => 'অ্যাকশন URL (ঐচ্ছিক)',
+
+    'send_action_url_hint' => 'বিজ্ঞপ্তিতে ক্লিক করলে যে অভ্যন্তরীণ পেজ খুলবে, যেমন /dashboard।',
+
+    'send_submit' => 'বিজ্ঞপ্তি পাঠান',
+
+    'send_sent' => ':count জন ব্যবহারকারীকে বিজ্ঞপ্তি পাঠানো হয়েছে।',
+
+    'send_title_required' => 'বিজ্ঞপ্তির শিরোনাম লিখুন।',
+
+    'send_title_max' => 'শিরোনাম ১৫০ অক্ষরের বেশি হতে পারবে না।',
+
+    'send_message_required' => 'বিজ্ঞপ্তির বার্তা লিখুন।',
+
+    'send_message_max' => 'বার্তা ১০০০ অক্ষরের বেশি হতে পারবে না।',
+
+    'send_recipients_required' => 'প্রাপক নির্বাচন করুন।',
+
+    'send_recipients_invalid' => 'সঠিক প্রাপক নির্বাচন করুন।',
+
+    'send_recipient_required' => 'কমপক্ষে একজন প্রাপক বাছাই করুন।',
+
+    'send_recipient_invalid' => 'নির্বাচিত প্রাপকের মধ্যে সঠিক ব্যবহারকারী নেই।',
+
+    'send_action_url_invalid' => 'অ্যাকশন URL অবশ্যই একটি অভ্যন্তরীণ ঠিকানা হতে হবে, যেমন /dashboard।',
 ];

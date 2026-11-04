@@ -80,6 +80,7 @@
                     <div class="min-w-0 flex-1">
                         <p class="font-bold font-bn text-white truncate" x-text="notification.title"></p>
                         <p class="text-xs text-gray-400 mt-0.5 line-clamp-2 font-bn" x-text="notification.body"></p>
+                        <p x-show="notification.sender_label" class="text-[10px] text-gray-500 mt-0.5 font-bn" x-text="notification.sender_label"></p>
                         <p class="text-[10px] text-gray-500 mt-1 font-bn" x-text="notification.created_at_human"></p>
                     </div>
                 </a>
