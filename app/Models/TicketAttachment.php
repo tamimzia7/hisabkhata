@@ -14,6 +14,17 @@ use Illuminate\Support\Facades\Storage;
 class TicketAttachment extends Model
 {
     /**
+     * Image MIME types that may be rendered inline as a preview.
+     *
+     * @var list<string>
+     */
+    public const PREVIEWABLE_IMAGE_MIMES = [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+    ];
+
+    /**
      * The ticket this attachment belongs to.
      *
      * @return BelongsTo<Ticket, self>
@@ -44,11 +55,35 @@ class TicketAttachment extends Model
     }
 
     /**
-     * Determine whether the attachment is an image.
+     * Determine whether the attachment is a previewable image.
      */
     public function isImage(): bool
     {
-        return str_starts_with((string) $this->mime_type, 'image/');
+        return in_array(strtolower((string) $this->mime_type), self::PREVIEWABLE_IMAGE_MIMES, true);
+    }
+
+    /**
+     * Determine whether the attachment is a PDF document.
+     */
+    public function isPdf(): bool
+    {
+        return $this->extension() === 'pdf';
+    }
+
+    /**
+     * Determine whether the attachment is a Word document.
+     */
+    public function isWordDocument(): bool
+    {
+        return in_array($this->extension(), ['doc', 'docx'], true);
+    }
+
+    /**
+     * The lowercase file extension of the original filename.
+     */
+    public function extension(): string
+    {
+        return strtolower((string) pathinfo((string) $this->file_name, PATHINFO_EXTENSION));
     }
 
     /**

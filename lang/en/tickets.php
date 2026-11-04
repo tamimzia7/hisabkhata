@@ -125,6 +125,15 @@ return [
         'management' => 'Management',
     ],
 
+    'attachments' => [
+        'view' => 'View image',
+        'download' => 'Download',
+        'remove' => 'Remove attachment',
+        'close' => 'Close preview',
+        'too_many' => 'You can attach up to 5 files.',
+        'uploading' => 'Uploading…',
+    ],
+
     'chat' => [
         'today' => 'Today',
         'yesterday' => 'Yesterday',

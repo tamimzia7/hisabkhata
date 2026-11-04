@@ -549,6 +549,28 @@ class TicketController extends Controller
     }
 
     /**
+     * Render a private image attachment inline for in-conversation previews.
+     */
+    public function previewAttachment(Request $request, Ticket $ticket, TicketAttachment $attachment): StreamedResponse
+    {
+        $viewer = $request->user();
+
+        abort_unless($viewer->can('viewAttachment', $ticket), 404);
+        abort_unless((int) $attachment->ticket_id === (int) $ticket->getKey(), 404);
+        abort_unless($attachment->isImage(), 404);
+
+        $disk = Storage::disk($attachment->disk ?: 'local');
+
+        abort_unless($disk->exists($attachment->file_path), 404);
+
+        return $disk->response($attachment->file_path, $attachment->file_name, [
+            'Content-Type' => $attachment->mime_type,
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'private, max-age=3600',
+        ], 'inline');
+    }
+
+    /**
      * Persist a ticket record with a collision-free ticket number.
      *
      * The number is derived from the unique auto-increment key, so concurrent
@@ -599,12 +621,16 @@ class TicketController extends Controller
                 ]);
             }
 
+            $originalName = basename($file->getClientOriginalName());
+            $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+            $baseName = pathinfo($originalName, PATHINFO_FILENAME) ?: 'attachment';
+
             $ticket->attachments()->create([
                 'message_id' => $message?->getKey(),
                 'user_id' => $uploader->getKey(),
                 'disk' => 'local',
                 'file_path' => $path,
-                'file_name' => Str::limit(basename($file->getClientOriginalName()), 200),
+                'file_name' => Str::limit($baseName, 180).($extension !== '' ? '.'.$extension : ''),
                 'mime_type' => $file->getMimeType() ?: 'application/octet-stream',
                 'file_size' => $file->getSize() ?: 0,
             ]);

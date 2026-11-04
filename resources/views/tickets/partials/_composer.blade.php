@@ -6,11 +6,40 @@
              lastId: @js((int) ($ticket->messages->last()?->getKey() ?? 0)),
              emptyError: @js(__('tickets.chat.empty_error')),
              sendFailed: @js(__('tickets.chat.send_failed')),
+             tooMany: @js(__('tickets.attachments.too_many')),
          })"
          x-init="init()">
         <form x-ref="form" method="POST" action="{{ route('tickets.messages.store', $ticket) }}" enctype="multipart/form-data"
               @submit.prevent="send($event)" class="space-y-2">
             @csrf
+
+            <div x-show="items.length > 0" x-cloak class="flex flex-wrap gap-2">
+                <template x-for="(item, index) in items" :key="item.key">
+                    <div class="relative rounded-xl border border-white/10 bg-black/25 p-1">
+                        <template x-if="item.previewUrl">
+                            <img :src="item.previewUrl" :alt="item.name" class="h-16 w-16 rounded-lg object-cover">
+                        </template>
+
+                        <template x-if="! item.previewUrl">
+                            <div class="flex h-16 w-36 items-center gap-2 px-1.5">
+                                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-[8px] font-bold tracking-tight"
+                                      :class="item.badgeClass" x-text="item.extension"></span>
+                                <span class="min-w-0">
+                                    <span class="block truncate text-[11px] text-gray-200 font-bn" x-text="item.name"></span>
+                                    <span class="block text-[9px] text-gray-500" x-text="item.sizeLabel"></span>
+                                </span>
+                            </div>
+                        </template>
+
+                        <button type="button" @click="removeItem(index)"
+                                title="{{ __('tickets.attachments.remove') }}"
+                                aria-label="{{ __('tickets.attachments.remove') }}"
+                                class="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[11px] font-bold leading-none text-white shadow transition hover:bg-red-400">
+                            ×
+                        </button>
+                    </div>
+                </template>
+            </div>
 
             <div class="flex items-end gap-2">
                 <label class="glass flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl text-gray-300 transition hover:text-emerald-300"
@@ -33,12 +62,12 @@
                 </button>
             </div>
 
-            <div x-show="files.length > 0" x-cloak class="flex flex-wrap gap-1.5">
-                <template x-for="file in files" :key="file.name + file.size">
-                    <span class="flex max-w-[220px] items-center gap-1.5 truncate rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-[10px] text-emerald-300 font-bn">
-                        <span class="truncate" x-text="file.name"></span>
-                    </span>
-                </template>
+            <div x-show="sending && progress > 0" x-cloak class="flex items-center gap-2">
+                <span class="shrink-0 text-[10px] text-emerald-300 font-bn">{{ __('tickets.attachments.uploading') }}</span>
+                <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
+                    <div class="h-full rounded-full bg-emerald-400 transition-all duration-150" :style="'width: ' + progress + '%'"></div>
+                </div>
+                <span class="shrink-0 text-[10px] font-bold text-emerald-300 font-bn" x-text="progress + '%'"></span>
             </div>
 
             <p x-show="error" x-text="error" class="text-xs text-red-400 font-bn" x-cloak></p>
@@ -51,7 +80,9 @@
                 return {
                     sending: false,
                     error: '',
-                    files: [],
+                    items: [],
+                    progress: 0,
+                    keySeed: 0,
                     lastId: config.lastId,
                     timer: null,
 
@@ -65,6 +96,8 @@
                         if (this.timer) {
                             clearInterval(this.timer);
                         }
+
+                        this.releasePreviews();
                     },
 
                     stream() {
@@ -96,11 +129,75 @@
                     },
 
                     onFiles(event) {
-                        this.files = Array.from(event.target.files || []);
+                        this.addFiles(Array.from(event.target.files || []));
+                        event.target.value = '';
+                    },
 
-                        if (this.files.length > 0) {
+                    addFiles(files) {
+                        const remaining = 5 - this.items.length;
+
+                        if (remaining <= 0) {
+                            this.error = config.tooMany;
+
+                            return;
+                        }
+
+                        if (files.length > remaining) {
+                            this.error = config.tooMany;
+                        }
+
+                        files.slice(0, remaining).forEach((file) => {
+                            const extension = (file.name.split('.').pop() || '').toUpperCase().slice(0, 5);
+                            const isImage = (file.type || '').startsWith('image/');
+
+                            this.items.push({
+                                key: ++this.keySeed,
+                                file,
+                                name: file.name,
+                                sizeLabel: this.formatSize(file.size),
+                                extension: extension || 'FILE',
+                                previewUrl: isImage ? URL.createObjectURL(file) : null,
+                                badgeClass: isImage
+                                    ? ''
+                                    : (extension === 'PDF'
+                                        ? 'bg-red-500/15 text-red-400'
+                                        : (extension.startsWith('DOC') ? 'bg-blue-500/15 text-blue-400' : 'bg-gray-500/15 text-gray-300')),
+                            });
+                        });
+
+                        if (files.length <= remaining) {
                             this.error = '';
                         }
+                    },
+
+                    removeItem(index) {
+                        const item = this.items[index];
+
+                        if (item && item.previewUrl) {
+                            URL.revokeObjectURL(item.previewUrl);
+                        }
+
+                        this.items.splice(index, 1);
+                    },
+
+                    releasePreviews() {
+                        this.items.forEach((item) => {
+                            if (item.previewUrl) {
+                                URL.revokeObjectURL(item.previewUrl);
+                            }
+                        });
+                    },
+
+                    formatSize(bytes) {
+                        if (bytes >= 1048576) {
+                            return (bytes / 1048576).toFixed(1) + ' MB';
+                        }
+
+                        if (bytes >= 1024) {
+                            return Math.round(bytes / 1024) + ' KB';
+                        }
+
+                        return bytes + ' B';
                     },
 
                     send() {
@@ -111,7 +208,7 @@
                         const input = this.$refs.input;
                         const body = (input?.value || '').trim();
 
-                        if (body === '' && this.files.length === 0) {
+                        if (body === '' && this.items.length === 0) {
                             this.error = config.emptyError;
 
                             return;
@@ -119,63 +216,83 @@
 
                         this.error = '';
                         this.sending = true;
+                        this.progress = 0;
 
                         const data = new FormData();
                         data.append('body', input.value);
-                        this.files.forEach((file) => data.append('attachments[]', file));
+                        this.items.forEach((item) => data.append('attachments[]', item.file));
 
-                        fetch(this.$refs.form.action, {
-                            method: 'POST',
-                            headers: {
-                                Accept: 'application/json',
-                                'X-CSRF-TOKEN': config.csrf,
-                            },
-                            credentials: 'same-origin',
-                            body: data,
-                        })
-                            .then(async (response) => {
-                                if (! response.ok) {
-                                    const payload = await response.json().catch(() => ({}));
-                                    const firstError = Object.values(payload.errors || {}).flat().find(Boolean);
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('POST', this.$refs.form.action);
+                        xhr.setRequestHeader('Accept', 'application/json');
+                        xhr.setRequestHeader('X-CSRF-TOKEN', config.csrf);
 
-                                    throw new Error(firstError || payload.message || config.sendFailed);
-                                }
+                        xhr.upload.addEventListener('progress', (event) => {
+                            if (event.lengthComputable) {
+                                this.progress = Math.max(1, Math.round((event.loaded / event.total) * 100));
+                            }
+                        });
 
-                                return response.json();
-                            })
-                            .then((payload) => {
-                                const stream = this.stream();
+                        xhr.addEventListener('load', () => {
+                            this.sending = false;
 
-                                if (stream && payload.html) {
-                                    stream.insertAdjacentHTML('beforeend', payload.html);
-                                }
+                            let payload = {};
 
-                                if (payload.last_id) {
-                                    this.lastId = payload.last_id;
-                                }
+                            try {
+                                payload = JSON.parse(xhr.responseText || '{}');
+                            } catch (exception) {
+                                payload = {};
+                            }
 
-                                input.value = '';
-                                input.style.height = 'auto';
-                                this.files = [];
+                            if (xhr.status < 200 || xhr.status >= 300) {
+                                const firstError = Object.values(payload.errors || {}).flat().find(Boolean);
 
-                                if (this.$refs.files) {
-                                    this.$refs.files.value = '';
-                                }
+                                this.error = firstError || payload.message || config.sendFailed;
+                                this.progress = 0;
 
-                                const emptyState = stream?.querySelector('[data-empty-conversation]');
+                                return;
+                            }
 
-                                if (emptyState) {
-                                    emptyState.remove();
-                                }
+                            this.onSent(payload);
+                        });
 
-                                this.scrollToBottom();
-                            })
-                            .catch((exception) => {
-                                this.error = exception.message || config.sendFailed;
-                            })
-                            .finally(() => {
-                                this.sending = false;
-                            });
+                        xhr.addEventListener('error', () => {
+                            this.sending = false;
+                            this.progress = 0;
+                            this.error = config.sendFailed;
+                        });
+
+                        xhr.send(data);
+                    },
+
+                    onSent(payload) {
+                        const stream = this.stream();
+                        const input = this.$refs.input;
+
+                        if (stream && payload.html) {
+                            stream.insertAdjacentHTML('beforeend', payload.html);
+                        }
+
+                        if (payload.last_id) {
+                            this.lastId = payload.last_id;
+                        }
+
+                        if (input) {
+                            input.value = '';
+                            input.style.height = 'auto';
+                        }
+
+                        this.releasePreviews();
+                        this.items = [];
+                        this.progress = 0;
+
+                        if (this.$refs.files) {
+                            this.$refs.files.value = '';
+                        }
+
+                        stream?.querySelector('[data-empty-conversation]')?.remove();
+
+                        this.scrollToBottom();
                     },
 
                     poll() {

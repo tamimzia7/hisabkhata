@@ -22,18 +22,11 @@
         @if($initialAttachments->isNotEmpty())
             <div>
                 <p class="mb-1 text-[10px] font-bold uppercase tracking-wider text-gray-500 font-bn">{{ __('tickets.show.attachments') }}</p>
-                <div class="space-y-1.5">
-                    @foreach($initialAttachments as $attachment)
-                        <a href="{{ route('tickets.attachments.download', [$ticket, $attachment]) }}"
-                           class="flex items-center gap-2 rounded-lg border border-white/10 bg-black/20 px-2.5 py-2 transition hover:bg-black/30">
-                            <svg class="h-4 w-4 shrink-0 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                            <span class="min-w-0">
-                                <span class="block truncate text-xs text-gray-200">{{ $attachment->file_name }}</span>
-                                <span class="block text-[10px] text-gray-500">{{ $attachment->humanSize() }}</span>
-                            </span>
-                        </a>
-                    @endforeach
-                </div>
+                @include('tickets.partials._attachments', [
+                    'attachments' => $initialAttachments,
+                    'ticket' => $ticket,
+                    'compact' => true,
+                ])
             </div>
         @endif
 

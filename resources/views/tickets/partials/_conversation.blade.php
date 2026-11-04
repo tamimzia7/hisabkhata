@@ -4,7 +4,7 @@
     $canReopen = $isClient && $ticket->isClosed();
 @endphp
 
-<div class="space-y-4">
+<div class="space-y-4" x-data="{ lightbox: null }" @keydown.escape.window="lightbox = null">
     <div class="glass rounded-2xl p-4 sm:p-5">
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div class="min-w-0">
@@ -95,5 +95,31 @@
                 @include('tickets.partials._composer')
             </div>
         </section>
+    </div>
+
+    <div x-show="lightbox" x-cloak x-transition.opacity
+         class="fixed inset-0 z-[200] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+         role="dialog" aria-modal="true" aria-label="{{ __('tickets.attachments.view') }}"
+         @click.self="lightbox = null">
+        <template x-if="lightbox">
+            <div class="relative flex max-h-[92vh] w-full max-w-5xl flex-col items-center">
+                <button type="button" @click="lightbox = null"
+                        class="absolute -top-3 right-0 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-red-500/80 sm:-right-3"
+                        aria-label="{{ __('tickets.attachments.close') }}">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+
+                <img :src="lightbox.url" :alt="lightbox.name"
+                     class="max-h-[82vh] max-w-full rounded-xl object-contain shadow-2xl">
+
+                <div class="mt-3 flex w-full max-w-xl items-center justify-center gap-4 rounded-xl bg-black/50 px-4 py-2">
+                    <span class="truncate text-sm text-gray-200 font-bn" x-text="lightbox.name"></span>
+                    <a :href="lightbox.download"
+                       class="shrink-0 text-xs font-bold text-emerald-300 transition hover:text-emerald-200 font-bn">
+                        {{ __('tickets.attachments.download') }}
+                    </a>
+                </div>
+            </div>
+        </template>
     </div>
 </div>

@@ -54,6 +54,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/tickets/{ticket}/priority', [TicketController::class, 'updatePriority'])->name('tickets.priority.update');
     Route::post('/tickets/{ticket}/assignee', [TicketController::class, 'updateAssignee'])->name('tickets.assignee.update');
     Route::get('/tickets/{ticket}/attachments/{attachment}', [TicketController::class, 'downloadAttachment'])->name('tickets.attachments.download');
+    Route::get('/tickets/{ticket}/attachments/{attachment}/preview', [TicketController::class, 'previewAttachment'])->name('tickets.attachments.preview');
 
     Route::delete('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });
