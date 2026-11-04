@@ -1,5 +1,6 @@
 @php($user = auth()->user())
 @php($unreadNotificationCount ??= $user?->unreadNotifications()->count() ?? 0)
+@php($ticketUnreadCount ??= $user ? \App\Models\Ticket::unreadTicketCountFor($user) : 0)
 
 <aside class="hidden md:flex w-64 flex-col glass-strong m-3 rounded-2xl p-4 sticky top-3 h-[calc(100vh-24px)]">
     <a href="{{ route('home') }}" class="flex items-center gap-2 mb-6 px-2">
@@ -9,6 +10,13 @@
     <nav class="space-y-1 text-sm font-bn">
         <a href="{{ route('dashboard') }}" class="block px-3 py-2 rounded-lg {{ request()->routeIs('dashboard') ? 'bg-emerald-500/20 text-emerald-300' : 'text-gray-300 hover:bg-white/5' }}">{{ __('site.dashboard.dashboard') }}</a>
         <x-notifications.sidebar-link :count="$unreadNotificationCount" variant="client" />
+        <a href="{{ route('tickets.index') }}" class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg {{ request()->routeIs('tickets.index') || request()->routeIs('tickets.show') ? 'bg-emerald-500/20 text-emerald-300' : 'text-gray-300 hover:bg-white/5' }}">
+            <span>{{ __('tickets.my_tickets') }}</span>
+            @if($ticketUnreadCount > 0)
+                <span class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-400">{{ $ticketUnreadCount > 99 ? '99+' : localize_digits($ticketUnreadCount) }}</span>
+            @endif
+        </a>
+        <a href="{{ route('tickets.create') }}" class="block px-3 py-2 rounded-lg {{ request()->routeIs('tickets.create') ? 'bg-emerald-500/20 text-emerald-300' : 'text-gray-300 hover:bg-white/5' }}">{{ __('tickets.create_ticket') }}</a>
         <a href="#" @click.prevent class="block px-3 py-2 rounded-lg text-gray-300 hover:bg-white/5">{{ __('site.dashboard.entries') }}</a>
         <a href="#" @click.prevent class="block px-3 py-2 rounded-lg text-gray-300 hover:bg-white/5">{{ __('site.dashboard.reports') }}</a>
         <a href="#" @click.prevent class="block px-3 py-2 rounded-lg text-gray-300 hover:bg-white/5">{{ __('site.dashboard.settings') }}</a>

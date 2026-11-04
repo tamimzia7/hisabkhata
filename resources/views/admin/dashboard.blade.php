@@ -46,8 +46,8 @@
         </div>
         <div class="glass rounded-xl p-4 sm:p-5 border-l-4 border-lime-500">
             <p class="text-xs sm:text-sm text-gray-400 font-bn mb-1">{{ __('site.admin.total_support_tickets') }}</p>
-            <p class="text-2xl sm:text-3xl font-bold font-display">{{ localize_number(12) }}</p>
-            <p class="text-[11px] sm:text-xs text-red-400 mt-2 font-bn">{{ __('site.admin.unresolved', ['count' => localize_digits(3)]) }}</p>
+            <p class="text-2xl sm:text-3xl font-bold font-display">{{ localize_number($totalTickets) }}</p>
+            <p class="text-[11px] sm:text-xs text-red-400 mt-2 font-bn">{{ __('site.admin.unresolved', ['count' => localize_number($unresolvedTickets)]) }}</p>
         </div>
     </div>
 

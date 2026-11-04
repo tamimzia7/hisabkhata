@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AdminActivity;
 use App\Models\Setting;
+use App\Models\Ticket;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\RedirectResponse;
@@ -196,6 +197,8 @@ class DashboardController extends Controller
                 'manual_access' => Setting::boolean('client.manual_access', true),
             ],
             'totalUsers' => User::count(),
+            'totalTickets' => Ticket::query()->count(),
+            'unresolvedTickets' => Ticket::query()->whereIn('status', Ticket::UNRESOLVED_STATUSES)->count(),
         ]);
     }
 
