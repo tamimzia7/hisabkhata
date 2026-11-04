@@ -210,7 +210,7 @@
             <!-- SUPPORT -->
             @php($ticketUnreadCount = \App\Models\Ticket::unreadTicketCountFor(auth()->user()))
 
-            <div x-data="{ open: @js(request()->routeIs('tickets.*') || request()->routeIs('notifications.*')) }">
+            <div x-data="{ open: @js(request()->routeIs('tickets.*')) }">
                 <button @click="collapsed ? (toggleCollapsed(), open = true) : (open = !open)"
                         :class="open ? 'text-white' : 'text-gray-400'"
                         title="{{ __('tickets.support') }}"
@@ -233,10 +233,10 @@
                             <span class="ml-auto rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-bold text-emerald-400 font-bn">{{ $ticketUnreadCount > 99 ? '99+' : localize_digits($ticketUnreadCount) }}</span>
                         @endif
                     </a>
-
-                    <x-notifications.sidebar-link :count="$unreadNotificationCount" variant="admin-child" />
                 </div>
             </div>
+
+            <x-notifications.sidebar-link :count="$unreadNotificationCount" variant="admin" />
 
             <!-- 1. USER MANAGEMENT -->
             <div x-data="{ open: @js(in_array($adminPage ?? '', ['system-users', 'system-activity', 'developer-access', 'roles-permission'], true)) }">
