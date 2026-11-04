@@ -187,6 +187,7 @@ class DashboardController extends Controller
         return view('admin.dashboard', [
             'admin' => $request->user(),
             'adminPage' => $page,
+            'adminSpa' => true,
             'recentUsers' => User::latest()->take(2)->get(),
             'clientUsers' => User::whereIn('role', User::CLIENT_ROLES)->latest()->get(),
             'systemUsers' => User::whereIn('role', User::SYSTEM_ROLES)->orderBy('id')->get(),

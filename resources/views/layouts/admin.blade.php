@@ -4,6 +4,7 @@
     dark: JSON.parse(localStorage.getItem('theme-dark') ?? 'true'),
     toggleDark() { this.dark = !this.dark; localStorage.setItem('theme-dark', JSON.stringify(this.dark)); },
     page: @js($adminPage ?? 'admin-dashboard'),
+    spa: @js($adminSpa ?? false),
     subTab: 'transactions',
     sidebarOpen: false,
     collapsed: JSON.parse(localStorage.getItem('admin-sidebar-collapsed') ?? 'false'),
@@ -45,9 +46,22 @@
             url.searchParams.set('page', name);
         }
 
+        // Standalone admin pages (notifications, tickets, …) do not contain the
+        // dashboard sections, so switching Alpine state alone would leave the
+        // previous page content on screen. Navigate for real in that case.
+        if (! this.spa) {
+            window.location.assign(url.toString());
+
+            return;
+        }
+
         window.history.pushState({ page: name }, '', url);
     },
     init() {
+        if (! this.spa) {
+            return;
+        }
+
         window.history.replaceState({ page: this.page }, '');
         window.addEventListener('popstate', (event) => {
             this.page = event.state?.page ?? 'admin-dashboard';
