@@ -54,7 +54,7 @@ test('support contains only tickets while notifications stays top-level for clie
         ->get(route('dashboard'))
         ->assertOk()
         ->assertSee(__('tickets.support'))
-        ->assertSee(route('tickets.create'), false);
+        ->assertDontSee(route('tickets.create'), false);
 
     $html = $response->getContent();
 

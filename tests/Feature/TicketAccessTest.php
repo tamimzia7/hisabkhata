@@ -208,7 +208,7 @@ test('the sidebar exposes the tickets menu for every role', function () {
         ->assertOk()
         ->assertSee(__('tickets.support'))
         ->assertSee(route('tickets.index'), false)
-        ->assertSee(route('tickets.create'), false);
+        ->assertDontSee(route('tickets.create'), false);
 
     $this->actingAs($staff)->get(route('dashboard'))
         ->assertOk()

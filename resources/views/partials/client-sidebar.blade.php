@@ -35,7 +35,6 @@
 
         <x-notifications.sidebar-link :count="$unreadNotificationCount" variant="client" />
 
-        <a href="{{ route('tickets.create') }}" class="block px-3 py-2 rounded-lg {{ request()->routeIs('tickets.create') ? 'bg-emerald-500/20 text-emerald-300' : 'text-gray-300 hover:bg-white/5' }}">{{ __('tickets.create_ticket') }}</a>
         <a href="#" @click.prevent class="block px-3 py-2 rounded-lg text-gray-300 hover:bg-white/5">{{ __('site.dashboard.entries') }}</a>
         <a href="#" @click.prevent class="block px-3 py-2 rounded-lg text-gray-300 hover:bg-white/5">{{ __('site.dashboard.reports') }}</a>
         <a href="#" @click.prevent class="block px-3 py-2 rounded-lg text-gray-300 hover:bg-white/5">{{ __('site.dashboard.settings') }}</a>
