@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\EnsureActiveStudentSubscription;
+use App\Http\Middleware\ResolveStudentMess;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -14,6 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [SetLocale::class]);
+
+        $middleware->alias([
+            'student.subscription' => EnsureActiveStudentSubscription::class,
+            'student.mess' => ResolveStudentMess::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
@@ -202,6 +203,60 @@ class User extends Authenticatable
             self::ROLE_DEVELOPER => [self::ROLE_CUSTOMER_CARE],
             default => [],
         };
+    }
+
+    /**
+     * The subscription records of the user.
+     */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(UserSubscription::class);
+    }
+
+    /**
+     * Mess memberships of the user.
+     */
+    public function messMemberships(): HasMany
+    {
+        return $this->hasMany(MessMember::class);
+    }
+
+    /**
+     * Messes owned by the user.
+     */
+    public function ownedMesses(): HasMany
+    {
+        return $this->hasMany(Mess::class, 'owner_id');
+    }
+
+    /**
+     * The latest active subscription for the given product.
+     */
+    public function activeSubscription(string $product = SubscriptionPlan::PRODUCT_STUDENT): ?UserSubscription
+    {
+        return $this->subscriptions()
+            ->active()
+            ->whereHas('plan', fn ($query) => $query
+                ->where('product', $product)
+                ->where('is_active', true))
+            ->latest('ends_at')
+            ->first();
+    }
+
+    /**
+     * Determine whether the user has an active subscription for a product.
+     */
+    public function hasActiveSubscription(string $product = SubscriptionPlan::PRODUCT_STUDENT): bool
+    {
+        return $this->activeSubscription($product) !== null;
+    }
+
+    /**
+     * Determine whether the user has an active Student/Mess subscription.
+     */
+    public function hasActiveStudentSubscription(): bool
+    {
+        return $this->hasActiveSubscription(SubscriptionPlan::PRODUCT_STUDENT);
     }
 
     /**

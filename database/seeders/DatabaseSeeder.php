@@ -32,6 +32,8 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
+        $this->call(SubscriptionPlanSeeder::class);
+
         User::unguarded(function (): void {
             foreach (self::ACCOUNTS as $role => $account) {
                 User::updateOrCreate(

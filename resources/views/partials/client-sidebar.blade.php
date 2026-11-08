@@ -10,6 +10,10 @@
     <nav class="space-y-1 text-sm font-bn">
         <a href="{{ route('dashboard') }}" class="block px-3 py-2 rounded-lg {{ request()->routeIs('dashboard') ? 'bg-emerald-500/20 text-emerald-300' : 'text-gray-300 hover:bg-white/5' }}">{{ __('site.dashboard.dashboard') }}</a>
 
+        @if($user?->role === \App\Models\User::ROLE_STUDENT)
+            <a href="{{ route('student.dashboard') }}" class="block px-3 py-2 rounded-lg {{ request()->routeIs('student.*') ? 'bg-emerald-500/20 text-emerald-300' : 'text-gray-300 hover:bg-white/5' }}">{{ __('student.nav.module_link') }}</a>
+        @endif
+
         <div x-data="{ open: @js(request()->routeIs('tickets.*')) }">
             <button type="button" @click="open = !open"
                     :class="open ? 'text-white' : 'text-gray-300'"

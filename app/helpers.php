@@ -36,3 +36,13 @@ if (! function_exists('localize_number')) {
         return localize_digits(number_format($number));
     }
 }
+
+if (! function_exists('localize_money')) {
+    /**
+     * Format a money amount with two decimals and localized digits.
+     */
+    function localize_money(int|float|string $number): string
+    {
+        return localize_digits(number_format((float) $number, 2));
+    }
+}
