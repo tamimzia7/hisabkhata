@@ -36,13 +36,13 @@
         </div>
         <div class="glass rounded-xl p-4 sm:p-5 border-l-4 border-teal-500">
             <p class="text-xs sm:text-sm text-gray-400 font-bn mb-1">{{ __('site.admin.active_subscriptions') }}</p>
-            <p class="text-2xl sm:text-3xl font-bold font-display">{{ localize_number(850) }}</p>
-            <p class="text-[11px] sm:text-xs text-teal-400 mt-2 font-bn">{{ __('site.admin.free_trial', ['count' => localize_number(1200)]) }}</p>
+            <p class="text-2xl sm:text-3xl font-bold font-display">{{ localize_number($activeSubscriptionCount) }}</p>
+            <p class="text-[11px] sm:text-xs text-teal-400 mt-2 font-bn">{{ __('site.admin.free_trial', ['count' => localize_number($trialCount)]) }}</p>
         </div>
         <div class="glass rounded-xl p-4 sm:p-5 border-l-4 border-amber-500">
             <p class="text-xs sm:text-sm text-gray-400 font-bn mb-1">{{ __('site.admin.this_month_revenue') }}</p>
-            <p class="text-2xl sm:text-3xl font-bold font-display text-amber-400">৳{{ localize_number(41650) }}</p>
-            <p class="text-[11px] sm:text-xs text-gray-400 mt-2 font-bn">{{ __('site.admin.last_month', ['amount' => '৳'.localize_number(35000)]) }}</p>
+            <p class="text-2xl sm:text-3xl font-bold font-display text-amber-400">৳{{ localize_number($monthlyRevenue) }}</p>
+            <p class="text-[11px] sm:text-xs text-gray-400 mt-2 font-bn">{{ __('site.admin.last_month', ['amount' => '৳'.localize_number($lastMonthRevenue)]) }}</p>
         </div>
         <div class="glass rounded-xl p-4 sm:p-5 border-l-4 border-lime-500">
             <p class="text-xs sm:text-sm text-gray-400 font-bn mb-1">{{ __('site.admin.total_support_tickets') }}</p>
@@ -85,14 +85,17 @@
                 <a href="#" @click.prevent="setPage('admin-subscriptions')" class="text-sm text-emerald-400 font-bn hover:underline shrink-0">{{ __('site.admin.see_all') }}</a>
             </div>
             <div class="divide-y divide-white/5">
-                <div class="p-4 flex items-center justify-between gap-3 hover:bg-white/5 transition">
-                    <div><p class="text-sm font-bold font-bn">করিম ভাই</p><p class="text-xs text-gray-400 font-bn">bKash • {{ __('site.admin.today') }} ১০:৩০</p></div>
-                    <span class="text-sm font-bold text-emerald-400 shrink-0">+৳৪৯</span>
-                </div>
-                <div class="p-4 flex items-center justify-between gap-3 hover:bg-white/5 transition">
-                    <div><p class="text-sm font-bold font-bn">সাদিয়া আক্তার</p><p class="text-xs text-gray-400 font-bn">Nagad • {{ __('site.admin.yesterday') }}</p></div>
-                    <span class="text-sm font-bold text-emerald-400 shrink-0">+৳৪৯৯</span>
-                </div>
+                @forelse($payments->where('status', \App\Models\Payment::STATUS_SUCCESSFUL)->take(2) as $payment)
+                    <div class="p-4 flex items-center justify-between gap-3 hover:bg-white/5 transition">
+                        <div>
+                            <p class="text-sm font-bold font-bn">{{ $payment->user?->name ?? '—' }}</p>
+                            <p class="text-xs text-gray-400 font-bn">{{ $payment->payment_method ?? $payment->gateway }} • {{ ($payment->paid_at ?? $payment->created_at)?->format('d M Y') }}</p>
+                        </div>
+                        <span class="text-sm font-bold text-emerald-400 shrink-0">+৳{{ localize_money($payment->amount) }}</span>
+                    </div>
+                @empty
+                    <p class="p-5 text-sm text-gray-400 font-bn">{{ __('subscription.admin.no_payments') }}</p>
+                @endforelse
             </div>
         </div>
     </div>
@@ -566,54 +569,119 @@
 <!-- ================= 6. SUBSCRIPTION MANAGEMENT ================= -->
 <div x-show="page === 'admin-subscriptions'" x-cloak x-transition.opacity class="space-y-5 sm:space-y-6">
     <div class="flex border-b border-white/10 gap-4 sm:gap-6 overflow-x-auto admin-scroll">
-        <button @click="subTab = 'transactions'" :class="subTab === 'transactions' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-gray-400 hover:text-white'" class="pb-3 border-b-2 font-bold font-bn text-xs sm:text-sm transition whitespace-nowrap">{{ __('site.admin.transactions') }}</button>
-        <button @click="subTab = 'active'" :class="subTab === 'active' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-gray-400 hover:text-white'" class="pb-3 border-b-2 font-bold font-bn text-xs sm:text-sm transition whitespace-nowrap">{{ __('site.admin.active_subscribers') }}</button>
+        <button @click="subTab = 'transactions'" :class="subTab === 'transactions' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-gray-400 hover:text-white'" class="pb-3 border-b-2 font-bold font-bn text-xs sm:text-sm transition whitespace-nowrap">{{ __('subscription.admin.payments') }}</button>
+        <button @click="subTab = 'subscriptions'" :class="subTab === 'subscriptions' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-gray-400 hover:text-white'" class="pb-3 border-b-2 font-bold font-bn text-xs sm:text-sm transition whitespace-nowrap">{{ __('subscription.admin.all_subscriptions') }}</button>
+        <button @click="subTab = 'active'" :class="subTab === 'active' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-gray-400 hover:text-white'" class="pb-3 border-b-2 font-bold font-bn text-xs sm:text-sm transition whitespace-nowrap">{{ __('subscription.admin.active_subscriptions') }}</button>
         <button @click="subTab = 'expiring'" :class="subTab === 'expiring' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-gray-400 hover:text-white'" class="pb-3 border-b-2 font-bold font-bn text-xs sm:text-sm transition whitespace-nowrap">{{ __('site.admin.expiring_soon') }}</button>
+        <button @click="subTab = 'trials'" :class="subTab === 'trials' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-gray-400 hover:text-white'" class="pb-3 border-b-2 font-bold font-bn text-xs sm:text-sm transition whitespace-nowrap">{{ __('subscription.admin.trial_usage') }}</button>
+        <button @click="subTab = 'failed'" :class="subTab === 'failed' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-gray-400 hover:text-white'" class="pb-3 border-b-2 font-bold font-bn text-xs sm:text-sm transition whitespace-nowrap">{{ __('subscription.admin.failed_payments') }}</button>
+        <button @click="subTab = 'revenue'" :class="subTab === 'revenue' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-gray-400 hover:text-white'" class="pb-3 border-b-2 font-bold font-bn text-xs sm:text-sm transition whitespace-nowrap">{{ __('subscription.admin.revenue') }}</button>
     </div>
 
     <div x-show="subTab === 'transactions'" x-cloak x-transition.opacity>
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
-            <h3 class="font-bold text-white font-bn">{{ __('site.admin.all_payment_records') }}</h3>
-            <button class="glass px-4 py-2 rounded-lg text-sm text-gray-300 font-bn hover:text-white transition">{{ __('site.admin.export_csv') }}</button>
+            <h3 class="font-bold text-white font-bn">{{ __('subscription.admin.payments') }}</h3>
         </div>
         <div class="glass rounded-xl overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full min-w-[820px] text-sm text-left">
+                <table class="w-full min-w-[900px] text-sm text-left">
                     <thead class="bg-white/5 text-xs text-gray-400 uppercase">
                     <tr>
-                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.trx_id') }}</th>
-                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.user') }}</th>
-                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.gateway') }}</th>
-                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.amount') }}</th>
-                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.status') }}</th>
+                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.payment.transaction_id') }}</th>
+                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.admin.user') }}</th>
+                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.admin.product') }}</th>
+                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.payment.method') }}</th>
+                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.payment.amount') }}</th>
+                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.payment.date') }}</th>
+                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.payment.status') }}</th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        @forelse($payments as $payment)
+                            @php
+                                $statusClass = match ($payment->status) {
+                                    \App\Models\Payment::STATUS_SUCCESSFUL => 'bg-emerald-500/15 text-emerald-400',
+                                    \App\Models\Payment::STATUS_PENDING => 'bg-amber-500/15 text-amber-400',
+                                    default => 'bg-red-500/15 text-red-400',
+                                };
+                            @endphp
+                            <tr class="hover:bg-white/5 transition">
+                                <td class="px-4 sm:px-6 py-4 text-xs font-mono text-gray-300">
+                                    {{ $payment->transaction_id }}
+                                    @if($payment->gateway_transaction_id)
+                                        <span class="block text-[10px] text-gray-500">{{ $payment->gateway_transaction_id }}</span>
+                                    @endif
+                                </td>
+                                <td class="px-4 sm:px-6 py-4"><p class="font-bold text-white font-bn">{{ $payment->user?->name ?? '—' }}</p><p class="text-xs text-gray-400">{{ $payment->user?->email }}</p></td>
+                                <td class="px-4 sm:px-6 py-4"><p class="text-xs font-bn text-gray-300">{{ __('subscription.products.'.$payment->product) }}</p><p class="text-[10px] text-gray-500 font-bn">{{ $payment->plan?->name }}</p></td>
+                                <td class="px-4 sm:px-6 py-4"><span class="text-gray-300 bg-white/5 px-2 py-1 rounded text-xs font-bn">{{ $payment->payment_method ?? $payment->gateway }}</span></td>
+                                <td class="px-4 sm:px-6 py-4 font-bold text-white">৳{{ localize_money($payment->amount) }} <span class="text-[10px] text-gray-500">{{ $payment->currency }}</span></td>
+                                <td class="px-4 sm:px-6 py-4 text-xs text-gray-300 font-bn">{{ ($payment->paid_at ?? $payment->created_at)?->format('d M Y H:i') }}</td>
+                                <td class="px-4 sm:px-6 py-4"><span class="px-2 py-1 rounded text-xs font-bn {{ $statusClass }}">{{ __('subscription.status.'.$payment->status) }}</span></td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="7" class="px-6 py-6 text-center text-gray-400 font-bn">{{ __('subscription.admin.no_payments') }}</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="subTab === 'subscriptions'" x-cloak x-transition.opacity>
+        <div class="glass rounded-xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[900px] text-sm text-left">
+                    <thead class="bg-white/5 text-xs text-gray-400 uppercase">
+                    <tr>
+                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.admin.user') }}</th>
+                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.admin.product') }}</th>
+                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.admin.plan') }}</th>
+                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.admin.started') }}</th>
+                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.admin.expires') }}</th>
+                        <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.payment.status') }}</th>
                         <th class="px-4 sm:px-6 py-4 font-bn text-right">{{ __('site.admin.action') }}</th>
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-white/5">
-                        <tr class="hover:bg-white/5 transition">
-                            <td class="px-4 sm:px-6 py-4 text-xs font-mono text-gray-400">TRX-8923401</td>
-                            <td class="px-4 sm:px-6 py-4"><p class="font-bold text-white font-bn">করিম ভাই</p><p class="text-xs text-gray-400">karim@example.com</p></td>
-                            <td class="px-4 sm:px-6 py-4"><span class="text-pink-400 bg-pink-500/10 px-2 py-1 rounded text-xs font-bn">bKash</span></td>
-                            <td class="px-4 sm:px-6 py-4 font-bold text-white">৳৪৯</td>
-                            <td class="px-4 sm:px-6 py-4"><span class="text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded text-xs font-bn">{{ __('site.admin.success') }}</span></td>
-                            <td class="px-4 sm:px-6 py-4 text-right"><button class="text-gray-400 hover:text-white text-xs font-bn">{{ __('site.admin.receipt') }}</button></td>
-                        </tr>
-                        <tr class="hover:bg-white/5 transition">
-                            <td class="px-4 sm:px-6 py-4 text-xs font-mono text-gray-400">TRX-8923399</td>
-                            <td class="px-4 sm:px-6 py-4"><p class="font-bold text-white font-bn">সাদিয়া আক্তার</p><p class="text-xs text-gray-400">sadia@example.com</p></td>
-                            <td class="px-4 sm:px-6 py-4"><span class="text-orange-400 bg-orange-500/10 px-2 py-1 rounded text-xs font-bn">Nagad</span></td>
-                            <td class="px-4 sm:px-6 py-4 font-bold text-white">৳৪৯৯</td>
-                            <td class="px-4 sm:px-6 py-4"><span class="text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded text-xs font-bn">{{ __('site.admin.success') }}</span></td>
-                            <td class="px-4 sm:px-6 py-4 text-right"><button class="text-gray-400 hover:text-white text-xs font-bn">{{ __('site.admin.receipt') }}</button></td>
-                        </tr>
-                        <tr class="hover:bg-white/5 transition">
-                            <td class="px-4 sm:px-6 py-4 text-xs font-mono text-gray-400">TRX-8923380</td>
-                            <td class="px-4 sm:px-6 py-4"><p class="font-bold text-white font-bn">তানভীর হাসান</p><p class="text-xs text-gray-400">tanvir@example.com</p></td>
-                            <td class="px-4 sm:px-6 py-4"><span class="text-purple-400 bg-purple-500/10 px-2 py-1 rounded text-xs font-bn">Rocket</span></td>
-                            <td class="px-4 sm:px-6 py-4 font-bold text-white">৳৪৯</td>
-                            <td class="px-4 sm:px-6 py-4"><span class="text-red-400 bg-red-500/10 px-2 py-1 rounded text-xs font-bn">{{ __('site.admin.failed') }}</span></td>
-                            <td class="px-4 sm:px-6 py-4 text-right"><button class="text-gray-400 hover:text-white text-xs font-bn">{{ __('site.admin.retry') }}</button></td>
-                        </tr>
+                        @forelse($subscriptions as $subscription)
+                            @php
+                                $displayStatus = $subscription->status === \App\Models\UserSubscription::STATUS_ACTIVE && $subscription->isExpired() ? 'expired' : $subscription->status;
+                                $subStatusClass = match ($displayStatus) {
+                                    'active' => 'bg-emerald-500/15 text-emerald-400',
+                                    'suspended' => 'bg-amber-500/15 text-amber-400',
+                                    default => 'bg-red-500/15 text-red-400',
+                                };
+                            @endphp
+                            <tr class="hover:bg-white/5 transition">
+                                <td class="px-4 sm:px-6 py-4"><p class="font-bold text-white font-bn">{{ $subscription->user?->name ?? '—' }}</p><p class="text-xs text-gray-400">{{ $subscription->user?->email }}</p></td>
+                                <td class="px-4 sm:px-6 py-4 text-xs text-gray-300 font-bn">{{ $subscription->plan?->product ? __('subscription.products.'.$subscription->plan->product) : '—' }}</td>
+                                <td class="px-4 sm:px-6 py-4"><p class="text-xs text-gray-300 font-bn">{{ $subscription->plan?->name }}</p><p class="text-[10px] text-gray-500 font-bn">{{ $subscription->billing_cycle ?? $subscription->plan?->billing_cycle }}</p></td>
+                                <td class="px-4 sm:px-6 py-4 text-xs text-gray-300 font-bn">{{ $subscription->starts_at?->format('d M Y') ?? '—' }}</td>
+                                <td class="px-4 sm:px-6 py-4 text-xs text-gray-300 font-bn">{{ $subscription->ends_at?->format('d M Y') ?? '—' }}</td>
+                                <td class="px-4 sm:px-6 py-4"><span class="px-2 py-1 rounded text-xs font-bn {{ $subStatusClass }}">{{ __('subscription.status.'.$displayStatus) }}</span></td>
+                                <td class="px-4 sm:px-6 py-4 text-right whitespace-nowrap">
+                                    @if($admin->role === \App\Models\User::ROLE_SUPER_ADMIN)
+                                        @if($displayStatus === 'active')
+                                            <form method="POST" action="{{ route('admin.subscriptions.suspend', $subscription) }}" class="inline-flex items-center gap-1">
+                                                @csrf
+                                                <input type="text" name="reason" placeholder="{{ __('subscription.admin.reason') }}" class="w-28 rounded border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-white font-bn">
+                                                <button type="submit" class="text-red-400 hover:text-red-300 text-xs font-bn px-2">{{ __('subscription.admin.suspend') }}</button>
+                                            </form>
+                                        @elseif($displayStatus === 'suspended')
+                                            <form method="POST" action="{{ route('admin.subscriptions.reactivate', $subscription) }}" class="inline">
+                                                @csrf
+                                                <button type="submit" class="text-emerald-400 hover:text-emerald-300 text-xs font-bn px-2">{{ __('subscription.admin.reactivate') }}</button>
+                                            </form>
+                                        @endif
+                                    @else
+                                        <span class="text-xs text-gray-500">—</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="7" class="px-6 py-6 text-center text-gray-400 font-bn">{{ __('subscription.admin.no_records') }}</td></tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -623,16 +691,16 @@
     <div x-show="subTab === 'active'" x-cloak x-transition.opacity>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             <div class="glass rounded-xl p-4 text-center">
-                <p class="text-xs text-gray-400 font-bn mb-1">{{ __('site.admin.monthly_paid') }}</p>
-                <p class="text-2xl font-bold text-emerald-400">৬৪০</p>
+                <p class="text-xs text-gray-400 font-bn mb-1">{{ __('subscription.admin.monthly_paid') }}</p>
+                <p class="text-2xl font-bold text-emerald-400">{{ localize_number($monthlyPaidCount) }}</p>
             </div>
             <div class="glass rounded-xl p-4 text-center">
-                <p class="text-xs text-gray-400 font-bn mb-1">{{ __('site.admin.yearly_paid') }}</p>
-                <p class="text-2xl font-bold text-teal-400">২১০</p>
+                <p class="text-xs text-gray-400 font-bn mb-1">{{ __('subscription.admin.yearly_paid') }}</p>
+                <p class="text-2xl font-bold text-teal-400">{{ localize_number($yearlyPaidCount) }}</p>
             </div>
             <div class="glass rounded-xl p-4 text-center">
-                <p class="text-xs text-gray-400 font-bn mb-1">{{ __('site.admin.free_trial_count') }}</p>
-                <p class="text-2xl font-bold text-amber-400">১,২০০</p>
+                <p class="text-xs text-gray-400 font-bn mb-1">{{ __('subscription.admin.trial_users') }}</p>
+                <p class="text-2xl font-bold text-amber-400">{{ localize_number($trialCount) }}</p>
             </div>
         </div>
 
@@ -641,31 +709,33 @@
                 <table class="w-full min-w-[700px] text-sm text-left">
                     <thead class="bg-white/5 text-xs text-gray-400 uppercase">
                         <tr>
-                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.user') }}</th>
-                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.plan') }}</th>
-                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.expire_date') }}</th>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.admin.user') }}</th>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.admin.plan') }}</th>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.admin.expires') }}</th>
                             <th class="px-4 sm:px-6 py-4 font-bn text-right">{{ __('site.admin.action') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/5">
-                        <tr class="hover:bg-white/5 transition">
-                            <td class="px-4 sm:px-6 py-4"><p class="font-bold text-white font-bn">করিম ভাই</p><p class="text-xs text-gray-400">karim@example.com</p></td>
-                            <td class="px-4 sm:px-6 py-4"><span class="text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded text-xs font-bn">{{ __('site.admin.monthly') }}</span></td>
-                            <td class="px-4 sm:px-6 py-4 text-gray-300 text-xs font-bn">১২ ডিসেম্বর, ২০২৫</td>
-                            <td class="px-4 sm:px-6 py-4 text-right whitespace-nowrap">
-                                <button class="text-emerald-400 hover:text-emerald-300 text-xs font-bn px-2">{{ __('site.admin.extend_1_month') }}</button>
-                                <button class="text-red-400 hover:text-red-300 text-xs font-bn px-2">{{ __('site.admin.cancel') }}</button>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-white/5 transition">
-                            <td class="px-4 sm:px-6 py-4"><p class="font-bold text-white font-bn">সাদিয়া আক্তার</p><p class="text-xs text-gray-400">sadia@example.com</p></td>
-                            <td class="px-4 sm:px-6 py-4"><span class="text-teal-400 bg-teal-500/10 px-2 py-1 rounded text-xs font-bn">{{ __('site.admin.yearly') }}</span></td>
-                            <td class="px-4 sm:px-6 py-4 text-gray-300 text-xs font-bn">১ নভেম্বর, ২০২৬</td>
-                            <td class="px-4 sm:px-6 py-4 text-right whitespace-nowrap">
-                                <button class="text-emerald-400 hover:text-emerald-300 text-xs font-bn px-2">{{ __('site.admin.extend_1_year') }}</button>
-                                <button class="text-red-400 hover:text-red-300 text-xs font-bn px-2">{{ __('site.admin.cancel') }}</button>
-                            </td>
-                        </tr>
+                        @forelse($activeSubscriptions as $subscription)
+                            <tr class="hover:bg-white/5 transition">
+                                <td class="px-4 sm:px-6 py-4"><p class="font-bold text-white font-bn">{{ $subscription->user?->name ?? '—' }}</p><p class="text-xs text-gray-400">{{ $subscription->user?->email }}</p></td>
+                                <td class="px-4 sm:px-6 py-4"><span class="text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded text-xs font-bn">{{ $subscription->plan?->name }}</span></td>
+                                <td class="px-4 sm:px-6 py-4 text-gray-300 text-xs font-bn">{{ $subscription->ends_at?->format('d M Y') ?? '—' }}</td>
+                                <td class="px-4 sm:px-6 py-4 text-right whitespace-nowrap">
+                                    @if($admin->role === \App\Models\User::ROLE_SUPER_ADMIN)
+                                        <form method="POST" action="{{ route('admin.subscriptions.suspend', $subscription) }}" class="inline-flex items-center gap-1">
+                                            @csrf
+                                            <input type="text" name="reason" placeholder="{{ __('subscription.admin.reason') }}" class="w-24 rounded border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-white font-bn">
+                                            <button type="submit" class="text-red-400 hover:text-red-300 text-xs font-bn px-2">{{ __('subscription.admin.suspend') }}</button>
+                                        </form>
+                                    @else
+                                        <span class="text-xs text-gray-500">—</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="4" class="px-6 py-6 text-center text-gray-400 font-bn">{{ __('subscription.admin.no_records') }}</td></tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -686,24 +756,114 @@
                 <table class="w-full min-w-[600px] text-sm text-left">
                     <thead class="bg-white/5 text-xs text-gray-400 uppercase">
                         <tr>
-                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.user') }}</th>
-                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('site.admin.expire_date') }}</th>
-                            <th class="px-4 sm:px-6 py-4 font-bn text-right">{{ __('site.admin.action') }}</th>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.admin.user') }}</th>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.admin.product') }}</th>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.admin.expires') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/5">
-                        <tr class="hover:bg-white/5 transition">
-                            <td class="px-4 sm:px-6 py-4"><p class="font-bold text-white font-bn">রাফি আহমেদ</p><p class="text-xs text-gray-400">rafi@example.com</p></td>
-                            <td class="px-4 sm:px-6 py-4"><span class="text-red-400 font-bold font-bn">{{ __('site.admin.expires_tomorrow') }}</span></td>
-                            <td class="px-4 sm:px-6 py-4 text-right"><button class="bg-amber-500/20 text-amber-400 px-3 py-1.5 rounded text-xs font-bn hover:bg-amber-500/30 transition whitespace-nowrap">{{ __('site.admin.reminder') }}</button></td>
-                        </tr>
-                        <tr class="hover:bg-white/5 transition">
-                            <td class="px-4 sm:px-6 py-4"><p class="font-bold text-white font-bn">ফারহানা ইসলাম</p><p class="text-xs text-gray-400">farhana@example.com</p></td>
-                            <td class="px-4 sm:px-6 py-4"><span class="text-amber-400 font-bold font-bn">{{ __('site.admin.expires_in_days', ['count' => 3]) }}</span></td>
-                            <td class="px-4 sm:px-6 py-4 text-right"><button class="bg-amber-500/20 text-amber-400 px-3 py-1.5 rounded text-xs font-bn hover:bg-amber-500/30 transition whitespace-nowrap">{{ __('site.admin.reminder') }}</button></td>
-                        </tr>
+                        @forelse($expiringSubscriptions as $subscription)
+                            <tr class="hover:bg-white/5 transition">
+                                <td class="px-4 sm:px-6 py-4"><p class="font-bold text-white font-bn">{{ $subscription->user?->name ?? '—' }}</p><p class="text-xs text-gray-400">{{ $subscription->user?->email }}</p></td>
+                                <td class="px-4 sm:px-6 py-4 text-xs text-gray-300 font-bn">{{ $subscription->plan?->product ? __('subscription.products.'.$subscription->plan->product) : '—' }}</td>
+                                <td class="px-4 sm:px-6 py-4"><span class="text-amber-400 font-bold font-bn">{{ $subscription->ends_at?->format('d M Y') }}</span></td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="3" class="px-6 py-6 text-center text-gray-400 font-bn">{{ __('subscription.admin.no_records') }}</td></tr>
+                        @endforelse
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="subTab === 'trials'" x-cloak x-transition.opacity>
+        <div class="glass rounded-xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[760px] text-sm text-left">
+                    <thead class="bg-white/5 text-xs text-gray-400 uppercase">
+                        <tr>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.admin.user') }}</th>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.admin.product') }}</th>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.admin.trial_started') }}</th>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.admin.trial_expires') }}</th>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.current.remaining') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        @forelse($subscriptionTrials as $trial)
+                            <tr class="hover:bg-white/5 transition">
+                                <td class="px-4 sm:px-6 py-4"><p class="font-bold text-white font-bn">{{ $trial->user?->name ?? '—' }}</p><p class="text-xs text-gray-400">{{ $trial->user?->email }}</p></td>
+                                <td class="px-4 sm:px-6 py-4 text-xs text-gray-300 font-bn">{{ __('subscription.products.'.$trial->product) }}</td>
+                                <td class="px-4 sm:px-6 py-4 text-xs text-gray-300 font-bn">{{ $trial->starts_at->format('d M Y') }}</td>
+                                <td class="px-4 sm:px-6 py-4 text-xs text-gray-300 font-bn">{{ $trial->ends_at->format('d M Y') }}</td>
+                                <td class="px-4 sm:px-6 py-4 text-xs font-bn {{ $trial->isActive() ? 'text-emerald-400' : 'text-red-400' }}">{{ localize_number($trial->remainingDays()) }} {{ __('subscription.plans.days') }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="5" class="px-6 py-6 text-center text-gray-400 font-bn">{{ __('subscription.admin.no_trials') }}</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="subTab === 'failed'" x-cloak x-transition.opacity>
+        <div class="glass rounded-xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[860px] text-sm text-left">
+                    <thead class="bg-white/5 text-xs text-gray-400 uppercase">
+                        <tr>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.payment.transaction_id') }}</th>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.admin.user') }}</th>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.payment.amount') }}</th>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.admin.reason') }}</th>
+                            <th class="px-4 sm:px-6 py-4 font-bn">{{ __('subscription.payment.date') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        @forelse($failedPayments as $payment)
+                            <tr class="hover:bg-white/5 transition">
+                                <td class="px-4 sm:px-6 py-4 text-xs font-mono text-gray-300">{{ $payment->transaction_id }}</td>
+                                <td class="px-4 sm:px-6 py-4"><p class="font-bold text-white font-bn">{{ $payment->user?->name ?? '—' }}</p><p class="text-xs text-gray-400">{{ $payment->user?->email }}</p></td>
+                                <td class="px-4 sm:px-6 py-4 font-bold text-white">৳{{ localize_money($payment->amount) }}</td>
+                                <td class="px-4 sm:px-6 py-4 text-xs text-red-400 font-bn">{{ $payment->failure_reason ?? '—' }}</td>
+                                <td class="px-4 sm:px-6 py-4 text-xs text-gray-300 font-bn">{{ ($payment->failed_at ?? $payment->created_at)?->format('d M Y H:i') }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="5" class="px-6 py-6 text-center text-gray-400 font-bn">{{ __('subscription.admin.no_records') }}</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="subTab === 'revenue'" x-cloak x-transition.opacity class="space-y-5">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="glass rounded-xl p-4">
+                <p class="text-xs text-gray-400 font-bn mb-1">{{ __('subscription.admin.total_revenue') }}</p>
+                <p class="text-2xl font-bold text-emerald-400">৳{{ localize_money($totalRevenue) }}</p>
+            </div>
+            <div class="glass rounded-xl p-4">
+                <p class="text-xs text-gray-400 font-bn mb-1">{{ __('subscription.admin.this_month_revenue') }}</p>
+                <p class="text-2xl font-bold text-teal-400">৳{{ localize_money($monthlyRevenue) }}</p>
+            </div>
+            <div class="glass rounded-xl p-4">
+                <p class="text-xs text-gray-400 font-bn mb-1">{{ __('subscription.admin.last_month_revenue') }}</p>
+                <p class="text-2xl font-bold text-amber-400">৳{{ localize_money($lastMonthRevenue) }}</p>
+            </div>
+        </div>
+
+        <div class="glass rounded-xl p-5">
+            <h3 class="font-bold text-white font-bn mb-4">{{ __('subscription.admin.revenue') }}</h3>
+            <div class="grid gap-3 sm:grid-cols-3">
+                @foreach(\App\Models\SubscriptionPlan::PRODUCTS as $product)
+                    <div class="rounded-xl bg-white/5 p-4">
+                        <p class="text-xs text-gray-400 font-bn">{{ __('subscription.products.'.$product) }}</p>
+                        <p class="mt-2 text-xl font-bold text-emerald-400">৳{{ localize_money($revenueByProduct[$product] ?? 0) }}</p>
+                    </div>
+                @endforeach
             </div>
         </div>
     </div>
@@ -711,45 +871,89 @@
 
 <!-- ================= 7. PRICING CMS ================= -->
 <div x-show="page === 'admin-pricing'" x-cloak x-transition.opacity class="space-y-5 sm:space-y-6">
-    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-        <p class="text-sm text-gray-400 font-bn">{{ __('site.admin.pricing_note') }}</p>
-        <button @click="modalOpen = true; modalTitle = @js(__('site.admin.new_plan'))" class="btn-emerald px-4 py-2 rounded-lg text-sm font-bold font-bn shrink-0">{{ __('site.admin.add_new_plan') }}</button>
-    </div>
+    <p class="text-sm text-gray-400 font-bn">{{ __('subscription.admin.pricing_note') }}</p>
 
-    <div class="grid md:grid-cols-2 gap-4 sm:gap-6">
-        <div class="glass-strong rounded-xl p-5 sm:p-6 relative border border-emerald-500/30">
-            <div class="flex justify-between items-start gap-3 mb-4">
-                <div>
-                    <h3 class="text-lg sm:text-xl font-bold text-white font-bn">{{ __('site.admin.monthly') }}</h3>
-                    <p class="text-2xl sm:text-3xl font-bold text-emerald-400 font-display mt-2">৳৪৯<span class="text-sm text-gray-400 font-bn font-normal">{{ __('site.admin.per_month') }}</span></p>
-                </div>
-                <button @click="modalOpen = true; modalTitle = @js(__('site.admin.edit_monthly'))" class="text-gray-400 hover:text-white bg-white/5 px-3 py-1 rounded text-xs font-bn shrink-0">{{ __('site.admin.edit') }}</button>
-            </div>
-            <div class="space-y-2 mb-4">
-                <p class="text-sm text-gray-300 font-bn flex gap-2"><span class="text-emerald-500">✓</span> {{ __('site.admin.all_features_unlocked') }}</p>
-                <p class="text-sm text-gray-300 font-bn flex gap-2"><span class="text-emerald-500">✓</span> {{ __('site.admin.unlimited_entries') }}</p>
-                <p class="text-sm text-gray-300 font-bn flex gap-2"><span class="text-emerald-500">✓</span> {{ __('site.admin.report_export') }}</p>
-            </div>
-            <div class="flex items-center gap-2 mt-4 pt-4 border-t border-white/10">
-                <span class="text-xs text-gray-400 font-bn">{{ __('site.admin.status_colon') }}</span>
-                <span class="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded font-bn">{{ __('site.admin.active') }}</span>
+    @foreach($subscriptionPlans->groupBy('product') as $product => $plans)
+        <div class="glass rounded-xl p-5 sm:p-6">
+            <h3 class="text-lg font-bold text-white font-bn mb-4 border-b border-white/10 pb-2">{{ __('subscription.products.'.$product) }}</h3>
+            <div class="space-y-3">
+                @foreach($plans as $plan)
+                    <div class="rounded-xl bg-white/5 p-4">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                                <p class="text-sm font-bold text-white font-bn">{{ $plan->name }}</p>
+                                <p class="text-xs text-gray-400 font-bn">{{ ucfirst($plan->billing_cycle) }} · {{ $plan->slug }}</p>
+                            </div>
+                            <span class="rounded-full px-2.5 py-1 text-[10px] font-bold font-bn {{ $plan->is_active ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400' }}">{{ $plan->is_active ? __('subscription.status.active') : __('subscription.status.inactive') }}</span>
+                        </div>
+
+                        @if($admin->role === \App\Models\User::ROLE_SUPER_ADMIN)
+                            <form method="POST" action="{{ route('admin.pricing.update', $plan) }}" class="mt-3 grid gap-2 sm:grid-cols-5 sm:items-end">
+                                @csrf
+                                @method('PUT')
+                                <label class="sm:col-span-2">
+                                    <span class="block text-[10px] text-gray-500 font-bn">{{ __('subscription.admin.plan') }}</span>
+                                    <input type="text" name="name" value="{{ $plan->name }}" class="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-xs text-white font-bn">
+                                </label>
+                                <label>
+                                    <span class="block text-[10px] text-gray-500 font-bn">{{ __('subscription.payment.amount') }} (৳)</span>
+                                    <input type="number" step="0.01" min="0" name="price" value="{{ $plan->price }}" class="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-xs text-white">
+                                </label>
+                                <label>
+                                    <span class="block text-[10px] text-gray-500 font-bn">{{ __('subscription.plans.days') }}</span>
+                                    <input type="number" min="1" name="duration_days" value="{{ $plan->duration_days }}" class="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-xs text-white">
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <input type="hidden" name="is_active" value="0">
+                                    <label class="flex items-center gap-1 text-xs text-gray-300 font-bn">
+                                        <input type="checkbox" name="is_active" value="1" @checked($plan->is_active) class="rounded border-white/10 bg-black/30">
+                                        {{ __('subscription.status.active') }}
+                                    </label>
+                                    <button type="submit" class="btn-emerald rounded-lg px-3 py-2 text-xs font-bold font-bn">{{ __('subscription.admin.update') }}</button>
+                                </div>
+                            </form>
+                        @else
+                            <p class="mt-3 text-xs text-gray-400 font-bn">৳{{ localize_money($plan->price) }} · {{ localize_number($plan->duration_days) }} {{ __('subscription.plans.days') }}</p>
+                        @endif
+                    </div>
+                @endforeach
             </div>
         </div>
+    @endforeach
 
-        <div class="glass rounded-xl p-5 sm:p-6 relative">
-            <div class="flex justify-between items-start gap-3 mb-4">
-                <div>
-                    <h3 class="text-lg sm:text-xl font-bold text-white font-bn">{{ __('site.admin.yearly') }}</h3>
-                    <p class="text-2xl sm:text-3xl font-bold text-emerald-400 font-display mt-2">৳৪৯৯<span class="text-sm text-gray-400 font-bn font-normal">{{ __('site.admin.per_year') }}</span></p>
-                </div>
-                <button @click="modalOpen = true; modalTitle = @js(__('site.admin.edit_yearly'))" class="text-gray-400 hover:text-white bg-white/5 px-3 py-1 rounded text-xs font-bn shrink-0">{{ __('site.admin.edit') }}</button>
+    <div class="glass rounded-xl p-5 sm:p-6">
+        <div class="flex flex-wrap items-start justify-between gap-3 border-b border-white/10 pb-3">
+            <div>
+                <h3 class="text-lg font-bold text-white font-bn">{{ __('subscription.admin.gateway_title') }}</h3>
+                <p class="mt-1 text-xs text-gray-400 font-bn">{{ __('subscription.admin.gateway_note') }}</p>
             </div>
-            <div class="space-y-2 mb-4">
-                <p class="text-sm text-gray-300 font-bn flex gap-2"><span class="text-emerald-500">✓</span> {{ __('site.admin.all_features_unlocked') }}</p>
-                <p class="text-sm text-gray-300 font-bn flex gap-2"><span class="text-emerald-500">✓</span> {{ __('site.admin.two_months_free') }}</p>
-                <p class="text-sm text-gray-300 font-bn flex gap-2"><span class="text-emerald-500">✓</span> {{ __('site.admin.priority_support') }}</p>
-            </div>
+            <span class="rounded-full px-2.5 py-1 text-[10px] font-bold font-bn {{ $gatewaySettings['configured'] ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400' }}">{{ $gatewaySettings['configured'] ? __('subscription.admin.configured') : __('subscription.admin.not_configured') }}</span>
         </div>
+
+        @if($admin->role === \App\Models\User::ROLE_SUPER_ADMIN)
+            <form method="POST" action="{{ route('admin.payment-gateway.update') }}" class="mt-4 grid gap-3 sm:grid-cols-2">
+                @csrf
+                @method('PUT')
+                <label>
+                    <span class="block text-xs text-gray-400 font-bn">{{ __('subscription.admin.store_id') }}</span>
+                    <input type="text" name="store_id" value="{{ $gatewaySettings['store_id'] }}" class="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white">
+                </label>
+                <label>
+                    <span class="block text-xs text-gray-400 font-bn">{{ __('subscription.admin.store_password') }}</span>
+                    <input type="password" name="store_password" autocomplete="new-password" placeholder="{{ $gatewaySettings['password_set'] ? '••••••••' : __('subscription.admin.store_password_placeholder') }}" class="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white">
+                </label>
+                <label class="flex items-center gap-2 text-sm text-gray-300 font-bn">
+                    <input type="hidden" name="sandbox" value="0">
+                    <input type="checkbox" name="sandbox" value="1" @checked($gatewaySettings['sandbox']) class="rounded border-white/10 bg-black/30">
+                    {{ __('subscription.admin.sandbox') }}
+                </label>
+                <div class="sm:text-right">
+                    <button type="submit" class="btn-emerald rounded-lg px-5 py-2.5 text-sm font-bold font-bn">{{ __('subscription.admin.save_gateway') }}</button>
+                </div>
+            </form>
+        @else
+            <p class="mt-4 text-xs text-gray-400 font-bn">{{ $gatewaySettings['store_id'] ?: '—' }}</p>
+        @endif
     </div>
 </div>
 

@@ -214,6 +214,48 @@ class User extends Authenticatable
     }
 
     /**
+     * The permanent trial history of the user.
+     */
+    public function subscriptionTrials(): HasMany
+    {
+        return $this->hasMany(SubscriptionTrial::class);
+    }
+
+    /**
+     * The payments made by the user.
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * The permanent trial record for a product, if one exists.
+     */
+    public function subscriptionTrial(string $product): ?SubscriptionTrial
+    {
+        return $this->subscriptionTrials()->where('product', $product)->first();
+    }
+
+    /**
+     * Determine whether the user has already used the free trial for a product.
+     */
+    public function hasUsedTrial(string $product): bool
+    {
+        return $this->subscriptionTrials()->where('product', $product)->exists();
+    }
+
+    /**
+     * Determine whether the user is still eligible for a product's free trial.
+     */
+    public function isEligibleForTrial(string $product): bool
+    {
+        return SubscriptionPlan::isValidProduct($product)
+            && ! $this->hasUsedTrial($product)
+            && ! $this->hasActiveSubscription($product);
+    }
+
+    /**
      * Mess memberships of the user.
      */
     public function messMemberships(): HasMany
@@ -236,9 +278,7 @@ class User extends Authenticatable
     {
         return $this->subscriptions()
             ->active()
-            ->whereHas('plan', fn ($query) => $query
-                ->where('product', $product)
-                ->where('is_active', true))
+            ->whereHas('plan', fn ($query) => $query->where('product', $product))
             ->latest('ends_at')
             ->first();
     }

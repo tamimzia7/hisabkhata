@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureActiveStudentSubscription;
+use App\Http\Middleware\EnsureProductSubscription;
 use App\Http\Middleware\ResolveStudentMess;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
@@ -17,8 +18,15 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [SetLocale::class]);
 
+        // SSLCommerz posts back to these URLs from its own servers, without a
+        // browser session or CSRF token.
+        $middleware->validateCsrfTokens(except: [
+            'payments/sslcommerz/*',
+        ]);
+
         $middleware->alias([
             'student.subscription' => EnsureActiveStudentSubscription::class,
+            'product.subscription' => EnsureProductSubscription::class,
             'student.mess' => ResolveStudentMess::class,
         ]);
     })

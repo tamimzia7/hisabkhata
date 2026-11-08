@@ -18,7 +18,7 @@ return [
         'bazar' => 'বাজার ম্যানেজমেন্ট',
         'deposits' => 'ডিপোজিট',
         'expenses' => 'খরচ',
-        'accounts' => 'হিসাব',
+        'accounts' => 'হিসাবসমূহ',
         'transactions' => 'লেনদেন',
         'settlements' => 'মাসিক সেটেলমেন্ট',
         'reports' => 'রিপোর্ট',

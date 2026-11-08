@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminSubscriptionController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\ClientSettingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\Student\BazarRecordController;
 use App\Http\Controllers\Student\MealEntryController;
@@ -21,11 +23,17 @@ use App\Http\Controllers\Student\ReportController;
 use App\Http\Controllers\Student\StudentDashboardController;
 use App\Http\Controllers\Student\StudentProfileController;
 use App\Http\Controllers\Student\StudentSubscriptionController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\SystemUserController;
 use App\Http\Controllers\TicketController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'home')->name('home');
+
+Route::match(['get', 'post'], '/payments/sslcommerz/success', [PaymentController::class, 'success'])->name('payments.sslcommerz.success');
+Route::match(['get', 'post'], '/payments/sslcommerz/fail', [PaymentController::class, 'fail'])->name('payments.sslcommerz.fail');
+Route::match(['get', 'post'], '/payments/sslcommerz/cancel', [PaymentController::class, 'cancel'])->name('payments.sslcommerz.cancel');
+Route::post('/payments/sslcommerz/ipn', [PaymentController::class, 'ipn'])->name('payments.sslcommerz.ipn');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
@@ -37,6 +45,18 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
+
+    Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');
+    Route::get('/subscriptions/{product}', [SubscriptionController::class, 'show'])->name('subscriptions.show');
+    Route::post('/subscriptions/{product}/trial', [SubscriptionController::class, 'startTrial'])->name('subscriptions.trial');
+    Route::post('/subscriptions/{product}/checkout', [SubscriptionController::class, 'checkout'])->name('subscriptions.checkout');
+
+    Route::middleware('product.subscription:family')
+        ->get('/family', fn () => redirect()->route('dashboard'))
+        ->name('family.dashboard');
+    Route::middleware('product.subscription:shop')
+        ->get('/shop', fn () => redirect()->route('dashboard'))
+        ->name('shop.dashboard');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/create', [NotificationController::class, 'create'])->name('notifications.create');
@@ -60,6 +80,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/admin/roles-permission', [RolePermissionController::class, 'update'])->name('admin.roles-permission.update');
 
     Route::put('/admin/client-settings', [ClientSettingController::class, 'update'])->name('admin.client-settings.update');
+
+    Route::post('/admin/subscriptions/{subscription}/suspend', [AdminSubscriptionController::class, 'suspend'])->name('admin.subscriptions.suspend');
+    Route::post('/admin/subscriptions/{subscription}/reactivate', [AdminSubscriptionController::class, 'reactivate'])->name('admin.subscriptions.reactivate');
+    Route::put('/admin/pricing/{plan}', [AdminSubscriptionController::class, 'updatePlan'])->name('admin.pricing.update');
+    Route::put('/admin/payment-gateway', [AdminSubscriptionController::class, 'updateGateway'])->name('admin.payment-gateway.update');
 
     Route::get('/tickets', [TicketController::class, 'index'])->name('tickets.index');
     Route::get('/tickets/create', [TicketController::class, 'create'])->name('tickets.create');

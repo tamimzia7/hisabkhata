@@ -3,9 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdminActivity;
+use App\Models\Payment;
 use App\Models\Setting;
+use App\Models\SubscriptionPlan;
+use App\Models\SubscriptionTrial;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Models\UserSubscription;
+use App\Services\SslCommerzGateway;
 use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -184,6 +189,25 @@ class DashboardController extends Controller
      */
     private function adminView(Request $request, string $page): View
     {
+        $gateway = app(SslCommerzGateway::class);
+
+        $activeSubscriptions = UserSubscription::query()
+            ->active()
+            ->with(['user', 'plan'])
+            ->latest('ends_at')
+            ->get();
+
+        $monthlyRevenue = Payment::query()
+            ->successful()
+            ->whereBetween('paid_at', [now()->startOfMonth(), now()->endOfMonth()])
+            ->sum('amount');
+
+        $lastMonth = now()->subMonthNoOverflow();
+        $lastMonthRevenue = Payment::query()
+            ->successful()
+            ->whereBetween('paid_at', [$lastMonth->copy()->startOfMonth(), $lastMonth->copy()->endOfMonth()])
+            ->sum('amount');
+
         return view('admin.dashboard', [
             'admin' => $request->user(),
             'adminPage' => $page,
@@ -200,6 +224,42 @@ class DashboardController extends Controller
             'totalUsers' => User::count(),
             'totalTickets' => Ticket::query()->count(),
             'unresolvedTickets' => Ticket::query()->whereIn('status', Ticket::UNRESOLVED_STATUSES)->count(),
+            'subscriptions' => UserSubscription::query()->with(['user', 'plan'])->latest('id')->take(100)->get(),
+            'activeSubscriptions' => $activeSubscriptions,
+            'expiringSubscriptions' => UserSubscription::query()
+                ->active()
+                ->whereNotNull('ends_at')
+                ->whereBetween('ends_at', [now(), now()->addDays(7)])
+                ->with(['user', 'plan'])
+                ->orderBy('ends_at')
+                ->get(),
+            'subscriptionTrials' => SubscriptionTrial::query()->with('user')->latest('id')->take(100)->get(),
+            'payments' => Payment::query()->with(['user', 'plan'])->latest('id')->take(100)->get(),
+            'failedPayments' => Payment::query()
+                ->where('status', Payment::STATUS_FAILED)
+                ->with(['user', 'plan'])
+                ->latest('id')
+                ->take(100)
+                ->get(),
+            'subscriptionPlans' => SubscriptionPlan::query()
+                ->orderBy('product')
+                ->orderBy('billing_cycle')
+                ->orderBy('price')
+                ->get(),
+            'activeSubscriptionCount' => $activeSubscriptions->count(),
+            'trialCount' => SubscriptionTrial::query()->count(),
+            'monthlyPaidCount' => $activeSubscriptions->where('billing_cycle', SubscriptionPlan::BILLING_CYCLE_MONTHLY)->count(),
+            'yearlyPaidCount' => $activeSubscriptions->where('billing_cycle', SubscriptionPlan::BILLING_CYCLE_YEARLY)->count(),
+            'totalRevenue' => Payment::query()->successful()->sum('amount'),
+            'monthlyRevenue' => $monthlyRevenue,
+            'lastMonthRevenue' => $lastMonthRevenue,
+            'revenueByProduct' => Payment::query()
+                ->successful()
+                ->whereNotNull('product')
+                ->selectRaw('product, SUM(amount) as total')
+                ->groupBy('product')
+                ->pluck('total', 'product'),
+            'gatewaySettings' => $gateway->publicSettings(),
         ]);
     }
 
