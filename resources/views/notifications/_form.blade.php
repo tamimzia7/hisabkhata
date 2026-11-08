@@ -16,8 +16,10 @@
      x-data="notificationForm({
          users: @js($sendableUsers),
          recipients: @js(old('recipients', 'all')),
+         roles: @js(array_values(old('roles', []))),
          selected: @js(array_values(array_map('intval', old('recipient_ids', [])))),
          recipientRequired: @js(__('notifications.send_recipient_required')),
+         roleRequired: @js(__('notifications.send_role_required')),
      })">
 
     @if($errors->any())
@@ -51,13 +53,21 @@
 
         <div>
             <span class="mb-1.5 block text-sm font-bold text-gray-300 font-bn">{{ __('notifications.send_field_recipients') }}</span>
-            <div class="grid gap-2 sm:grid-cols-2">
+            <div class="grid gap-2 sm:grid-cols-3">
                 <label class="flex cursor-pointer items-center gap-2.5 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-gray-300 transition hover:bg-white/5">
                     <input type="radio" name="recipients" value="all" x-model="recipients"
                            class="border-white/20 bg-black/30 text-emerald-500 focus:ring-emerald-500/40">
                     <span class="min-w-0">
                         <span class="block font-bold text-white font-bn">{{ __('notifications.send_recipients_all') }}</span>
                         <span class="block text-[11px] text-gray-500 font-bn">{{ __('notifications.send_recipients_all_hint') }}</span>
+                    </span>
+                </label>
+                <label class="flex cursor-pointer items-center gap-2.5 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-gray-300 transition hover:bg-white/5">
+                    <input type="radio" name="recipients" value="role" x-model="recipients"
+                           class="border-white/20 bg-black/30 text-emerald-500 focus:ring-emerald-500/40">
+                    <span class="min-w-0">
+                        <span class="block font-bold text-white font-bn">{{ __('notifications.send_recipients_role') }}</span>
+                        <span class="block text-[11px] text-gray-500 font-bn">{{ __('notifications.send_recipients_role_hint') }}</span>
                     </span>
                 </label>
                 <label class="flex cursor-pointer items-center gap-2.5 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-gray-300 transition hover:bg-white/5">
@@ -71,6 +81,26 @@
             </div>
             @error('recipients')
                 <p class="mt-1 text-xs text-red-400 font-bn">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div x-show="recipients === 'role'" x-cloak class="space-y-2 rounded-xl border border-white/10 bg-black/20 p-3">
+            <span class="block text-xs font-bold text-gray-400 font-bn">{{ __('notifications.send_roles_label') }}</span>
+            <div class="grid gap-2 sm:grid-cols-3">
+                @foreach($roleOptions as $option)
+                    <label class="flex cursor-pointer items-center gap-2.5 rounded-lg border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-gray-300 transition hover:bg-white/5">
+                        <input type="checkbox" name="roles[]" value="{{ $option['value'] }}" x-model="roles"
+                               class="rounded border-white/20 bg-black/30 text-emerald-500 focus:ring-emerald-500/40">
+                        <span class="text-lg leading-none" aria-hidden="true">{{ $option['icon'] }}</span>
+                        <span class="min-w-0 truncate font-bold text-white font-bn">{{ $option['label'] }}</span>
+                    </label>
+                @endforeach
+            </div>
+            @error('roles')
+                <p class="text-xs text-red-400 font-bn">{{ $message }}</p>
+            @enderror
+            @error('roles.*')
+                <p class="text-xs text-red-400 font-bn">{{ $message }}</p>
             @enderror
         </div>
 
@@ -142,6 +172,7 @@
         function notificationForm(config) {
             return {
                 recipients: config.recipients || 'all',
+                roles: config.roles || [],
                 selected: (config.selected || []).map(String),
                 search: '',
                 error: '',
@@ -161,6 +192,13 @@
                     if (this.recipients === 'selected' && this.selected.length === 0) {
                         event.preventDefault();
                         this.error = config.recipientRequired;
+
+                        return;
+                    }
+
+                    if (this.recipients === 'role' && this.roles.length === 0) {
+                        event.preventDefault();
+                        this.error = config.roleRequired;
 
                         return;
                     }

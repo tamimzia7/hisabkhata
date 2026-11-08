@@ -99,6 +99,18 @@ return [
 
     'send_recipients_selected_hint' => 'Pick specific users below',
 
+    'send_recipients_role' => 'By Dashboard',
+
+    'send_recipients_role_hint' => 'Everyone in the selected dashboard(s)',
+
+    'send_roles_label' => 'Select dashboard(s)',
+
+    'send_role_required' => 'Select at least one dashboard.',
+
+    'send_role_invalid' => 'One or more selected dashboards are invalid.',
+
+    'send_role_empty' => 'There are no users in the selected dashboard(s).',
+
     'send_search_users' => 'Search by name or email…',
 
     'send_no_users' => 'No users match your search.',

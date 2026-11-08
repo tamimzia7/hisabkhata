@@ -233,3 +233,74 @@ test('guests cannot send notifications', function () {
 
     expect(Notification::query()->count())->toBe(0);
 });
+
+test('an admin can send a notification to a single dashboard role', function () {
+    $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+    $student = User::factory()->create(['role' => User::ROLE_STUDENT]);
+    $family = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $shop = User::factory()->create(['role' => User::ROLE_SHOP]);
+
+    $this->actingAs($admin)->post(route('notifications.send'), [
+        'title' => 'Students only',
+        'body' => 'This is for the student dashboard.',
+        'recipients' => 'role',
+        'roles' => [User::ROLE_STUDENT],
+    ])->assertRedirect(route('notifications.index'))->assertSessionHas('toast');
+
+    expect($student->notifications()->count())->toBe(1)
+        ->and($family->notifications()->count())->toBe(0)
+        ->and($shop->notifications()->count())->toBe(0)
+        ->and($admin->notifications()->count())->toBe(0)
+        ->and(Notification::query()->count())->toBe(1);
+});
+
+test('a super admin can send a notification to multiple dashboard roles', function () {
+    $superAdmin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
+    $student = User::factory()->create(['role' => User::ROLE_STUDENT]);
+    $family = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $shop = User::factory()->create(['role' => User::ROLE_SHOP]);
+
+    $this->actingAs($superAdmin)->post(route('notifications.send'), [
+        'title' => 'Family and shop',
+        'body' => 'This is for two dashboards.',
+        'recipients' => 'role',
+        'roles' => [User::ROLE_FAMILY, User::ROLE_SHOP, User::ROLE_FAMILY],
+    ])->assertRedirect(route('notifications.index'));
+
+    expect($family->notifications()->count())->toBe(1)
+        ->and($shop->notifications()->count())->toBe(1)
+        ->and($student->notifications()->count())->toBe(0)
+        ->and(Notification::query()->count())->toBe(2);
+});
+
+test('role targeting validates the selected dashboards', function () {
+    $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+    $this->actingAs($admin)->post(route('notifications.send'), [
+        'title' => 'No dashboard',
+        'body' => 'Body',
+        'recipients' => 'role',
+    ])->assertSessionHasErrors('roles');
+
+    $this->actingAs($admin)->post(route('notifications.send'), [
+        'title' => 'System role',
+        'body' => 'Body',
+        'recipients' => 'role',
+        'roles' => [User::ROLE_ADMIN],
+    ])->assertSessionHasErrors('roles.0');
+
+    expect(Notification::query()->count())->toBe(0);
+});
+
+test('the notification form offers the dashboard role section', function () {
+    $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+    $this->actingAs($admin)
+        ->get(route('notifications.create'))
+        ->assertOk()
+        ->assertSee(__('notifications.send_recipients_role'))
+        ->assertSee(__('notifications.send_roles_label'))
+        ->assertSee('value="'.User::ROLE_STUDENT.'"', false)
+        ->assertSee('value="'.User::ROLE_FAMILY.'"', false)
+        ->assertSee('value="'.User::ROLE_SHOP.'"', false);
+});

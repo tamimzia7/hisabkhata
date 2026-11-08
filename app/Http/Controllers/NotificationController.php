@@ -65,6 +65,19 @@ class NotificationController extends Controller
 
         return view('admin.notifications.create', [
             'notifiableUsers' => User::query()->orderBy('name')->get(),
+            'roleOptions' => collect(User::CLIENT_ROLES)
+                ->map(fn (string $role): array => [
+                    'value' => $role,
+                    'label' => __('site.admin.role_'.str_replace('-', '_', $role)),
+                    'icon' => match ($role) {
+                        User::ROLE_STUDENT => '🎓',
+                        User::ROLE_FAMILY => '🏠',
+                        User::ROLE_SHOP => '🏪',
+                        default => '👤',
+                    },
+                ])
+                ->values()
+                ->all(),
             'adminPage' => 'notification-create',
         ]);
     }
@@ -81,7 +94,9 @@ class NotificationController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:150'],
             'body' => ['required', 'string', 'max:1000'],
-            'recipients' => ['required', Rule::in(['all', 'selected'])],
+            'recipients' => ['required', Rule::in(['all', 'role', 'selected'])],
+            'roles' => ['bail', 'array', 'required_if:recipients,role', 'min:1'],
+            'roles.*' => ['string', Rule::in(User::CLIENT_ROLES)],
             'recipient_ids' => ['bail', 'array', 'required_if:recipients,selected', 'min:1'],
             'recipient_ids.*' => ['integer', Rule::exists('users', 'id')],
             'action_url' => [
@@ -101,6 +116,10 @@ class NotificationController extends Controller
             'body.max' => __('notifications.send_message_max'),
             'recipients.required' => __('notifications.send_recipients_required'),
             'recipients.in' => __('notifications.send_recipients_invalid'),
+            'roles.required_if' => __('notifications.send_role_required'),
+            'roles.array' => __('notifications.send_role_invalid'),
+            'roles.min' => __('notifications.send_role_required'),
+            'roles.*.in' => __('notifications.send_role_invalid'),
             'recipient_ids.required_if' => __('notifications.send_recipient_required'),
             'recipient_ids.array' => __('notifications.send_recipient_invalid'),
             'recipient_ids.min' => __('notifications.send_recipient_required'),
@@ -114,13 +133,21 @@ class NotificationController extends Controller
             ->unique()
             ->values();
 
-        $recipients = $validated['recipients'] === 'all'
-            ? User::query()->get()
-            : User::query()->whereIn('id', $recipientIds)->get();
+        $recipients = match ($validated['recipients']) {
+            'all' => User::query()->get(),
+            'role' => User::query()
+                ->whereIn('role', collect($validated['roles'])->unique()->values()->all())
+                ->get(),
+            default => User::query()->whereIn('id', $recipientIds)->get(),
+        };
 
         if ($recipients->isEmpty()) {
+            $errorKey = $validated['recipients'] === 'role' ? 'roles' : 'recipient_ids';
+
             throw ValidationException::withMessages([
-                'recipient_ids' => __('notifications.send_recipient_required'),
+                $errorKey => $validated['recipients'] === 'role'
+                    ? __('notifications.send_role_empty')
+                    : __('notifications.send_recipient_required'),
             ]);
         }
 
