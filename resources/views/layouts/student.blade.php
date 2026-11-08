@@ -10,30 +10,84 @@
 @endphp
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" x-data="{
-    dark: JSON.parse(localStorage.getItem('theme-dark') ?? 'true'),
-    toggleDark() { this.dark = !this.dark; localStorage.setItem('theme-dark', JSON.stringify(this.dark)); },
+    dark: window.hisabTheme ? window.hisabTheme.isDark() : true,
+    toggleDark() {
+        window.hisabTheme.toggle();
+        this.dark = window.hisabTheme.isDark();
+    },
+    init() {
+        try {
+            this.collapsed = JSON.parse(localStorage.getItem('student-sidebar-collapsed') ?? 'false');
+        } catch (error) {
+            this.collapsed = false;
+        }
+
+        window.addEventListener('hisab-theme-changed', (event) => {
+            this.dark = event.detail.dark;
+        });
+    },
     sidebarOpen: false,
-    collapsed: JSON.parse(localStorage.getItem('student-sidebar-collapsed') ?? 'false'),
-    toggleCollapsed() { this.collapsed = !this.collapsed; localStorage.setItem('student-sidebar-collapsed', JSON.stringify(this.collapsed)); },
+    collapsed: false,
+    toggleCollapsed() {
+        this.collapsed = !this.collapsed;
+
+        try {
+            localStorage.setItem('student-sidebar-collapsed', JSON.stringify(this.collapsed));
+        } catch (error) {
+            // Keep the sidebar usable when storage is unavailable.
+        }
+    },
     toastMsg: window.__flashToast || '',
     showToast: Boolean(window.__flashToast),
-}" :class="dark ? 'dark' : ''">
+}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
 <title>@yield('title', __('student.brand'))</title>
+@include('partials.theme-init')
 <script>window.__flashToast = @js(session('toast'));</script>
 <script src="https://cdn.tailwindcss.com"></script>
+<script>
+    if (window.tailwind) {
+        tailwind.config = Object.assign({}, tailwind.config, { darkMode: 'class' });
+    }
+</script>
 <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
 <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@100;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-    :root { --brand-bg: #050B14; --brand-surface: #091C14; }
+    :root {
+        --brand-bg: #050B14;
+        --brand-surface: #091C14;
+        --brand-text: #f8fafc;
+        --brand-sidebar: rgba(5, 11, 20, 0.95);
+        --brand-topbar: rgba(5, 11, 20, 0.85);
+        --brand-popover: #081510;
+        --brand-border: rgba(255, 255, 255, 0.10);
+        --brand-hover: rgba(255, 255, 255, 0.05);
+        --brand-input: rgba(0, 0, 0, 0.30);
+        color-scheme: dark;
+    }
+    html:not(.dark) {
+        --brand-bg: #F1F5F9;
+        --brand-surface: #FFFFFF;
+        --brand-text: #0F172A;
+        --brand-sidebar: rgba(255, 255, 255, 0.97);
+        --brand-topbar: rgba(248, 250, 252, 0.92);
+        --brand-popover: #FFFFFF;
+        --brand-border: rgba(15, 23, 42, 0.10);
+        --brand-hover: rgba(15, 23, 42, 0.05);
+        --brand-input: #FFFFFF;
+        color-scheme: light;
+    }
     html { -webkit-text-size-adjust: 100%; }
-    body { font-family: 'Inter', 'Hind Siliguri', sans-serif; background: var(--brand-bg); color: #f8fafc; }
+    body { font-family: 'Inter', 'Hind Siliguri', sans-serif; background: var(--brand-bg); color: var(--brand-text); }
+    .student-sidebar { background-color: var(--brand-sidebar); }
+    .student-topbar { background-color: var(--brand-topbar); }
+    .student-popover { background-color: var(--brand-popover); }
     .font-bn { font-family: 'Hind Siliguri', sans-serif; }
     .font-display { font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.03em; }
     .glass { background: rgba(255,255,255,0.04); backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(16,185,129,0.15); box-shadow: 0 8px 32px rgba(6,19,13,0.6), inset 0 1px 0 rgba(255,255,255,0.08); }
@@ -49,6 +103,7 @@
     .field:focus { outline: none; border-color: rgba(16,185,129,0.6); box-shadow: 0 0 0 2px rgba(16,185,129,0.2); }
     .field::placeholder { color: #64748b; }
     .field option { background: #0b1a13; }
+    input[type="checkbox"], input[type="radio"], input[type="range"], progress { accent-color: #10B981; }
     .kpi-label { font-size: 0.7rem; color: #94a3b8; }
     .table-wrap { overflow-x: auto; }
     .data-table { width: 100%; min-width: 640px; font-size: 0.8rem; border-collapse: collapse; }
@@ -57,6 +112,86 @@
     .data-table tbody tr:hover { background: rgba(255,255,255,0.03); }
     .card-hover { transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
     .card-hover:hover { transform: translateY(-2px); border-color: rgba(52,211,153,0.4); box-shadow: 0 18px 45px -18px rgba(16,185,129,0.45); }
+
+    /* Light Mode: keep the same layout and brand accents, only swap the palette. */
+    html:not(.dark) .glass {
+        background: rgba(255, 255, 255, 0.82);
+        border-color: rgba(16, 185, 129, 0.22);
+        box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+    html:not(.dark) .glass-strong {
+        background: rgba(255, 255, 255, 0.95);
+        border-color: rgba(16, 185, 129, 0.28);
+        box-shadow: 0 12px 36px rgba(15, 23, 42, 0.10), inset 0 1px 0 #FFFFFF;
+    }
+    html:not(.dark) .btn-ghost {
+        background: rgba(15, 23, 42, 0.05);
+        border-color: rgba(15, 23, 42, 0.12);
+        color: #0F172A;
+    }
+    html:not(.dark) .btn-ghost:hover { background: rgba(15, 23, 42, 0.09); }
+    html:not(.dark) .field {
+        background: #FFFFFF;
+        border-color: rgba(15, 23, 42, 0.16);
+        color: #0F172A;
+    }
+    html:not(.dark) .field::placeholder { color: #94A3B8; }
+    html:not(.dark) .field option { background: #FFFFFF; color: #0F172A; }
+    html:not(.dark) .kpi-label { color: #64748B; }
+    html:not(.dark) .student-popover { box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12); }
+    html:not(.dark) .glass-strong.bg-red-500 { background-color: #EF4444; color: #FFFFFF; }
+    html:not(.dark) .data-table th {
+        color: #475569;
+        border-bottom-color: rgba(15, 23, 42, 0.10);
+    }
+    html:not(.dark) .data-table td { border-bottom-color: rgba(15, 23, 42, 0.06); }
+    html:not(.dark) .data-table tbody tr:hover { background: rgba(15, 23, 42, 0.03); }
+    html:not(.dark) .student-scroll::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.20); }
+    html:not(.dark) .card-hover:hover {
+        border-color: rgba(16, 185, 129, 0.40);
+        box-shadow: 0 18px 45px -18px rgba(15, 23, 42, 0.18);
+    }
+
+    /* Text utilities that are light-on-dark in night mode. */
+    html:not(.dark) .text-white { color: #0F172A; }
+    html:not(.dark) .text-gray-200 { color: #1E293B; }
+    html:not(.dark) .text-gray-300 { color: #334155; }
+    html:not(.dark) .text-gray-400 { color: #475569; }
+    html:not(.dark) .text-gray-500 { color: #64748B; }
+    html:not(.dark) .text-gray-600 { color: #475569; }
+    html:not(.dark) .text-emerald-200 { color: #065F46; }
+    html:not(.dark) .text-emerald-300 { color: #047857; }
+    html:not(.dark) .text-emerald-400 { color: #059669; }
+    html:not(.dark) .text-emerald-500 { color: #047857; }
+    html:not(.dark) .text-orange-300 { color: #C2410C; }
+    html:not(.dark) .text-orange-400 { color: #C2410C; }
+    html:not(.dark) .text-red-300 { color: #B91C1C; }
+    html:not(.dark) .text-red-400 { color: #B91C1C; }
+    html:not(.dark) .text-amber-300 { color: #B45309; }
+    html:not(.dark) .text-amber-400 { color: #B45309; }
+    html:not(.dark) .text-teal-300 { color: #0F766E; }
+    html:not(.dark) .text-teal-400 { color: #0F766E; }
+    html:not(.dark) .text-sky-300 { color: #0369A1; }
+    html:not(.dark) .text-sky-400 { color: #0369A1; }
+    html:not(.dark) .text-violet-300 { color: #6D28D9; }
+    html:not(.dark) .text-lime-300 { color: #4D7C0F; }
+    html:not(.dark) .text-lime-400 { color: #4D7C0F; }
+    html:not(.dark) .hover\:text-white:hover { color: #0F172A; }
+    html:not(.dark) .hover\:text-emerald-300:hover { color: #047857; }
+    .bg-emerald-500.text-white { color: #04120B; }
+
+    /* Surface utilities. */
+    html:not(.dark) .bg-white\/5 { background-color: rgba(15, 23, 42, 0.04); }
+    html:not(.dark) .bg-white\/10 { background-color: rgba(15, 23, 42, 0.08); }
+    html:not(.dark) .bg-black\/30 { background-color: #FFFFFF; }
+    html:not(.dark) .bg-black\/60 { background-color: rgba(15, 23, 42, 0.35); }
+    html:not(.dark) .hover\:bg-white\/5:hover { background-color: rgba(15, 23, 42, 0.05); }
+    html:not(.dark) .hover\:bg-white\/10:hover { background-color: rgba(15, 23, 42, 0.09); }
+    html:not(.dark) .border-white\/5 { border-color: rgba(15, 23, 42, 0.06); }
+    html:not(.dark) .border-white\/10 { border-color: rgba(15, 23, 42, 0.10); }
+    html:not(.dark) .border-white\/20 { border-color: rgba(15, 23, 42, 0.16); }
+    html:not(.dark) .divide-white\/5 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(15, 23, 42, 0.06); }
+    html:not(.dark) .divide-white\/10 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(15, 23, 42, 0.10); }
 </style>
 </head>
 <body class="min-h-screen">
@@ -66,7 +201,7 @@
 
     <!-- Sidebar -->
     <aside x-cloak :class="[sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0', collapsed ? 'md:w-20' : 'md:w-64']"
-           class="fixed md:sticky top-0 left-0 z-40 flex h-screen w-72 shrink-0 -translate-x-full flex-col border-r border-white/10 bg-[#050B14]/95 backdrop-blur-xl transition-all duration-200 md:translate-x-0">
+           class="student-sidebar fixed md:sticky top-0 left-0 z-40 flex h-screen w-72 shrink-0 -translate-x-full flex-col border-r border-white/10 backdrop-blur-xl transition-all duration-200 md:translate-x-0">
         <div class="flex items-center gap-2 border-b border-white/10 px-3 py-4">
             <a href="{{ route('home') }}" class="flex min-w-0 items-center gap-2">
                 <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 font-bold text-black">৳</span>
@@ -150,7 +285,7 @@
 
     <!-- Main -->
     <div class="flex min-w-0 flex-1 flex-col">
-        <header class="sticky top-0 z-20 border-b border-white/10 bg-[#050B14]/85 px-3 py-2.5 backdrop-blur-xl sm:px-5">
+        <header class="student-topbar sticky top-0 z-20 border-b border-white/10 px-3 py-2.5 backdrop-blur-xl sm:px-5">
             <div class="flex flex-wrap items-center gap-2 sm:gap-3">
                 <button @click="sidebarOpen = true" class="glass flex h-9 w-9 items-center justify-center rounded-lg md:hidden" aria-label="{{ __('student.nav.open_menu') }}">
                     <i data-lucide="menu" class="h-4 w-4"></i>
@@ -192,7 +327,7 @@
                             <i data-lucide="chevron-down" class="h-3 w-3 text-gray-400"></i>
                         </button>
 
-                        <div x-show="profileOpen" x-cloak x-transition.origin.top.right class="absolute right-0 z-[80] mt-2 w-64 overflow-hidden rounded-xl border border-white/10 bg-[#081510] shadow-2xl">
+                        <div x-show="profileOpen" x-cloak x-transition.origin.top.right class="student-popover absolute right-0 z-[80] mt-2 w-64 overflow-hidden rounded-xl border border-white/10 shadow-2xl">
                             <div class="border-b border-white/10 px-4 py-3">
                                 <p class="truncate text-sm font-bold font-bn text-white">{{ $studentUser->name }}</p>
                                 <p class="truncate text-[11px] text-gray-500">{{ $studentUser->email }}</p>

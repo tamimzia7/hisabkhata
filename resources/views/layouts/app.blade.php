@@ -1,10 +1,18 @@
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" x-data="{
-    dark: JSON.parse(localStorage.getItem('theme-dark') ?? 'true'),
-    toggleDark() { this.dark = !this.dark; localStorage.setItem('theme-dark', JSON.stringify(this.dark)); },
+    dark: window.hisabTheme ? window.hisabTheme.isDark() : true,
+    toggleDark() {
+        window.hisabTheme.toggle();
+        this.dark = window.hisabTheme.isDark();
+    },
+    init() {
+        window.addEventListener('hisab-theme-changed', (event) => {
+            this.dark = event.detail.dark;
+        });
+    },
     toastMsg: window.__flashToast || '',
     showToast: Boolean(window.__flashToast),
-}" :class="dark ? 'dark' : ''">
+}">
 
 <head>
 <meta charset="UTF-8">
@@ -14,8 +22,14 @@
 <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 <title>@yield('title', __('site.meta.default_title'))</title>
 <meta name="description" content="{{ __('site.meta.description') }}">
+@include('partials.theme-init')
 <script>window.__flashToast = @js(session('toast'));</script>
 <script src="https://cdn.tailwindcss.com"></script>
+<script>
+    if (window.tailwind) {
+        tailwind.config = Object.assign({}, tailwind.config, { darkMode: 'class' });
+    }
+</script>
 <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@100;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -51,10 +65,30 @@
   html:not(.dark) body { background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 50%, #F7FAFC 100%); color: #06130D; }
   html:not(.dark) .glass { background: rgba(255, 255, 255, 0.6); border-color: rgba(16, 185, 129, 0.2); box-shadow: 0 8px 32px rgba(16, 185, 129, 0.1), inset 0 1px 0 rgba(255,255,255,0.9); }
   html:not(.dark) .glass-strong { background: rgba(255, 255, 255, 0.8); border-color: rgba(16, 185, 129, 0.3); }
+  html:not(.dark) .glass-strong.bg-red-500 { background-color: #EF4444; color: #FFFFFF; }
   html:not(.dark) .glass-nav { background: rgba(240, 253, 244, 0.8); border-bottom-color: rgba(16, 185, 129, 0.15); }
   html:not(.dark) .text-white { color: #06130D; }
+  html:not(.dark) .text-gray-200 { color: #1E293B; }
   html:not(.dark) .text-gray-300 { color: #475569; }
   html:not(.dark) .text-gray-400 { color: #64748B; }
+  html:not(.dark) .text-gray-500 { color: #64748B; }
+  html:not(.dark) .text-emerald-300 { color: #047857; }
+  html:not(.dark) .text-emerald-400 { color: #059669; }
+  html:not(.dark) .text-teal-400 { color: #0F766E; }
+  html:not(.dark) .text-orange-400 { color: #C2410C; }
+  html:not(.dark) .text-red-300 { color: #B91C1C; }
+  html:not(.dark) .text-red-400 { color: #B91C1C; }
+  html:not(.dark) .text-amber-400 { color: #B45309; }
+  html:not(.dark) .text-lime-400 { color: #4D7C0F; }
+  html:not(.dark) .bg-white\/5 { background-color: rgba(15, 23, 42, 0.04); }
+  html:not(.dark) .bg-white\/10 { background-color: rgba(15, 23, 42, 0.08); }
+  html:not(.dark) .border-white\/5 { border-color: rgba(15, 23, 42, 0.06); }
+  html:not(.dark) .border-white\/10 { border-color: rgba(15, 23, 42, 0.10); }
+  html:not(.dark) .hover\:bg-white\/5:hover { background-color: rgba(15, 23, 42, 0.05); }
+  html:not(.dark) .hover\:bg-white\/10:hover { background-color: rgba(15, 23, 42, 0.09); }
+  html:not(.dark) .hover\:text-white:hover { color: #06130D; }
+  html:not(.dark) .hover\:text-emerald-300:hover { color: #047857; }
+  .bg-emerald-500.text-white { color: #04120B; }
   html:not(.dark) .gradient-green { background: linear-gradient(135deg, #06130D 0%, #10B981 50%, #047857 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
   html:not(.dark) .blob { opacity: 0.2; }
   html { scroll-behavior: smooth; }

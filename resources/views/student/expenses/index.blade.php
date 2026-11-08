@@ -107,7 +107,7 @@
                                     @if($canManage && ! $locked)
                                         <details class="relative">
                                             <summary class="cursor-pointer text-[11px] text-emerald-400 font-bn">{{ __('student.common.edit') }}</summary>
-                                            <div class="mt-2 w-56 space-y-2 rounded-lg border border-white/10 bg-[#07130d] p-3">
+                                            <div class="mt-2 w-56 space-y-2 rounded-lg border border-white/10 student-popover p-3">
                                                 <form method="POST" action="{{ route('student.mess.expenses.update', [$mess, $expense]) }}" enctype="multipart/form-data" class="space-y-2">
                                                     @csrf @method('PUT')
                                                     <input name="title" value="{{ $expense->title }}" required class="field text-xs font-bn">

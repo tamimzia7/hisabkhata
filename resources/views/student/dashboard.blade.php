@@ -78,7 +78,7 @@
                         <i data-lucide="chevrons-up-down" class="h-3.5 w-3.5"></i>
                         {{ __('student.nav.switch_mess') }}
                     </button>
-                    <div x-show="wsOpen" x-cloak x-transition.origin.top.right class="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-xl border border-white/10 bg-[#081510] shadow-2xl">
+                    <div x-show="wsOpen" x-cloak x-transition.origin.top.right class="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-xl border border-white/10 student-popover shadow-2xl">
                         @foreach($memberships as $membership)
                             <form method="POST" action="{{ route('student.messes.switch', $membership->mess) }}">
                                 @csrf
@@ -447,16 +447,64 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    const chartGrid = { color: 'rgba(148, 163, 184, 0.12)' };
-    const chartTicks = { color: '#94a3b8' };
     const money = (value) => '৳' + Number(value || 0).toLocaleString();
     const incomeExpense = @js($charts['income_expense']);
     const breakdown = @js($charts['breakdown']);
     const breakdownColors = ['#34D399', '#F59E0B', '#38BDF8', '#A78BFA'];
 
+    const chartTheme = () => {
+        const dark = window.hisabTheme
+            ? window.hisabTheme.isDark()
+            : document.documentElement.classList.contains('dark');
+
+        return {
+            grid: dark ? 'rgba(148, 163, 184, 0.12)' : 'rgba(15, 23, 42, 0.10)',
+            ticks: dark ? '#94A3B8' : '#475569',
+            legend: dark ? '#94A3B8' : '#334155',
+            tooltipBackground: dark ? '#0B1A13' : '#FFFFFF',
+            tooltipTitle: dark ? '#F8FAFC' : '#0F172A',
+            tooltipBody: dark ? '#CBD5E1' : '#334155',
+            tooltipBorder: dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(15, 23, 42, 0.12)',
+            doughnutBorder: dark ? '#050B14' : '#FFFFFF',
+        };
+    };
+
+    let incomeChart = null;
+    let breakdownChart = null;
+
+    const applyChartTheme = () => {
+        const theme = chartTheme();
+
+        if (incomeChart) {
+            incomeChart.options.plugins.legend.labels.color = theme.legend;
+            incomeChart.options.plugins.tooltip.backgroundColor = theme.tooltipBackground;
+            incomeChart.options.plugins.tooltip.titleColor = theme.tooltipTitle;
+            incomeChart.options.plugins.tooltip.bodyColor = theme.tooltipBody;
+            incomeChart.options.plugins.tooltip.borderColor = theme.tooltipBorder;
+            incomeChart.options.plugins.tooltip.borderWidth = 1;
+            incomeChart.options.scales.x.grid.color = theme.grid;
+            incomeChart.options.scales.x.ticks.color = theme.ticks;
+            incomeChart.options.scales.y.grid.color = theme.grid;
+            incomeChart.options.scales.y.ticks.color = theme.ticks;
+            incomeChart.update('none');
+        }
+
+        if (breakdownChart) {
+            breakdownChart.data.datasets[0].borderColor = theme.doughnutBorder;
+            breakdownChart.options.plugins.tooltip.backgroundColor = theme.tooltipBackground;
+            breakdownChart.options.plugins.tooltip.titleColor = theme.tooltipTitle;
+            breakdownChart.options.plugins.tooltip.bodyColor = theme.tooltipBody;
+            breakdownChart.options.plugins.tooltip.borderColor = theme.tooltipBorder;
+            breakdownChart.options.plugins.tooltip.borderWidth = 1;
+            breakdownChart.update('none');
+        }
+    };
+
+    const initialTheme = chartTheme();
     const incomeCanvas = document.getElementById('incomeExpenseChart');
+
     if (incomeCanvas) {
-        new Chart(incomeCanvas, {
+        incomeChart = new Chart(incomeCanvas, {
             type: 'bar',
             data: {
                 labels: incomeExpense.labels,
@@ -481,12 +529,25 @@ document.addEventListener('DOMContentLoaded', function () {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { labels: { color: '#94a3b8', boxWidth: 10, boxHeight: 10, usePointStyle: true } },
-                    tooltip: { callbacks: { label: (context) => context.dataset.label + ': ' + money(context.raw) } },
+                    legend: { labels: { color: initialTheme.legend, boxWidth: 10, boxHeight: 10, usePointStyle: true } },
+                    tooltip: {
+                        backgroundColor: initialTheme.tooltipBackground,
+                        titleColor: initialTheme.tooltipTitle,
+                        bodyColor: initialTheme.tooltipBody,
+                        borderColor: initialTheme.tooltipBorder,
+                        borderWidth: 1,
+                        callbacks: { label: (context) => context.dataset.label + ': ' + money(context.raw) },
+                    },
                 },
                 scales: {
-                    x: { grid: chartGrid, ticks: chartTicks },
-                    y: { grid: chartGrid, ticks: { ...chartTicks, callback: (value) => money(value) } },
+                    x: {
+                        grid: { color: initialTheme.grid },
+                        ticks: { color: initialTheme.ticks },
+                    },
+                    y: {
+                        grid: { color: initialTheme.grid },
+                        ticks: { color: initialTheme.ticks, callback: (value) => money(value) },
+                    },
                 },
             },
         });
@@ -494,14 +555,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const breakdownCanvas = document.getElementById('expenseBreakdownChart');
     if (breakdownCanvas) {
-        new Chart(breakdownCanvas, {
+        breakdownChart = new Chart(breakdownCanvas, {
             type: 'doughnut',
             data: {
                 labels: breakdown.labels,
                 datasets: [{
                     data: breakdown.values,
                     backgroundColor: breakdownColors,
-                    borderColor: '#050B14',
+                    borderColor: initialTheme.doughnutBorder,
                     borderWidth: 3,
                     hoverOffset: 4,
                 }],
@@ -513,6 +574,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 plugins: {
                     legend: { display: false },
                     tooltip: {
+                        backgroundColor: initialTheme.tooltipBackground,
+                        titleColor: initialTheme.tooltipTitle,
+                        bodyColor: initialTheme.tooltipBody,
+                        borderColor: initialTheme.tooltipBorder,
+                        borderWidth: 1,
                         callbacks: {
                             label: (context) => context.label + ': ' + money(context.raw) + ' (' + (breakdown.percentages[context.dataIndex] ?? 0) + '%)',
                         },
@@ -521,6 +587,8 @@ document.addEventListener('DOMContentLoaded', function () {
             },
         });
     }
+
+    window.addEventListener('hisab-theme-changed', applyChartTheme);
 });
 </script>
 @endsection
