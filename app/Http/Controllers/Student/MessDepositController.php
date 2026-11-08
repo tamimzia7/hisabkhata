@@ -62,6 +62,7 @@ class MessDepositController extends Controller
             'month' => $month,
             'deposits' => $deposits,
             'members' => $mess->members()->orderBy('name')->get(),
+            'ownMember' => $mess->memberFor($request->user()),
             'accounts' => $mess->accounts()->where('is_active', true)->orderBy('name')->get(),
             'byMember' => $byMember,
             'monthTotal' => round((float) $byMember->sum(), 2),

@@ -9,6 +9,7 @@ use App\Models\MessMember;
 use App\Models\MonthlySettlement;
 use App\Models\SettlementDetail;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -136,6 +137,77 @@ class SettlementService
                 'total_outstanding_dues' => $this->mealRates->fromCents($outstanding),
                 'total_receivable' => $this->mealRates->fromCents($receivable),
                 'total_surplus' => $this->mealRates->fromCents($surplus),
+            ],
+        ];
+    }
+
+    /**
+     * Resolve a month using the finalized snapshot when available, otherwise live data.
+     *
+     * @return array<string, mixed>
+     */
+    public function monthly(Mess $mess, string $month): array
+    {
+        $settlement = $mess->finalizedSettlementForMonth($month);
+
+        if ($settlement === null) {
+            return $this->preview($mess, $month);
+        }
+
+        return $this->snapshot($settlement);
+    }
+
+    /**
+     * Convert a finalized settlement snapshot into the live-preview shape.
+     *
+     * @return array<string, mixed>
+     */
+    private function snapshot(MonthlySettlement $settlement): array
+    {
+        $start = CarbonImmutable::createFromFormat('Y-m-d', $settlement->month.'-01')->startOfMonth();
+        $rows = $settlement->details()->with('member')->get()->map(function (SettlementDetail $detail): array {
+            $balance = (float) $detail->balance;
+
+            return [
+                'member' => $detail->member,
+                'opening_balance' => (float) $detail->opening_balance,
+                'deposits' => (float) $detail->deposits,
+                'refunds' => (float) $detail->refunds,
+                'adjustments' => (float) $detail->adjustments,
+                'meals' => (float) $detail->meals,
+                'meal_cost' => (float) $detail->meal_cost,
+                'shared_allocated' => (float) $detail->other_allocated,
+                'other_allocated' => (float) $detail->other_allocated,
+                'personal_expenses' => (float) $detail->personal_expenses,
+                'balance' => $balance,
+                'status' => $balance > 0 ? self::STATUS_RECEIVABLE : ($balance < 0 ? self::STATUS_DUE : self::STATUS_SETTLED),
+            ];
+        });
+
+        $shared = (float) $settlement->total_other_expenses;
+
+        return [
+            'month' => $settlement->month,
+            'from' => $start->toDateString(),
+            'to' => $start->endOfMonth()->toDateString(),
+            'members' => $rows,
+            'totals' => [
+                'total_opening_balance' => round((float) $rows->sum('opening_balance'), 2),
+                'total_deposits' => (float) $settlement->total_deposits,
+                'total_refunds' => (float) $settlement->total_refunds,
+                'total_adjustments' => (float) $settlement->total_adjustments,
+                'total_bazar' => (float) $settlement->total_bazar,
+                'total_meal_expenses' => (float) $settlement->total_meal_expenses,
+                'total_meal_cost' => (float) $settlement->total_meal_cost,
+                'total_shared_expenses' => $shared,
+                'total_other_expenses' => $shared,
+                'total_personal_expenses' => (float) $settlement->total_personal_expenses,
+                'total_other_allocated' => $shared,
+                'total_meals' => (float) $settlement->total_meals,
+                'meal_rate' => (float) $settlement->meal_rate,
+                'total_outstanding_dues' => (float) $settlement->total_outstanding_dues,
+                'total_receivable' => (float) $settlement->total_receivable,
+                'total_surplus' => (float) $settlement->total_surplus,
             ],
         ];
     }

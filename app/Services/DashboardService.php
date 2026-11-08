@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Mess;
+use App\Models\MessMember;
+use App\Models\MonthlySettlement;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -14,259 +16,358 @@ class DashboardService
     ) {}
 
     /**
-     * Build every dashboard figure from the database for the given date range.
+     * Build every dashboard figure for the selected billing month.
      *
      * @return array<string, mixed>
      */
-    public function summary(Mess $mess, CarbonImmutable $from, CarbonImmutable $to): array
+    public function summary(Mess $mess, string $month, ?MessMember $viewer = null): array
     {
-        $fromDate = $from->toDateString();
-        $toDate = $to->toDateString();
-        $month = $to->format('Y-m');
+        $start = CarbonImmutable::createFromFormat('Y-m-d', $month.'-01')->startOfMonth();
+        $end = $start->endOfMonth();
+        $previousMonth = $start->subMonthNoOverflow()->format('Y-m');
+        $previousEnd = $start->subMonthNoOverflow()->endOfMonth();
 
-        $preview = $this->settlements->preview($mess, $month);
-        $rate = $this->mealRates->forMonth($mess, $month);
+        $selected = $this->settlements->monthly($mess, $month);
+        $previous = $this->settlements->monthly($mess, $previousMonth);
 
-        $allDepositCents = $this->depositCents($mess);
-        $allBazarCents = $this->mealRates->toCents($mess->bazarRecords()->active()->sum('total_amount'));
-        $allExpenseCents = $this->mealRates->toCents($mess->expenses()->active()->sum('amount'));
+        $currentBazar = (float) $selected['totals']['total_bazar'];
+        $previousBazar = (float) $previous['totals']['total_bazar'];
+        $currentMeals = (float) $selected['totals']['total_meals'];
+        $previousMeals = (float) $previous['totals']['total_meals'];
+        $currentRate = (float) $selected['totals']['meal_rate'];
+        $previousRate = (float) $previous['totals']['meal_rate'];
 
-        $periodBazarCents = $this->mealRates->toCents(
-            $mess->bazarRecords()->active()->whereBetween('purchase_date', [$fromDate, $toDate])->sum('total_amount')
-        );
-        $periodExpenseCents = $this->mealRates->toCents(
-            $mess->expenses()->active()->whereBetween('expense_date', [$fromDate, $toDate])->sum('amount')
-        );
-        $periodDepositCents = $this->mealRates->toCents(
-            $mess->deposits()->active()->whereBetween('deposit_date', [$fromDate, $toDate])->sum('amount')
-        );
+        $balance = $this->balanceThrough($mess, $end);
+        $previousBalance = $this->balanceThrough($mess, $previousEnd);
 
-        $periodMeals = round((float) $mess->mealEntries()
-            ->active()
-            ->whereBetween('entry_date', [$fromDate, $toDate])
-            ->sum('total_meals'), 2);
-
-        $periodRateCents = $periodMeals > 0
-            ? (int) round(($periodBazarCents + $this->mealExpenseCents($mess, $fromDate, $toDate)) / $periodMeals)
-            : 0;
-
-        $accountBalance = (float) $mess->accounts()->get()->sum(fn ($account): float => $account->balance());
-
-        $outstanding = $preview['totals']['total_outstanding_dues'];
-        $receivable = $preview['totals']['total_receivable'];
         $activeMembers = $mess->activeMembers()->count();
+        $totalMembers = $mess->members()->count();
+        $inactiveMembers = max(0, $totalMembers - $activeMembers);
 
-        $labels = [];
-        $income = [];
-        $expense = [];
-        $monthlyBazar = [];
-        $monthlyMeals = [];
+        $dues = (float) $selected['totals']['total_outstanding_dues'];
+        $previousDues = (float) $previous['totals']['total_outstanding_dues'];
+        $dueMembers = $selected['members']->where('status', 'due')->count();
 
-        for ($i = 5; $i >= 0; $i--) {
-            $cursor = CarbonImmutable::now()->subMonths($i);
-            $start = $cursor->startOfMonth()->toDateString();
-            $end = $cursor->endOfMonth()->toDateString();
-
-            $labels[] = $cursor->format('M Y');
-            $income[] = $this->mealRates->fromCents($this->mealRates->toCents(
-                $mess->deposits()->active()->whereBetween('deposit_date', [$start, $end])->sum('amount')
-            ));
-            $monthBazarCents = $this->mealRates->toCents(
-                $mess->bazarRecords()->active()->whereBetween('purchase_date', [$start, $end])->sum('total_amount')
-            );
-            $monthExpenseCents = $this->mealRates->toCents(
-                $mess->expenses()->active()->whereBetween('expense_date', [$start, $end])->sum('amount')
-            );
-            $monthlyBazar[] = $this->mealRates->fromCents($monthBazarCents);
-            $expense[] = $this->mealRates->fromCents($monthBazarCents + $monthExpenseCents);
-            $monthlyMeals[] = round((float) $mess->mealEntries()->active()->whereBetween('entry_date', [$start, $end])->sum('total_meals'), 2);
-        }
-
-        $dailyBazar = $mess->bazarRecords()
-            ->active()
-            ->whereBetween('purchase_date', [$fromDate, $toDate])
-            ->selectRaw('purchase_date, SUM(total_amount) as total')
-            ->groupBy('purchase_date')
-            ->orderBy('purchase_date')
-            ->get();
-
-        $mealRows = $mess->mealEntries()
-            ->active()
-            ->with('member')
-            ->whereBetween('entry_date', [$fromDate, $toDate])
-            ->get()
-            ->groupBy('mess_member_id')
-            ->map(function (Collection $rows): array {
-                $member = $rows->first()->member;
-
-                return [
-                    'id' => $member?->getKey(),
-                    'name' => $member?->name ?? '—',
-                    'breakfast' => round((float) $rows->sum('breakfast'), 2),
-                    'lunch' => round((float) $rows->sum('lunch'), 2),
-                    'dinner' => round((float) $rows->sum('dinner'), 2),
-                    'total' => round((float) $rows->sum('total_meals'), 2),
-                ];
-            })
-            ->sortByDesc('total')
-            ->values();
-
-        $recentBazar = $mess->bazarRecords()
-            ->active()
-            ->with(['purchaser', 'account'])
-            ->latest('purchase_date')
-            ->latest('id')
-            ->limit(5)
-            ->get();
-
-        $recentDeposits = $mess->deposits()
-            ->active()
-            ->with(['member', 'account'])
-            ->latest('deposit_date')
-            ->latest('id')
-            ->limit(5)
-            ->get();
-
-        $latestSettlement = $mess->settlements()
+        $record = $mess->settlements()
             ->where('month', $month)
             ->latest('version')
             ->first();
 
-        $reminders = $preview['members']
-            ->filter(fn (array $row): bool => $row['balance'] < 0)
-            ->sortBy('balance')
-            ->take(5)
-            ->values();
+        $settlementStatus = match (true) {
+            $record?->status === MonthlySettlement::STATUS_FINALIZED => 'finalized',
+            $record?->status === MonthlySettlement::STATUS_DRAFT => 'draft',
+            default => 'pending',
+        };
 
         return [
             'month' => $month,
-            'preview' => $preview,
+            'month_label' => $start->format('F Y'),
+            'previous_month' => $previousMonth,
+            'period_start' => $start,
+            'period_end' => $end,
+            'members' => $selected['members']->values(),
             'kpis' => [
-                'total_balance' => $this->mealRates->fromCents($allDepositCents - $allBazarCents - $allExpenseCents),
-                'account_balance' => round($accountBalance, 2),
-                'period_bazar' => $this->mealRates->fromCents($periodBazarCents),
-                'period_meals' => $periodMeals,
-                'meal_rate' => $this->mealRates->fromCents($periodRateCents),
-                'monthly_meal_rate' => $rate['meal_rate'],
-                'total_members' => $activeMembers,
-                'outstanding_dues' => $outstanding,
-                'receivable' => $receivable,
-                'period_deposits' => $this->mealRates->fromCents($periodDepositCents),
-                'period_expenses' => $this->mealRates->fromCents($periodExpenseCents),
+                'balance' => [
+                    'value' => $balance,
+                    'previous' => $previousBalance,
+                    'change' => $this->change($balance, $previousBalance),
+                ],
+                'bazar' => [
+                    'value' => $currentBazar,
+                    'previous' => $previousBazar,
+                    'change' => $this->change($currentBazar, $previousBazar),
+                ],
+                'meals' => [
+                    'value' => $currentMeals,
+                    'previous' => $previousMeals,
+                    'change' => $this->change($currentMeals, $previousMeals),
+                ],
+                'meal_rate' => [
+                    'value' => $currentRate,
+                    'previous' => $previousRate,
+                    'change' => $this->change($currentRate, $previousRate),
+                ],
+                'members' => [
+                    'active' => $activeMembers,
+                    'inactive' => $inactiveMembers,
+                    'total' => $totalMembers,
+                ],
+                'dues' => [
+                    'value' => $dues,
+                    'previous' => $previousDues,
+                    'change' => $this->change($dues, $previousDues),
+                    'count' => $dueMembers,
+                ],
             ],
-            'income_expense' => [
-                'labels' => $labels,
-                'income' => $income,
-                'expense' => $expense,
+            'charts' => [
+                'income_expense' => $this->incomeExpenseSeries($mess, $start),
+                'breakdown' => $this->expenseBreakdown($mess, $start),
             ],
-            'monthly_bazar' => [
-                'labels' => $labels,
-                'values' => $monthlyBazar,
+            'activities' => $this->recentActivity($mess, $viewer),
+            'settlement' => [
+                'status' => $settlementStatus,
+                'record' => $record,
+                'is_finalized' => $settlementStatus === 'finalized',
+                'period_end' => $end,
+                'totals' => $selected['totals'],
             ],
-            'monthly_meals' => [
-                'labels' => $labels,
-                'values' => $monthlyMeals,
-            ],
-            'daily_bazar' => [
-                'labels' => $dailyBazar->map(fn ($row): string => (string) $row->purchase_date)->all(),
-                'values' => $dailyBazar->map(fn ($row): float => round((float) $row->total, 2))->all(),
-            ],
-            'member_meals' => $mealRows,
-            'member_balances' => $preview['members']->sortBy('balance')->values(),
-            'recent_bazar' => $recentBazar,
-            'recent_deposits' => $recentDeposits,
-            'settlement' => $latestSettlement,
-            'reminders' => $reminders,
-            'recent_activity' => $this->recentActivity($mess),
-            'transactions' => $mess->transactions()->active()->latest('transaction_date')->latest('id')->limit(8)->get(),
         ];
     }
 
     /**
-     * Total active, non-personal meal-related expenses in a date range.
+     * Calculate the cumulative mess balance up to the end of a date.
      */
-    private function mealExpenseCents(Mess $mess, string $from, string $to): int
+    private function balanceThrough(Mess $mess, CarbonImmutable $end): float
     {
-        return $this->mealRates->toCents($mess->expenses()
+        $date = $end->toDateString();
+
+        $deposits = $this->mealRates->toCents(
+            $mess->deposits()->active()->whereDate('deposit_date', '<=', $date)->sum('amount')
+        );
+        $bazar = $this->mealRates->toCents(
+            $mess->bazarRecords()->active()->whereDate('purchase_date', '<=', $date)->sum('total_amount')
+        );
+        $expenses = $this->mealRates->toCents(
+            $mess->expenses()->active()->whereDate('expense_date', '<=', $date)->sum('amount')
+        );
+
+        return $this->mealRates->fromCents($deposits - $bazar - $expenses);
+    }
+
+    /**
+     * Build the last six months of deposit vs expense data.
+     *
+     * @return array{labels: list<string>, deposits: list<float>, expenses: list<float>}
+     */
+    private function incomeExpenseSeries(Mess $mess, CarbonImmutable $selectedStart): array
+    {
+        $labels = [];
+        $deposits = [];
+        $expenses = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $cursor = $selectedStart->subMonthsNoOverflow($i);
+            $from = $cursor->startOfMonth()->toDateString();
+            $to = $cursor->endOfMonth()->toDateString();
+
+            $labels[] = $cursor->format('M Y');
+            $deposits[] = $this->mealRates->fromCents($this->mealRates->toCents(
+                $mess->deposits()->active()->whereBetween('deposit_date', [$from, $to])->sum('amount')
+            ));
+            $bazarCents = $this->mealRates->toCents(
+                $mess->bazarRecords()->active()->whereBetween('purchase_date', [$from, $to])->sum('total_amount')
+            );
+            $expenseCents = $this->mealRates->toCents(
+                $mess->expenses()->active()->whereBetween('expense_date', [$from, $to])->sum('amount')
+            );
+            $expenses[] = $this->mealRates->fromCents($bazarCents + $expenseCents);
+        }
+
+        return ['labels' => $labels, 'deposits' => $deposits, 'expenses' => $expenses];
+    }
+
+    /**
+     * Split the selected month's expenses into the dashboard categories.
+     *
+     * @return array{labels: list<string>, values: list<float>, percentages: list<float>, total: float}
+     */
+    private function expenseBreakdown(Mess $mess, CarbonImmutable $start): array
+    {
+        $from = $start->startOfMonth()->toDateString();
+        $to = $start->endOfMonth()->toDateString();
+
+        $bazar = $this->mealRates->fromCents($this->mealRates->toCents(
+            $mess->bazarRecords()->active()->whereBetween('purchase_date', [$from, $to])->sum('total_amount')
+        ));
+
+        $utilities = 0;
+        $miscellaneous = 0;
+        $other = 0;
+
+        $expenses = $mess->expenses()
             ->active()
             ->whereBetween('expense_date', [$from, $to])
-            ->where('is_meal_related', true)
-            ->where('is_personal', false)
-            ->sum('amount'));
+            ->get(['category', 'amount']);
+
+        foreach ($expenses as $expense) {
+            $amount = $this->mealRates->toCents($expense->amount);
+            $category = mb_strtolower(trim((string) $expense->category));
+
+            if ($this->matchesAny($category, ['utility', 'utilities', 'electric', 'water', 'gas', 'internet', 'wifi', 'rent', 'bill', 'maintenance'])) {
+                $utilities += $amount;
+
+                continue;
+            }
+
+            if ($this->matchesAny($category, ['misc', 'miscellaneous', 'other', 'others'])) {
+                $miscellaneous += $amount;
+
+                continue;
+            }
+
+            $other += $amount;
+        }
+
+        $values = [
+            $bazar,
+            $this->mealRates->fromCents($other),
+            $this->mealRates->fromCents($utilities),
+            $this->mealRates->fromCents($miscellaneous),
+        ];
+        $total = round(array_sum($values), 2);
+        $percentages = array_map(
+            fn (float $value): float => $total > 0 ? round(($value / $total) * 100, 1) : 0.0,
+            $values
+        );
+
+        return [
+            'labels' => [
+                __('student.dashboard.categories.bazar'),
+                __('student.dashboard.categories.other'),
+                __('student.dashboard.categories.utilities'),
+                __('student.dashboard.categories.miscellaneous'),
+            ],
+            'values' => $values,
+            'percentages' => $percentages,
+            'total' => $total,
+        ];
     }
 
     /**
-     * All active deposit money (deposits + refunds + adjustments) as paisa.
-     */
-    private function depositCents(Mess $mess): int
-    {
-        return $this->mealRates->toCents($mess->deposits()->active()->sum('amount'));
-    }
-
-    /**
-     * Merge recent operational and financial activity into one feed.
+     * Merge the latest financial and member activity into one timeline.
      *
      * @return Collection<int, array<string, mixed>>
      */
-    private function recentActivity(Mess $mess): Collection
+    private function recentActivity(Mess $mess, ?MessMember $viewer = null): Collection
     {
         $activity = collect();
 
-        foreach ($mess->deposits()->active()->with('member')->latest('created_at')->limit(5)->get() as $deposit) {
+        foreach ($mess->deposits()->active()->with(['member', 'creator'])->latest('created_at')->limit(6)->get() as $deposit) {
             $activity->push([
                 'kind' => 'deposit',
-                'title' => $deposit->member?->name ?? '—',
-                'detail' => __('student.deposits.types.'.$deposit->type),
+                'member_id' => $deposit->mess_member_id,
+                'title' => __('student.dashboard.activity.deposit'),
+                'description' => ($deposit->member?->name ?? '—').' · '.__('student.deposits.types.'.$deposit->type),
+                'actor' => $deposit->creator?->name,
                 'amount' => (float) $deposit->amount,
-                'date' => $deposit->deposit_date,
-                'sort' => $deposit->created_at,
+                'time' => $deposit->created_at,
+                'url' => route('student.mess.deposits.index', $mess),
             ]);
         }
 
-        foreach ($mess->bazarRecords()->active()->with('purchaser')->latest('created_at')->limit(5)->get() as $record) {
+        foreach ($mess->bazarRecords()->active()->with(['purchaser', 'creator'])->latest('created_at')->limit(6)->get() as $record) {
             $activity->push([
                 'kind' => 'bazar',
-                'title' => $record->category,
-                'detail' => $record->purchaser?->name ?? '—',
+                'title' => __('student.dashboard.activity.bazar'),
+                'description' => $record->category.' · '.($record->purchaser?->name ?? '—'),
+                'actor' => $record->creator?->name,
                 'amount' => (float) $record->total_amount,
-                'date' => $record->purchase_date,
-                'sort' => $record->created_at,
+                'time' => $record->created_at,
+                'url' => route('student.mess.bazar.index', $mess),
             ]);
         }
 
-        foreach ($mess->mealEntries()->active()->with('member')->latest('created_at')->limit(5)->get() as $entry) {
+        foreach ($mess->mealEntries()->active()->with(['member', 'creator', 'updater'])->latest('created_at')->limit(6)->get() as $entry) {
+            $updated = $entry->updated_by !== null
+                && $entry->updated_at !== null
+                && $entry->created_at !== null
+                && $entry->updated_at->gt($entry->created_at);
+
             $activity->push([
-                'kind' => 'meal',
-                'title' => $entry->member?->name ?? '—',
-                'detail' => localize_number($entry->total_meals).' '.__('student.reports.columns.meals'),
+                'kind' => $updated ? 'meal_updated' : 'meal',
+                'member_id' => $entry->mess_member_id,
+                'title' => __($updated ? 'student.dashboard.activity.meal_updated' : 'student.dashboard.activity.meal'),
+                'description' => ($entry->member?->name ?? '—').' · '.localize_number($entry->total_meals).' '.__('student.reports.columns.meals'),
+                'actor' => ($updated ? $entry->updater : $entry->creator)?->name,
                 'amount' => null,
-                'date' => $entry->entry_date,
-                'sort' => $entry->created_at,
+                'time' => $updated ? $entry->updated_at : $entry->created_at,
+                'url' => route('student.mess.meals.index', $mess),
             ]);
         }
 
-        foreach ($mess->expenses()->active()->latest('created_at')->limit(5)->get() as $expense) {
+        foreach ($mess->expenses()->active()->with(['creator', 'member'])->latest('created_at')->limit(6)->get() as $expense) {
             $activity->push([
                 'kind' => 'expense',
-                'title' => $expense->title,
-                'detail' => $expense->is_personal ? __('student.expenses.personal') : __('student.expenses.shared'),
+                'title' => __('student.dashboard.activity.expense'),
+                'description' => $expense->title.' · '.($expense->is_personal ? __('student.expenses.personal') : __('student.expenses.shared')),
+                'actor' => $expense->creator?->name,
                 'amount' => (float) $expense->amount,
-                'date' => $expense->expense_date,
-                'sort' => $expense->created_at,
+                'time' => $expense->created_at,
+                'url' => route('student.mess.expenses.index', $mess),
             ]);
         }
 
-        foreach ($mess->settlements()->where('status', 'finalized')->latest('finalized_at')->limit(3)->get() as $settlement) {
+        foreach ($mess->settlements()->with('finalizer')->where('status', MonthlySettlement::STATUS_FINALIZED)->latest('finalized_at')->limit(4)->get() as $settlement) {
             $activity->push([
                 'kind' => 'settlement',
-                'title' => $settlement->month,
-                'detail' => __('student.settlements.finalize'),
+                'title' => __('student.dashboard.activity.settlement'),
+                'description' => $settlement->month.' · v'.$settlement->version,
+                'actor' => $settlement->finalizer?->name,
                 'amount' => (float) $settlement->total_surplus,
-                'date' => $settlement->finalized_at,
-                'sort' => $settlement->finalized_at,
+                'time' => $settlement->finalized_at,
+                'url' => route('student.mess.settlements.show', [$mess, $settlement]),
             ]);
         }
 
-        return $activity->sortByDesc('sort')->take(10)->values();
+        foreach ($mess->auditLogs()->with('user')->where('action', 'member.created')->latest()->limit(3)->get() as $log) {
+            $activity->push([
+                'kind' => 'member',
+                'title' => __('student.dashboard.activity.member'),
+                'description' => (string) data_get($log->meta, 'name', '—'),
+                'actor' => $log->user?->name,
+                'amount' => null,
+                'time' => $log->created_at,
+                'url' => route('student.mess.members.index', $mess),
+            ]);
+        }
+
+        return $activity
+            ->filter(function (array $item) use ($viewer): bool {
+                if ($item['time'] === null) {
+                    return false;
+                }
+
+                if ($viewer === null || $viewer->role !== MessMember::ROLE_MEMBER) {
+                    return true;
+                }
+
+                if (in_array($item['kind'], ['settlement'], true)) {
+                    return true;
+                }
+
+                return in_array($item['kind'], ['deposit', 'meal', 'meal_updated'], true)
+                    && (int) ($item['member_id'] ?? 0) === (int) $viewer->getKey();
+            })
+            ->sortByDesc('time')
+            ->take(12)
+            ->values();
+    }
+
+    /**
+     * Calculate a rounded percentage change, returning null when not meaningful.
+     */
+    private function change(float $current, float $previous): ?float
+    {
+        if (abs($previous) < 0.005) {
+            return null;
+        }
+
+        return round((($current - $previous) / abs($previous)) * 100, 1);
+    }
+
+    /**
+     * Determine whether a category matches any hint fragment.
+     *
+     * @param  list<string>  $hints
+     */
+    private function matchesAny(string $category, array $hints): bool
+    {
+        foreach ($hints as $hint) {
+            if (str_contains($category, $hint)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

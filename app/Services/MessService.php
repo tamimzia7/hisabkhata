@@ -70,7 +70,10 @@ class MessService
     public function activeMessFor(User $user, ?int $preferredId = null): ?Mess
     {
         if ($preferredId !== null) {
-            $member = $user->messMemberships()->where('mess_id', $preferredId)->first();
+            $member = $user->messMemberships()
+                ->where('mess_id', $preferredId)
+                ->where('status', MessMember::STATUS_ACTIVE)
+                ->first();
 
             if ($member) {
                 return $member->mess;
@@ -78,6 +81,7 @@ class MessService
         }
 
         return $user->messMemberships()
+            ->where('status', MessMember::STATUS_ACTIVE)
             ->with('mess')
             ->orderByDesc('id')
             ->first()?->mess;

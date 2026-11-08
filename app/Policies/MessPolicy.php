@@ -20,7 +20,9 @@ class MessPolicy
      */
     public function view(User $user, Mess $mess): bool
     {
-        return $mess->hasMember($user);
+        $member = $mess->memberFor($user);
+
+        return $member !== null && $member->isActive();
     }
 
     /**

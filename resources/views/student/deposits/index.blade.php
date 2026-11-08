@@ -36,24 +36,34 @@
         @endif
     </form>
 
-    @if($canManage && ! $locked)
-        <form method="POST" action="{{ route('student.mess.deposits.store', $mess) }}" class="glass rounded-2xl p-4">
+    @if(! $locked && ($canManage || $ownMember))
+        <form id="deposit-form" method="POST" action="{{ route('student.mess.deposits.store', $mess) }}" class="glass rounded-2xl p-4">
             @csrf
             <h3 class="mb-3 text-sm font-bold font-bn">{{ __('student.deposits.add') }}</h3>
             <div class="grid gap-2 sm:grid-cols-4">
-                <select name="mess_member_id" required class="field font-bn">
-                    <option value="">{{ __('student.deposits.member') }}</option>
-                    @foreach($members as $member)
-                        <option value="{{ $member->id }}" @selected(old('mess_member_id') == $member->id)>{{ $member->name }}</option>
-                    @endforeach
-                </select>
+                @if($canManage)
+                    <select name="mess_member_id" required class="field font-bn">
+                        <option value="">{{ __('student.deposits.member') }}</option>
+                        @foreach($members as $member)
+                            <option value="{{ $member->id }}" @selected(old('mess_member_id') == $member->id)>{{ $member->name }}</option>
+                        @endforeach
+                    </select>
+                @else
+                    <input type="hidden" name="mess_member_id" value="{{ $ownMember->getKey() }}">
+                    <div class="field flex items-center font-bn">{{ $ownMember->name }}</div>
+                @endif
                 <input type="date" name="deposit_date" value="{{ old('deposit_date', now()->toDateString()) }}" required class="field">
                 <input type="number" step="0.01" min="0.01" name="amount" value="{{ old('amount') }}" required placeholder="{{ __('student.deposits.amount') }}" class="field">
-                <select name="type" class="field font-bn">
-                    @foreach($types as $type)
-                        <option value="{{ $type }}">{{ __('student.deposits.types.'.$type) }}</option>
-                    @endforeach
-                </select>
+                @if($canManage)
+                    <select name="type" class="field font-bn">
+                        @foreach($types as $type)
+                            <option value="{{ $type }}">{{ __('student.deposits.types.'.$type) }}</option>
+                        @endforeach
+                    </select>
+                @else
+                    <input type="hidden" name="type" value="deposit">
+                    <div class="field flex items-center font-bn">{{ __('student.deposits.types.deposit') }}</div>
+                @endif
                 <select name="payment_method" class="field font-bn">
                     @foreach(['cash', 'bank', 'bkash', 'nagad'] as $method)
                         <option value="{{ $method }}">{{ __('student.accounts.types.'.$method) }}</option>

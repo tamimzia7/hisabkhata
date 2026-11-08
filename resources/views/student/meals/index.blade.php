@@ -34,16 +34,22 @@
     </div>
 
     @unless($locked)
-        <form method="POST" action="{{ route('student.mess.meals.store', $mess) }}" class="glass rounded-2xl p-4">
+        @if($canManage || $ownMember)
+        <form id="meal-form" method="POST" action="{{ route('student.mess.meals.store', $mess) }}" class="glass rounded-2xl p-4">
             @csrf
             <h3 class="mb-3 text-sm font-bold font-bn">{{ __('student.meals.add') }}</h3>
             <div class="grid gap-2 sm:grid-cols-7">
-                <select name="mess_member_id" required class="field font-bn sm:col-span-2">
-                    <option value="">{{ __('student.meals.member') }}</option>
-                    @foreach($members as $member)
-                        <option value="{{ $member->id }}" @selected(old('mess_member_id') == $member->id)>{{ $member->name }}</option>
-                    @endforeach
-                </select>
+                @if($canManage)
+                    <select name="mess_member_id" required class="field font-bn sm:col-span-2">
+                        <option value="">{{ __('student.meals.member') }}</option>
+                        @foreach($members as $member)
+                            <option value="{{ $member->id }}" @selected(old('mess_member_id') == $member->id)>{{ $member->name }}</option>
+                        @endforeach
+                    </select>
+                @else
+                    <input type="hidden" name="mess_member_id" value="{{ $ownMember->getKey() }}">
+                    <div class="field flex items-center font-bn sm:col-span-2">{{ $ownMember->name }}</div>
+                @endif
                 <input type="date" name="entry_date" value="{{ old('entry_date', now()->toDateString()) }}" required class="field sm:col-span-2">
                 <input type="number" step="0.5" min="0" max="30" name="breakfast" value="{{ old('breakfast', 0) }}" placeholder="{{ __('student.meals.breakfast') }}" class="field">
                 <input type="number" step="0.5" min="0" max="30" name="lunch" value="{{ old('lunch', 0) }}" placeholder="{{ __('student.meals.lunch') }}" class="field">
@@ -52,6 +58,7 @@
                 <button type="submit" class="btn-emerald rounded-lg px-4 py-2 text-xs font-bold font-bn sm:col-span-2">{{ __('student.meals.add') }}</button>
             </div>
         </form>
+        @endif
     @endunless
 
     <div class="glass rounded-2xl p-4">

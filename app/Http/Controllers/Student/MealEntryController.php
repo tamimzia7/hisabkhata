@@ -31,11 +31,15 @@ class MealEntryController extends Controller
         $month = $this->month($request);
         $start = CarbonImmutable::createFromFormat('Y-m-d', $month.'-01')->startOfMonth();
         $end = $start->endOfMonth();
+        $canManage = $request->user()->can('manageMeals', $mess);
+        $ownMember = $mess->memberFor($request->user());
+        $visibleMemberId = $canManage ? null : $ownMember?->getKey();
 
         $query = $mess->mealEntries()
             ->active()
             ->with('member')
             ->whereBetween('entry_date', [$start->toDateString(), $end->toDateString()])
+            ->when($visibleMemberId !== null, fn ($query) => $query->where('mess_member_id', $visibleMemberId))
             ->when($request->filled('member'), fn ($query) => $query->where('mess_member_id', $request->integer('member')))
             ->latest('entry_date')
             ->latest('id');
@@ -43,17 +47,24 @@ class MealEntryController extends Controller
         $summary = $mess->mealEntries()
             ->active()
             ->whereBetween('entry_date', [$start->toDateString(), $end->toDateString()])
+            ->when($visibleMemberId !== null, fn ($query) => $query->where('mess_member_id', $visibleMemberId))
             ->selectRaw('mess_member_id, SUM(breakfast) as breakfast, SUM(lunch) as lunch, SUM(dinner) as dinner, SUM(total_meals) as total')
             ->groupBy('mess_member_id')
             ->get()
             ->keyBy('mess_member_id');
+
+        $members = $canManage
+            ? $mess->activeMembers()->orderBy('name')->get()
+            : collect([$ownMember])->filter()->values();
 
         return view('student.meals.index', [
             'mess' => $mess,
             'month' => $month,
             'entries' => $query->paginate(30)->withQueryString(),
             'summary' => $summary,
-            'members' => $mess->activeMembers()->orderBy('name')->get(),
+            'members' => $members,
+            'ownMember' => $ownMember,
+            'canManage' => $canManage,
             'locked' => $this->settlements->isLocked($mess, $month),
             'totals' => [
                 'breakfast' => round((float) $summary->sum('breakfast'), 2),

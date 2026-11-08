@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
-use App\Models\Mess;
+use App\Models\MessMember;
 use App\Services\DashboardService;
 use App\Services\MessService;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
@@ -29,58 +30,72 @@ class StudentDashboardController extends Controller
 
         Gate::authorize('view', $mess);
 
-        [$from, $to, $range] = $this->resolveRange($request);
+        $member = $mess->memberFor($request->user());
+        abort_if($member === null, 403);
+
+        $month = $this->month($request);
+        $search = trim((string) $request->query('q', ''));
+        $summary = $dashboard->summary($mess, $month, $member);
+
+        $rows = $summary['members'];
+
+        if ($member->role === MessMember::ROLE_MEMBER) {
+            $rows = $rows->filter(fn (array $row): bool => (int) $row['member']?->getKey() === (int) $member->getKey());
+        }
+
+        if ($search !== '') {
+            $rows = $rows->filter(function (array $row) use ($search): bool {
+                $needle = mb_strtolower($search);
+
+                return str_contains(mb_strtolower((string) $row['member']?->name), $needle)
+                    || str_contains(mb_strtolower((string) $row['member']?->email), $needle);
+            });
+        }
 
         return view('student.dashboard', [
             'mess' => $mess,
-            'range' => $range,
-            'from' => $from,
-            'to' => $to,
-            'summary' => $dashboard->summary($mess, $from, $to),
+            'member' => $member,
+            'month' => $month,
+            'search' => $search,
+            'summary' => $summary,
+            'overview' => $this->paginate($rows->values(), $request, $month, $search),
+            'memberships' => $request->user()->messMemberships()->with('mess')->get(),
+            'subscription' => $request->user()->activeSubscription(),
         ]);
     }
 
     /**
-     * Convert the requested quick range into concrete dates.
+     * Build the member overview paginator.
      *
-     * @return array{0: CarbonImmutable, 1: CarbonImmutable, 2: string}
+     * @param  Collection<int, array<string, mixed>>  $rows
      */
-    private function resolveRange(Request $request): array
+    private function paginate(Collection $rows, Request $request, string $month, string $search): LengthAwarePaginator
     {
-        $range = (string) $request->query('range', 'month');
-        $now = CarbonImmutable::now();
+        $perPage = 8;
+        $page = max(1, (int) $request->integer('page', 1));
 
-        [$from, $to] = match ($range) {
-            'today' => [$now->startOfDay(), $now->endOfDay()],
-            'week' => [$now->startOfWeek(), $now->endOfWeek()],
-            'previous_month' => [$now->subMonthNoOverflow()->startOfMonth(), $now->subMonthNoOverflow()->endOfMonth()],
-            'custom' => $this->customRange($request, $now),
-            default => [$now->startOfMonth(), $now->endOfMonth()],
-        };
-
-        return [$from, $to, $range === 'custom' ? 'custom' : $range];
+        return new LengthAwarePaginator(
+            $rows->forPage($page, $perPage)->values(),
+            $rows->count(),
+            $perPage,
+            $page,
+            [
+                'path' => route('student.dashboard'),
+                'query' => array_filter([
+                    'month' => $month,
+                    'q' => $search !== '' ? $search : null,
+                ], fn ($value): bool => $value !== null && $value !== ''),
+            ],
+        );
     }
 
     /**
-     * Resolve a validated custom date range with sensible fallbacks.
-     *
-     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
+     * Validate the selected billing month.
      */
-    private function customRange(Request $request, CarbonImmutable $now): array
+    private function month(Request $request): string
     {
-        $validated = $request->validate([
-            'from' => ['nullable', 'date'],
-            'to' => ['nullable', 'date', 'after_or_equal:from'],
-        ]);
+        $month = (string) $request->query('month', now()->format('Y-m'));
 
-        $from = filled($validated['from'] ?? null)
-            ? CarbonImmutable::parse($validated['from'])->startOfDay()
-            : $now->startOfMonth();
-
-        $to = filled($validated['to'] ?? null)
-            ? CarbonImmutable::parse($validated['to'])->endOfDay()
-            : $now->endOfMonth();
-
-        return [$from, $to];
+        return preg_match('/^\d{4}-\d{2}$/', $month) === 1 ? $month : now()->format('Y-m');
     }
 }

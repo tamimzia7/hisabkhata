@@ -37,7 +37,7 @@
     </form>
 
     @if($canManage && ! $locked)
-        <form method="POST" action="{{ route('student.mess.bazar.store', $mess) }}" enctype="multipart/form-data" class="glass rounded-2xl p-4"
+        <form id="bazar-form" method="POST" action="{{ route('student.mess.bazar.store', $mess) }}" enctype="multipart/form-data" class="glass rounded-2xl p-4"
               x-data="{ items: [{ name: '', qty: 1, unit: 'kg', price: 0 }], addItem() { this.items.push({ name: '', qty: 1, unit: 'kg', price: 0 }); }, removeItem(i) { this.items.splice(i, 1); }, get total() { return this.items.reduce((s, i) => s + ((+i.qty || 0) * (+i.price || 0)), 0); } }">
             @csrf
             <div class="mb-3 flex items-center justify-between">
