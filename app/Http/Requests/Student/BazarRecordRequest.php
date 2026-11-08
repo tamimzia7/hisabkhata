@@ -6,6 +6,7 @@ use App\Models\Mess;
 use App\Models\MessAccount;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class BazarRecordRequest extends FormRequest
 {
@@ -54,17 +55,15 @@ class BazarRecordRequest extends FormRequest
     /**
      * Ensure the purchase has a total.
      */
-    public function after(): array
+    public function withValidator(Validator $validator): void
     {
-        return [
-            function ($validator): void {
-                $items = collect($this->input('items', []))->filter(fn ($item): bool => filled($item['name'] ?? null));
-                $itemsTotal = $items->sum(fn (array $item): float => (float) ($item['total_price'] ?? ((float) ($item['quantity'] ?? 1) * (float) ($item['unit_price'] ?? 0))));
+        $validator->after(function (Validator $validator): void {
+            $items = collect($this->input('items', []))->filter(fn ($item): bool => filled($item['name'] ?? null));
+            $itemsTotal = $items->sum(fn (array $item): float => (float) ($item['total_price'] ?? ((float) ($item['quantity'] ?? 1) * (float) ($item['unit_price'] ?? 0))));
 
-                if ($itemsTotal <= 0 && (float) $this->input('total_amount', 0) <= 0) {
-                    $validator->errors()->add('total_amount', __('student.errors.bazar_total_required'));
-                }
-            },
-        ];
+            if ($itemsTotal <= 0 && (float) $this->input('total_amount', 0) <= 0) {
+                $validator->errors()->add('total_amount', __('student.errors.bazar_total_required'));
+            }
+        });
     }
 }

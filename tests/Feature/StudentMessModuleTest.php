@@ -338,8 +338,8 @@ test('meal rate and member balances are calculated from database records', funct
         ->and($rows['Tamim']['other_allocated'])->toBe(166.67)
         ->and($rows['Tamim']['balance'])->toBe(1033.33)
         ->and($rows['Rahim']['meal_cost'])->toBe(1200.0)
-        ->and($rows['Rahim']['other_allocated'])->toBe(166.67)
-        ->and($rows['Rahim']['balance'])->toBe(133.33);
+        ->and($rows['Rahim']['other_allocated'])->toBe(166.66)
+        ->and($rows['Rahim']['balance'])->toBe(133.34);
 
     $this->actingAs($owner)
         ->get(route('student.dashboard'))

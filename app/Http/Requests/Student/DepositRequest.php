@@ -7,6 +7,7 @@ use App\Models\MessAccount;
 use App\Models\MessDeposit;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class DepositRequest extends FormRequest
 {
@@ -23,8 +24,14 @@ class DepositRequest extends FormRequest
             return false;
         }
 
-        return $this->user()->can('manageFinance', $mess)
-            || $this->user()->can('view', $mess);
+        if ($this->user()->can('manageFinance', $mess)) {
+            return true;
+        }
+
+        $own = $mess->memberFor($this->user());
+
+        return $own !== null
+            && (int) $this->input('mess_member_id') === (int) $own->getKey();
     }
 
     /**
@@ -52,5 +59,37 @@ class DepositRequest extends FormRequest
             'reference' => ['nullable', 'string', 'max:120'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
+    }
+
+    /**
+     * Prevent accidental duplicate deposit records.
+     */
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            $mess = $this->route('mess');
+
+            if (! $mess instanceof Mess) {
+                return;
+            }
+
+            $query = MessDeposit::query()
+                ->where('mess_id', $mess->getKey())
+                ->where('status', MessDeposit::STATUS_ACTIVE)
+                ->where('mess_member_id', $this->input('mess_member_id'))
+                ->whereDate('deposit_date', $this->input('deposit_date'))
+                ->where('amount', $this->input('amount'))
+                ->where('type', $this->input('type'));
+
+            $existing = $this->route('deposit');
+
+            if ($existing instanceof MessDeposit) {
+                $query->whereKeyNot($existing->getKey());
+            }
+
+            if ($query->exists()) {
+                $validator->errors()->add('amount', __('student.errors.duplicate_deposit'));
+            }
+        });
     }
 }

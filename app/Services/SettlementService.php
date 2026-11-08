@@ -3,17 +3,26 @@
 namespace App\Services;
 
 use App\Models\Mess;
+use App\Models\MessDeposit;
 use App\Models\MessExpense;
 use App\Models\MessMember;
 use App\Models\MonthlySettlement;
+use App\Models\SettlementDetail;
 use App\Models\User;
-use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class SettlementService
 {
+    private const STATUS_RECEIVABLE = 'receivable';
+
+    private const STATUS_DUE = 'due';
+
+    private const STATUS_SETTLED = 'settled';
+
+    public function __construct(private readonly MealRateService $mealRates) {}
+
     /**
      * Build the live settlement figures for a mess and billing month.
      *
@@ -21,59 +30,89 @@ class SettlementService
      *     month: string,
      *     from: string,
      *     to: string,
-     *     members: Collection<int, array{member: MessMember, meals: float, meal_cost: float, deposits: float, other_allocated: float, adjustments: float, balance: float}>,
+     *     members: Collection<int, array<string, mixed>>,
      *     totals: array<string, float>
      * }
      */
     public function preview(Mess $mess, string $month): array
     {
-        $start = CarbonImmutable::createFromFormat('Y-m-d', $month.'-01')->startOfMonth();
-        $end = $start->endOfMonth();
-        $from = $start->toDateString();
-        $to = $end->toDateString();
-
+        $rate = $this->mealRates->forMonth($mess, $month);
+        $from = $rate['from'];
+        $to = $rate['to'];
         $members = $mess->members()->orderBy('name')->get();
+        $memberIds = $members->pluck('id')->map(fn (int $id): int => $id)->all();
 
-        $mealRows = $mess->mealEntries()
-            ->whereBetween('entry_date', [$from, $to])
-            ->selectRaw('mess_member_id, SUM(total_meals) as meals')
-            ->groupBy('mess_member_id')
-            ->pluck('meals', 'mess_member_id');
+        $openings = $this->openingBalances($mess, $month);
 
-        $totalMeals = round((float) $mealRows->sum(), 2);
-        $totalBazar = round((float) $mess->bazarRecords()->whereBetween('purchase_date', [$from, $to])->sum('total_amount'), 2);
-        $totalMealExpenses = round((float) $mess->expenses()->whereBetween('expense_date', [$from, $to])->where('is_meal_related', true)->sum('amount'), 2);
-        $totalOtherExpenses = round((float) $mess->expenses()->whereBetween('expense_date', [$from, $to])->where('is_meal_related', false)->sum('amount'), 2);
+        $deposits = $this->zeroMap($memberIds);
+        $refunds = $this->zeroMap($memberIds);
+        $adjustments = $this->zeroMap($memberIds);
 
-        $mealPool = round($totalBazar + $totalMealExpenses, 2);
-        $mealRate = $totalMeals > 0 ? round($mealPool / $totalMeals, 4) : 0.0;
-
-        $depositTotals = $mess->deposits()
+        $depositRows = $mess->deposits()
+            ->active()
             ->whereBetween('deposit_date', [$from, $to])
-            ->get()
-            ->groupBy('mess_member_id')
-            ->map(fn (Collection $rows): float => round((float) $rows->sum(fn ($deposit): float => $deposit->signedAmount()), 2));
+            ->get();
 
-        $otherAllocations = $this->allocateOtherExpenses($mess, $from, $to, $members, $mealRows, $totalMeals);
+        foreach ($depositRows as $deposit) {
+            $memberId = (int) $deposit->mess_member_id;
+            $cents = $this->mealRates->toCents($deposit->amount);
 
-        $rows = $members->map(function (MessMember $member) use ($mealRows, $mealRate, $depositTotals, $otherAllocations): array {
-            $meals = round((float) ($mealRows[$member->getKey()] ?? 0), 2);
-            $mealCost = round($meals * $mealRate, 2);
-            $deposits = round((float) ($depositTotals[$member->getKey()] ?? 0), 2);
-            $other = round((float) ($otherAllocations[$member->getKey()] ?? 0), 2);
+            match ($deposit->type) {
+                MessDeposit::TYPE_REFUND => $refunds[$memberId] = ($refunds[$memberId] ?? 0) + $cents,
+                MessDeposit::TYPE_ADJUSTMENT => $adjustments[$memberId] = ($adjustments[$memberId] ?? 0) + $cents,
+                default => $deposits[$memberId] = ($deposits[$memberId] ?? 0) + $cents,
+            };
+        }
+
+        $sharedAllocations = $this->allocateSharedExpenses($mess, $from, $to, $members, $rate['member_meals'], $rate['total_meals']);
+        [$personalExpenses, $totalPersonalCents] = $this->personalExpenses($mess, $from, $to, $memberIds);
+
+        $rows = $members->map(function (MessMember $member) use ($openings, $deposits, $refunds, $adjustments, $rate, $sharedAllocations, $personalExpenses): array {
+            $id = (int) $member->getKey();
+            $meals = round((float) ($rate['member_meals'][$id] ?? 0), 2);
+            $mealCost = (int) ($rate['member_cost_cents'][$id] ?? 0);
+            $opening = $openings[$id] ?? 0;
+            $balance = $opening
+                + ($deposits[$id] ?? 0)
+                + ($refunds[$id] ?? 0)
+                + ($adjustments[$id] ?? 0)
+                - $mealCost
+                - ($sharedAllocations[$id] ?? 0)
+                - ($personalExpenses[$id] ?? 0);
 
             return [
                 'member' => $member,
+                'opening_balance' => $this->mealRates->fromCents($opening),
+                'deposits' => $this->mealRates->fromCents($deposits[$id] ?? 0),
+                'refunds' => $this->mealRates->fromCents($refunds[$id] ?? 0),
+                'adjustments' => $this->mealRates->fromCents($adjustments[$id] ?? 0),
                 'meals' => $meals,
-                'meal_cost' => $mealCost,
-                'deposits' => $deposits,
-                'other_allocated' => $other,
-                'adjustments' => 0.0,
-                'balance' => round($deposits - $mealCost - $other, 2),
+                'meal_cost' => $this->mealRates->fromCents($mealCost),
+                'shared_allocated' => $this->mealRates->fromCents($sharedAllocations[$id] ?? 0),
+                'other_allocated' => $this->mealRates->fromCents($sharedAllocations[$id] ?? 0),
+                'personal_expenses' => $this->mealRates->fromCents($personalExpenses[$id] ?? 0),
+                'balance' => $this->mealRates->fromCents($balance),
+                'status' => $this->statusForCents($balance),
             ];
         });
 
-        $totalDeposits = round((float) $rows->sum('deposits'), 2);
+        $totalDeposits = (int) array_sum($deposits);
+        $totalRefunds = (int) array_sum($refunds);
+        $totalAdjustments = (int) array_sum($adjustments);
+        $totalMealCost = (int) $rows->sum(fn (array $row): int => $this->mealRates->toCents($row['meal_cost']));
+        $totalShared = (int) array_sum($sharedAllocations);
+        $totalPersonal = $totalPersonalCents;
+        $totalOpening = (int) array_sum($openings);
+
+        $outstanding = (int) $rows->sum(fn (array $row): int => $this->mealRates->toCents($row['balance']) < 0
+            ? abs($this->mealRates->toCents($row['balance']))
+            : 0);
+        $receivable = (int) $rows->sum(fn (array $row): int => $this->mealRates->toCents($row['balance']) > 0
+            ? $this->mealRates->toCents($row['balance'])
+            : 0);
+
+        $surplus = $totalDeposits + $totalRefunds + $totalAdjustments
+            - $totalMealCost - $totalShared - $totalPersonal;
 
         return [
             'month' => $month,
@@ -81,15 +120,22 @@ class SettlementService
             'to' => $to,
             'members' => $rows,
             'totals' => [
-                'total_deposits' => $totalDeposits,
-                'total_bazar' => $totalBazar,
-                'total_meal_expenses' => $totalMealExpenses,
-                'total_other_expenses' => $totalOtherExpenses,
-                'total_meals' => $totalMeals,
-                'meal_rate' => $mealRate,
-                'total_meal_cost' => round((float) $rows->sum('meal_cost'), 2),
-                'total_other_allocated' => round((float) $rows->sum('other_allocated'), 2),
-                'total_surplus' => round($totalDeposits - $mealPool - $totalOtherExpenses, 2),
+                'total_opening_balance' => $this->mealRates->fromCents($totalOpening),
+                'total_deposits' => $this->mealRates->fromCents($totalDeposits),
+                'total_refunds' => $this->mealRates->fromCents($totalRefunds),
+                'total_adjustments' => $this->mealRates->fromCents($totalAdjustments),
+                'total_bazar' => $rate['bazar'],
+                'total_meal_expenses' => $rate['meal_expenses'],
+                'total_meal_cost' => $this->mealRates->fromCents($totalMealCost),
+                'total_shared_expenses' => $this->mealRates->fromCents($totalShared),
+                'total_other_expenses' => $this->mealRates->fromCents($totalShared),
+                'total_personal_expenses' => $this->mealRates->fromCents($totalPersonal),
+                'total_other_allocated' => $this->mealRates->fromCents($totalShared),
+                'total_meals' => $rate['total_meals'],
+                'meal_rate' => $rate['meal_rate'],
+                'total_outstanding_dues' => $this->mealRates->fromCents($outstanding),
+                'total_receivable' => $this->mealRates->fromCents($receivable),
+                'total_surplus' => $this->mealRates->fromCents($surplus),
             ],
         ];
     }
@@ -129,32 +175,22 @@ class SettlementService
                 ->lockForUpdate()
                 ->first();
 
+            $totals = $this->settlementTotals($preview);
+
             if ($settlement === null) {
                 $settlement = MonthlySettlement::create([
                     'mess_id' => $mess->getKey(),
                     'month' => $month,
                     'version' => $version,
                     'status' => MonthlySettlement::STATUS_FINALIZED,
-                    'total_deposits' => $preview['totals']['total_deposits'],
-                    'total_bazar' => $preview['totals']['total_bazar'],
-                    'total_meal_expenses' => $preview['totals']['total_meal_expenses'],
-                    'total_other_expenses' => $preview['totals']['total_other_expenses'],
-                    'total_meals' => $preview['totals']['total_meals'],
-                    'meal_rate' => $preview['totals']['meal_rate'],
-                    'total_surplus' => $preview['totals']['total_surplus'],
+                    ...$totals,
                     'finalized_at' => now(),
                     'finalized_by' => $actor->getKey(),
                 ]);
             } else {
                 $settlement->update([
                     'status' => MonthlySettlement::STATUS_FINALIZED,
-                    'total_deposits' => $preview['totals']['total_deposits'],
-                    'total_bazar' => $preview['totals']['total_bazar'],
-                    'total_meal_expenses' => $preview['totals']['total_meal_expenses'],
-                    'total_other_expenses' => $preview['totals']['total_other_expenses'],
-                    'total_meals' => $preview['totals']['total_meals'],
-                    'meal_rate' => $preview['totals']['meal_rate'],
-                    'total_surplus' => $preview['totals']['total_surplus'],
+                    ...$totals,
                     'finalized_at' => now(),
                     'finalized_by' => $actor->getKey(),
                 ]);
@@ -164,10 +200,13 @@ class SettlementService
             foreach ($preview['members'] as $row) {
                 $settlement->details()->create([
                     'mess_member_id' => $row['member']->getKey(),
+                    'opening_balance' => $row['opening_balance'],
                     'meals' => $row['meals'],
                     'meal_cost' => $row['meal_cost'],
                     'deposits' => $row['deposits'],
-                    'other_allocated' => $row['other_allocated'],
+                    'refunds' => $row['refunds'],
+                    'other_allocated' => $row['shared_allocated'],
+                    'personal_expenses' => $row['personal_expenses'],
                     'adjustments' => $row['adjustments'],
                     'balance' => $row['balance'],
                 ]);
@@ -205,13 +244,7 @@ class SettlementService
                 'month' => $settlement->month,
                 'version' => $version,
                 'status' => MonthlySettlement::STATUS_DRAFT,
-                'total_deposits' => $preview['totals']['total_deposits'],
-                'total_bazar' => $preview['totals']['total_bazar'],
-                'total_meal_expenses' => $preview['totals']['total_meal_expenses'],
-                'total_other_expenses' => $preview['totals']['total_other_expenses'],
-                'total_meals' => $preview['totals']['total_meals'],
-                'meal_rate' => $preview['totals']['meal_rate'],
-                'total_surplus' => $preview['totals']['total_surplus'],
+                ...$this->settlementTotals($preview),
             ]);
         });
     }
@@ -240,50 +273,170 @@ class SettlementService
     }
 
     /**
-     * Allocate non-meal expenses to members.
+     * Opening balances come from each member's most recent finalized settlement.
+     *
+     * @return array<int, int>
+     */
+    private function openingBalances(Mess $mess, string $month): array
+    {
+        return SettlementDetail::query()
+            ->join('monthly_settlements as ms', 'ms.id', '=', 'settlement_details.monthly_settlement_id')
+            ->where('ms.mess_id', $mess->getKey())
+            ->where('ms.status', MonthlySettlement::STATUS_FINALIZED)
+            ->where('ms.month', '<', $month)
+            ->orderByDesc('ms.month')
+            ->orderByDesc('ms.version')
+            ->get(['settlement_details.mess_member_id', 'settlement_details.balance'])
+            ->unique('mess_member_id')
+            ->mapWithKeys(fn ($row): array => [(int) $row->mess_member_id => $this->mealRates->toCents($row->balance)])
+            ->all();
+    }
+
+    /**
+     * Allocate non-meal shared expenses to active members.
      *
      * @param  Collection<int, MessMember>  $members
-     * @param  Collection<int|string, mixed>  $mealRows
-     * @return array<int, float>
+     * @param  array<int|string, float>  $memberMeals
+     * @return array<int, int>
      */
-    private function allocateOtherExpenses(Mess $mess, string $from, string $to, Collection $members, Collection $mealRows, float $totalMeals): array
+    private function allocateSharedExpenses(Mess $mess, string $from, string $to, Collection $members, array $memberMeals, float $totalMeals): array
     {
-        $active = $members->where('status', MessMember::STATUS_ACTIVE);
-        $eligible = $active->isEmpty() ? $members : $active;
-        $allocations = [];
+        $eligible = $members->where('status', MessMember::STATUS_ACTIVE)->sortBy('id')->values();
 
-        foreach ($eligible as $member) {
-            $allocations[$member->getKey()] = 0.0;
+        if ($eligible->isEmpty()) {
+            $eligible = $members->sortBy('id')->values();
         }
 
+        $allocations = $this->zeroMap($members->pluck('id')->all());
+
         $expenses = $mess->expenses()
+            ->active()
             ->whereBetween('expense_date', [$from, $to])
             ->where('is_meal_related', false)
+            ->where('is_personal', false)
             ->get();
 
         foreach ($expenses as $expense) {
-            $amount = (float) $expense->amount;
+            $amount = $this->mealRates->toCents($expense->amount);
 
             if ($eligible->isEmpty()) {
                 continue;
             }
 
             if ($expense->allocation_method === MessExpense::ALLOCATION_MEALS && $totalMeals > 0) {
+                $allocated = 0;
+                $shares = [];
+
                 foreach ($eligible as $member) {
-                    $meals = (float) ($mealRows[$member->getKey()] ?? 0);
-                    $allocations[$member->getKey()] += round($amount * ($meals / $totalMeals), 2);
+                    $meals = (float) ($memberMeals[$member->getKey()] ?? 0);
+                    $share = (int) round($amount * ($meals / $totalMeals));
+                    $shares[$member->getKey()] = $share;
+                    $allocated += $share;
+                }
+
+                $shares[$eligible->first()->getKey()] += $amount - $allocated;
+
+                foreach ($shares as $memberId => $share) {
+                    $allocations[$memberId] += $share;
                 }
 
                 continue;
             }
 
-            $share = round($amount / $eligible->count(), 2);
+            $count = max($eligible->count(), 1);
+            $share = intdiv($amount, $count);
+            $remainder = $amount - ($share * $count);
 
-            foreach ($eligible as $member) {
-                $allocations[$member->getKey()] += $share;
+            foreach ($eligible->values() as $index => $member) {
+                $allocations[$member->getKey()] += $share + ($index < $remainder ? 1 : 0);
             }
         }
 
         return $allocations;
+    }
+
+    /**
+     * Personal expenses are charged only to their owning member.
+     *
+     * @param  list<int>  $memberIds
+     * @return array{0: array<int, int>, 1: int}
+     */
+    private function personalExpenses(Mess $mess, string $from, string $to, array $memberIds): array
+    {
+        $allocations = $this->zeroMap($memberIds);
+        $total = 0;
+
+        $expenses = $mess->expenses()
+            ->active()
+            ->whereBetween('expense_date', [$from, $to])
+            ->where('is_personal', true)
+            ->get();
+
+        foreach ($expenses as $expense) {
+            $amount = $this->mealRates->toCents($expense->amount);
+            $total += $amount;
+
+            $memberId = (int) $expense->mess_member_id;
+
+            if ($memberId > 0) {
+                $allocations[$memberId] = ($allocations[$memberId] ?? 0) + $amount;
+            }
+        }
+
+        return [$allocations, $total];
+    }
+
+    /**
+     * Build the persisted settlement totals from a preview.
+     *
+     * @param  array<string, mixed>  $preview
+     * @return array<string, float>
+     */
+    private function settlementTotals(array $preview): array
+    {
+        return [
+            'total_deposits' => $preview['totals']['total_deposits'],
+            'total_refunds' => $preview['totals']['total_refunds'],
+            'total_adjustments' => $preview['totals']['total_adjustments'],
+            'total_bazar' => $preview['totals']['total_bazar'],
+            'total_meal_expenses' => $preview['totals']['total_meal_expenses'],
+            'total_other_expenses' => $preview['totals']['total_other_expenses'],
+            'total_personal_expenses' => $preview['totals']['total_personal_expenses'],
+            'total_meals' => $preview['totals']['total_meals'],
+            'total_meal_cost' => $preview['totals']['total_meal_cost'],
+            'meal_rate' => $preview['totals']['meal_rate'],
+            'total_surplus' => $preview['totals']['total_surplus'],
+            'total_outstanding_dues' => $preview['totals']['total_outstanding_dues'],
+            'total_receivable' => $preview['totals']['total_receivable'],
+        ];
+    }
+
+    /**
+     * Create a zero map for the given member IDs.
+     *
+     * @param  list<int|string>  $memberIds
+     * @return array<int, int>
+     */
+    private function zeroMap(array $memberIds): array
+    {
+        $map = [];
+
+        foreach ($memberIds as $memberId) {
+            $map[(int) $memberId] = 0;
+        }
+
+        return $map;
+    }
+
+    /**
+     * Resolve the balance status label.
+     */
+    private function statusForCents(int $cents): string
+    {
+        return match (true) {
+            $cents > 0 => self::STATUS_RECEIVABLE,
+            $cents < 0 => self::STATUS_DUE,
+            default => self::STATUS_SETTLED,
+        };
     }
 }

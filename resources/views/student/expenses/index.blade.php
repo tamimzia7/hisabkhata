@@ -30,7 +30,8 @@
     </form>
 
     @if($canManage && ! $locked)
-        <form method="POST" action="{{ route('student.mess.expenses.store', $mess) }}" enctype="multipart/form-data" class="glass rounded-2xl p-4">
+        <form method="POST" action="{{ route('student.mess.expenses.store', $mess) }}" enctype="multipart/form-data" class="glass rounded-2xl p-4"
+              x-data="{ personal: {{ old('is_personal') ? 'true' : 'false' }} }">
             @csrf
             <h3 class="mb-3 text-sm font-bold font-bn">{{ __('student.expenses.add') }}</h3>
             <div class="grid gap-2 sm:grid-cols-4">
@@ -52,6 +53,16 @@
                     <input type="checkbox" name="is_meal_related" value="1" class="rounded border-white/20 bg-black/30 text-emerald-500">
                     {{ __('student.expenses.meal_related') }}
                 </label>
+                <label class="flex items-center gap-2 rounded-lg bg-white/5 px-3 text-xs text-gray-300 font-bn">
+                    <input type="checkbox" name="is_personal" value="1" x-model="personal" class="rounded border-white/20 bg-black/30 text-emerald-500">
+                    {{ __('student.expenses.personal') }}
+                </label>
+                <select name="mess_member_id" x-show="personal" x-cloak class="field font-bn sm:col-span-2">
+                    <option value="">{{ __('student.expenses.personal_for') }}</option>
+                    @foreach($members as $member)
+                        <option value="{{ $member->id }}" @selected(old('mess_member_id') == $member->id)>{{ $member->name }}</option>
+                    @endforeach
+                </select>
                 <input name="notes" value="{{ old('notes') }}" placeholder="{{ __('student.expenses.notes') }}" class="field font-bn sm:col-span-2">
                 <input type="file" name="receipt" accept="image/*" class="field text-[10px] sm:col-span-2">
             </div>
@@ -80,7 +91,12 @@
                             <td>{{ $expense->expense_date?->format('d M Y') }}</td>
                             <td class="font-bn font-bold text-white">{{ $expense->title }}</td>
                             <td class="font-bn">{{ $expense->category }}</td>
-                            <td><span class="rounded-full px-2 py-0.5 text-[10px] font-bn {{ $expense->is_meal_related ? 'bg-emerald-500/15 text-emerald-400' : 'bg-orange-500/15 text-orange-400' }}">{{ $expense->is_meal_related ? __('student.expenses.meal') : __('student.expenses.other') }}</span></td>
+                            <td>
+                                <span class="rounded-full px-2 py-0.5 text-[10px] font-bn {{ $expense->is_meal_related ? 'bg-emerald-500/15 text-emerald-400' : 'bg-orange-500/15 text-orange-400' }}">{{ $expense->is_meal_related ? __('student.expenses.meal') : __('student.expenses.other') }}</span>
+                                @if($expense->is_personal)
+                                    <span class="mt-1 block rounded-full bg-sky-500/15 px-2 py-0.5 text-[10px] text-sky-300 font-bn">{{ __('student.expenses.personal') }}: {{ $expense->member?->name ?? '—' }}</span>
+                                @endif
+                            </td>
                             <td class="font-bold text-orange-400">৳{{ localize_money($expense->amount) }}</td>
                             <td class="text-[11px] font-bn">{{ $expense->account?->name ?? '—' }}</td>
                             <td>
@@ -109,6 +125,13 @@
                                                         @endforeach
                                                     </select>
                                                     <label class="flex items-center gap-2 text-[11px] text-gray-300 font-bn"><input type="checkbox" name="is_meal_related" value="1" @checked($expense->is_meal_related) class="rounded border-white/20 bg-black/30 text-emerald-500">{{ __('student.expenses.meal_related') }}</label>
+                                                    <label class="flex items-center gap-2 text-[11px] text-gray-300 font-bn"><input type="checkbox" name="is_personal" value="1" @checked($expense->is_personal) class="rounded border-white/20 bg-black/30 text-emerald-500">{{ __('student.expenses.personal') }}</label>
+                                                    <select name="mess_member_id" class="field text-xs font-bn">
+                                                        <option value="">{{ __('student.expenses.personal_for') }}</option>
+                                                        @foreach($members as $member)
+                                                            <option value="{{ $member->id }}" @selected($expense->mess_member_id === $member->id)>{{ $member->name }}</option>
+                                                        @endforeach
+                                                    </select>
                                                     <input name="notes" value="{{ $expense->notes }}" class="field text-xs font-bn">
                                                     <input type="file" name="receipt" accept="image/*" class="field text-[10px]">
                                                     <button type="submit" class="btn-emerald w-full rounded-lg py-1.5 text-[11px] font-bold font-bn">{{ __('student.common.save') }}</button>

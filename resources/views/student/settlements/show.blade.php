@@ -32,8 +32,12 @@
             @foreach([
                 ['label' => __('student.settlements.total_deposits'), 'value' => '৳'.localize_money($settlement->total_deposits)],
                 ['label' => __('student.settlements.total_bazar'), 'value' => '৳'.localize_money($settlement->total_bazar)],
+                ['label' => __('student.settlements.total_meal_expenses'), 'value' => '৳'.localize_money($settlement->total_meal_expenses)],
                 ['label' => __('student.settlements.total_meals'), 'value' => localize_number($settlement->total_meals)],
                 ['label' => __('student.settlements.meal_rate'), 'value' => '৳'.localize_money($settlement->meal_rate)],
+                ['label' => __('student.settlements.total_meal_cost'), 'value' => '৳'.localize_money($settlement->total_meal_cost)],
+                ['label' => __('student.settlements.total_personal_expenses'), 'value' => '৳'.localize_money($settlement->total_personal_expenses)],
+                ['label' => __('student.settlements.total_outstanding_dues'), 'value' => '৳'.localize_money($settlement->total_outstanding_dues)],
             ] as $card)
                 <div class="rounded-lg bg-white/5 p-3"><p class="kpi-label font-bn">{{ $card['label'] }}</p><p class="text-base font-bold text-emerald-400">{{ $card['value'] }}</p></div>
             @endforeach
@@ -44,22 +48,33 @@
                 <thead>
                     <tr>
                         <th>{{ __('student.members.name') }}</th>
+                        <th>{{ __('student.settlements.opening_balance') }}</th>
                         <th>{{ __('student.settlements.meals') }}</th>
                         <th>{{ __('student.settlements.meal_cost') }}</th>
                         <th>{{ __('student.settlements.deposits') }}</th>
+                        <th>{{ __('student.settlements.refunds') }}</th>
+                        <th>{{ __('student.settlements.adjustments') }}</th>
                         <th>{{ __('student.settlements.other_allocated') }}</th>
+                        <th>{{ __('student.settlements.personal_expenses') }}</th>
                         <th>{{ __('student.settlements.balance') }}</th>
+                        <th>{{ __('student.common.status') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($settlement->details as $detail)
+                        @php($status = $detail->balance > 0 ? 'receivable' : ($detail->balance < 0 ? 'due' : 'settled'))
                         <tr>
                             <td class="font-bn font-bold text-white">{{ $detail->member?->name ?? '—' }}</td>
+                            <td>৳{{ localize_money($detail->opening_balance) }}</td>
                             <td>{{ localize_number($detail->meals) }}</td>
                             <td>৳{{ localize_money($detail->meal_cost) }}</td>
                             <td>৳{{ localize_money($detail->deposits) }}</td>
+                            <td>৳{{ localize_money($detail->refunds) }}</td>
+                            <td>৳{{ localize_money($detail->adjustments) }}</td>
                             <td>৳{{ localize_money($detail->other_allocated) }}</td>
+                            <td>৳{{ localize_money($detail->personal_expenses) }}</td>
                             <td class="font-bold {{ $detail->balance >= 0 ? 'text-emerald-400' : 'text-red-400' }}">{{ $detail->balance >= 0 ? '+' : '-' }}৳{{ localize_money(abs($detail->balance)) }}</td>
+                            <td><span class="rounded-full px-2 py-0.5 text-[10px] font-bn {{ $status === 'due' ? 'bg-red-500/15 text-red-300' : ($status === 'receivable' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-white/10 text-gray-300') }}">{{ __('student.settlements.balance_statuses.'.$status) }}</span></td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -67,7 +82,8 @@
         </div>
 
         <div class="mt-4 flex flex-wrap justify-between gap-2 border-t border-white/10 pt-3 text-xs font-bn">
-            <span class="text-gray-400">{{ __('student.settlements.total_other_expenses') }}: <b class="text-gray-200">৳{{ localize_money($settlement->total_other_expenses) }}</b></span>
+            <span class="text-gray-400">{{ __('student.settlements.total_shared_expenses') }}: <b class="text-gray-200">৳{{ localize_money($settlement->total_other_expenses) }}</b></span>
+            <span class="text-gray-400">{{ __('student.settlements.total_receivable') }}: <b class="text-emerald-400">৳{{ localize_money($settlement->total_receivable) }}</b></span>
             <span class="text-gray-400">{{ __('student.settlements.total_surplus') }}: <b class="{{ $settlement->total_surplus >= 0 ? 'text-emerald-400' : 'text-red-400' }}">৳{{ localize_money($settlement->total_surplus) }}</b></span>
         </div>
     </div>

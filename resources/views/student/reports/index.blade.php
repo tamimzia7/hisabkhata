@@ -15,6 +15,9 @@
         ['type' => 'balance', 'icon' => '⚖️', 'label' => __('student.reports.types.balance')],
         ['type' => 'settlement', 'icon' => '📅', 'label' => __('student.reports.types.settlement')],
         ['type' => 'income-expense', 'icon' => '📈', 'label' => __('student.reports.types.income_expense')],
+        ['type' => 'member-statement', 'icon' => '🧾', 'label' => __('student.reports.types.member_statement')],
+        ['type' => 'outstanding-dues', 'icon' => '⚠️', 'label' => __('student.reports.types.outstanding_dues')],
+        ['type' => 'receivable', 'icon' => '✅', 'label' => __('student.reports.types.receivable')],
     ];
 @endphp
 <div class="space-y-4">

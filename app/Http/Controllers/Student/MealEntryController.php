@@ -33,6 +33,7 @@ class MealEntryController extends Controller
         $end = $start->endOfMonth();
 
         $query = $mess->mealEntries()
+            ->active()
             ->with('member')
             ->whereBetween('entry_date', [$start->toDateString(), $end->toDateString()])
             ->when($request->filled('member'), fn ($query) => $query->where('mess_member_id', $request->integer('member')))
@@ -40,6 +41,7 @@ class MealEntryController extends Controller
             ->latest('id');
 
         $summary = $mess->mealEntries()
+            ->active()
             ->whereBetween('entry_date', [$start->toDateString(), $end->toDateString()])
             ->selectRaw('mess_member_id, SUM(breakfast) as breakfast, SUM(lunch) as lunch, SUM(dinner) as dinner, SUM(total_meals) as total')
             ->groupBy('mess_member_id')
@@ -90,7 +92,10 @@ class MealEntryController extends Controller
         $this->settlements->ensureMonthOpen($mess, $entry->entry_date->toDateString(), 'entry_date');
         $this->settlements->ensureMonthOpen($mess, $request->validated('entry_date'), 'entry_date');
 
-        $entry->update($request->validated());
+        $entry->update([
+            ...$request->validated(),
+            'updated_by' => $request->user()->getKey(),
+        ]);
 
         $this->audit->log($mess, $request->user(), 'meal.updated', $entry, $request->validated(), $request->ip());
 

@@ -38,7 +38,8 @@ class MessExpenseController extends Controller
         $end = $start->endOfMonth();
 
         $expenses = $mess->expenses()
-            ->with('account')
+            ->active()
+            ->with(['account', 'member'])
             ->whereBetween('expense_date', [$start->toDateString(), $end->toDateString()])
             ->when($request->filled('type'), function ($query) use ($request): void {
                 if ($request->query('type') === 'meal') {
@@ -53,6 +54,7 @@ class MessExpenseController extends Controller
             ->withQueryString();
 
         $monthExpenses = $mess->expenses()
+            ->active()
             ->whereBetween('expense_date', [$start->toDateString(), $end->toDateString()])
             ->get();
 
@@ -60,6 +62,7 @@ class MessExpenseController extends Controller
             'mess' => $mess,
             'month' => $month,
             'expenses' => $expenses,
+            'members' => $mess->members()->orderBy('name')->get(),
             'accounts' => $mess->accounts()->where('is_active', true)->orderBy('name')->get(),
             'mealTotal' => round((float) $monthExpenses->where('is_meal_related', true)->sum('amount'), 2),
             'otherTotal' => round((float) $monthExpenses->where('is_meal_related', false)->sum('amount'), 2),
@@ -80,6 +83,8 @@ class MessExpenseController extends Controller
             $expense = $mess->expenses()->create([
                 ...$validated,
                 'is_meal_related' => (bool) ($validated['is_meal_related'] ?? false),
+                'is_personal' => (bool) ($validated['is_personal'] ?? false),
+                'mess_member_id' => ($validated['is_personal'] ?? false) ? ($validated['mess_member_id'] ?? null) : null,
                 'created_by' => $request->user()->getKey(),
                 'receipt_path' => $request->hasFile('receipt')
                     ? Storage::disk('public')->putFile('mess-expenses', $request->file('receipt'))
@@ -116,6 +121,8 @@ class MessExpenseController extends Controller
             $expense->update([
                 ...$validated,
                 'is_meal_related' => (bool) ($validated['is_meal_related'] ?? false),
+                'is_personal' => (bool) ($validated['is_personal'] ?? false),
+                'mess_member_id' => ($validated['is_personal'] ?? false) ? ($validated['mess_member_id'] ?? null) : null,
                 'receipt_path' => $request->hasFile('receipt')
                     ? Storage::disk('public')->putFile('mess-expenses', $request->file('receipt'))
                     : $expense->receipt_path,

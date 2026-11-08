@@ -26,14 +26,20 @@
         </div>
     </form>
 
-    <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+    <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
         @foreach([
             ['label' => __('student.settlements.total_deposits'), 'value' => '৳'.localize_money($preview['totals']['total_deposits']), 'tone' => 'text-emerald-400'],
             ['label' => __('student.settlements.total_bazar'), 'value' => '৳'.localize_money($preview['totals']['total_bazar']), 'tone' => 'text-orange-400'],
+            ['label' => __('student.settlements.total_meal_expenses'), 'value' => '৳'.localize_money($preview['totals']['total_meal_expenses']), 'tone' => 'text-amber-400'],
             ['label' => __('student.settlements.total_meals'), 'value' => localize_number($preview['totals']['total_meals']), 'tone' => 'text-sky-400'],
             ['label' => __('student.settlements.meal_rate'), 'value' => '৳'.localize_money($preview['totals']['meal_rate']), 'tone' => 'text-teal-400'],
+            ['label' => __('student.settlements.total_meal_cost'), 'value' => '৳'.localize_money($preview['totals']['total_meal_cost']), 'tone' => 'text-emerald-300'],
+            ['label' => __('student.settlements.total_shared_expenses'), 'value' => '৳'.localize_money($preview['totals']['total_shared_expenses']), 'tone' => 'text-orange-300'],
+            ['label' => __('student.settlements.total_personal_expenses'), 'value' => '৳'.localize_money($preview['totals']['total_personal_expenses']), 'tone' => 'text-sky-300'],
+            ['label' => __('student.settlements.total_outstanding_dues'), 'value' => '৳'.localize_money($preview['totals']['total_outstanding_dues']), 'tone' => 'text-red-400'],
+            ['label' => __('student.settlements.total_receivable'), 'value' => '৳'.localize_money($preview['totals']['total_receivable']), 'tone' => 'text-lime-400'],
         ] as $card)
-            <div class="glass rounded-xl p-3"><p class="kpi-label font-bn">{{ $card['label'] }}</p><p class="text-lg font-bold {{ $card['tone'] }}">{{ $card['value'] }}</p></div>
+            <div class="glass rounded-xl p-3"><p class="kpi-label font-bn">{{ $card['label'] }}</p><p class="text-base font-bold {{ $card['tone'] }}">{{ $card['value'] }}</p></div>
         @endforeach
     </div>
 
@@ -44,35 +50,50 @@
                 <thead>
                     <tr>
                         <th>{{ __('student.members.name') }}</th>
+                        <th>{{ __('student.settlements.opening_balance') }}</th>
                         <th>{{ __('student.settlements.meals') }}</th>
                         <th>{{ __('student.settlements.meal_cost') }}</th>
                         <th>{{ __('student.settlements.deposits') }}</th>
+                        <th>{{ __('student.settlements.refunds') }}</th>
+                        <th>{{ __('student.settlements.adjustments') }}</th>
                         <th>{{ __('student.settlements.other_allocated') }}</th>
+                        <th>{{ __('student.settlements.personal_expenses') }}</th>
                         <th>{{ __('student.settlements.balance') }}</th>
+                        <th>{{ __('student.common.status') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($preview['members'] as $row)
                         <tr>
                             <td class="font-bn font-bold text-white">{{ $row['member']->name }}</td>
+                            <td>৳{{ localize_money($row['opening_balance']) }}</td>
                             <td>{{ localize_number($row['meals']) }}</td>
                             <td>৳{{ localize_money($row['meal_cost']) }}</td>
                             <td>৳{{ localize_money($row['deposits']) }}</td>
-                            <td>৳{{ localize_money($row['other_allocated']) }}</td>
+                            <td>৳{{ localize_money($row['refunds']) }}</td>
+                            <td>৳{{ localize_money($row['adjustments']) }}</td>
+                            <td>৳{{ localize_money($row['shared_allocated']) }}</td>
+                            <td>৳{{ localize_money($row['personal_expenses']) }}</td>
                             <td class="font-bold {{ $row['balance'] >= 0 ? 'text-emerald-400' : 'text-red-400' }}">{{ $row['balance'] >= 0 ? '+' : '-' }}৳{{ localize_money(abs($row['balance'])) }}</td>
+                            <td><span class="rounded-full px-2 py-0.5 text-[10px] font-bn {{ $row['status'] === 'due' ? 'bg-red-500/15 text-red-300' : ($row['status'] === 'receivable' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-white/10 text-gray-300') }}">{{ __('student.settlements.balance_statuses.'.$row['status']) }}</span></td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="py-4 text-center text-gray-500 font-bn">{{ __('student.common.no_records') }}</td></tr>
+                        <tr><td colspan="11" class="py-4 text-center text-gray-500 font-bn">{{ __('student.common.no_records') }}</td></tr>
                     @endforelse
                 </tbody>
                 <tfoot>
                     <tr class="border-t border-emerald-400/20 text-xs">
                         <td class="font-bn font-bold text-white">{{ __('student.common.total') }}</td>
+                        <td class="font-bold">৳{{ localize_money($preview['totals']['total_opening_balance']) }}</td>
                         <td class="font-bold">{{ localize_number($preview['totals']['total_meals']) }}</td>
                         <td class="font-bold">৳{{ localize_money($preview['totals']['total_meal_cost']) }}</td>
                         <td class="font-bold">৳{{ localize_money($preview['totals']['total_deposits']) }}</td>
-                        <td class="font-bold">৳{{ localize_money($preview['totals']['total_other_allocated']) }}</td>
-                        <td class="font-bold {{ $preview['totals']['total_surplus'] >= 0 ? 'text-emerald-400' : 'text-red-400' }}">৳{{ localize_money($preview['totals']['total_surplus']) }}</td>
+                        <td class="font-bold">৳{{ localize_money($preview['totals']['total_refunds']) }}</td>
+                        <td class="font-bold">৳{{ localize_money($preview['totals']['total_adjustments']) }}</td>
+                        <td class="font-bold">৳{{ localize_money($preview['totals']['total_shared_expenses']) }}</td>
+                        <td class="font-bold">৳{{ localize_money($preview['totals']['total_personal_expenses']) }}</td>
+                        <td class="font-bold {{ $preview['totals']['total_surplus'] >= 0 ? 'text-emerald-400' : 'text-red-400' }}">৳{{ localize_money($preview['totals']['total_surplus'] + $preview['totals']['total_opening_balance']) }}</td>
+                        <td></td>
                     </tr>
                 </tfoot>
             </table>

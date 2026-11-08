@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Mess;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 class MealRateService
 {
@@ -92,7 +93,7 @@ class MealRateService
     /**
      * Sum a decimal column as integer paisa.
      */
-    private function sumCents(Builder $query, string $column): int
+    private function sumCents(Builder|Relation $query, string $column): int
     {
         return $this->toCents($query->sum($column));
     }

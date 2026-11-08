@@ -29,6 +29,9 @@ class ReportController extends Controller
         'balance',
         'settlement',
         'income-expense',
+        'member-statement',
+        'outstanding-dues',
+        'receivable',
     ];
 
     public function __construct(private readonly SettlementService $settlements) {}
@@ -66,6 +69,7 @@ class ReportController extends Controller
             'type' => $type,
             'month' => $month,
             'report' => $report,
+            'members' => $mess->members()->orderBy('name')->get(),
         ]);
     }
 
@@ -88,12 +92,16 @@ class ReportController extends Controller
             'balance' => $this->balanceReport($mess, $month),
             'settlement' => $this->settlementReport($mess, $month),
             'income-expense' => $this->incomeExpenseReport($mess, $start, $end),
+            'member-statement' => $this->memberStatementReport($request, $mess, $month),
+            'outstanding-dues' => $this->balanceStatusReport($mess, $month, 'due'),
+            'receivable' => $this->balanceStatusReport($mess, $month, 'receivable'),
         };
     }
 
     private function dailyMealReport(Mess $mess, CarbonImmutable $start, CarbonImmutable $end): array
     {
         $rows = $mess->mealEntries()
+            ->active()
             ->whereBetween('entry_date', [$start->toDateString(), $end->toDateString()])
             ->selectRaw('entry_date, SUM(breakfast) as breakfast, SUM(lunch) as lunch, SUM(dinner) as dinner, SUM(total_meals) as total')
             ->groupBy('entry_date')
@@ -118,6 +126,7 @@ class ReportController extends Controller
     private function monthlyMealReport(Mess $mess, CarbonImmutable $start, CarbonImmutable $end): array
     {
         $rows = $mess->mealEntries()
+            ->active()
             ->with('member')
             ->whereBetween('entry_date', [$start->toDateString(), $end->toDateString()])
             ->get()
@@ -146,6 +155,7 @@ class ReportController extends Controller
         $memberId = $request->integer('member');
 
         $query = $mess->mealEntries()
+            ->active()
             ->with('member')
             ->whereBetween('entry_date', [$start->toDateString(), $end->toDateString()])
             ->when($memberId > 0, fn ($query) => $query->where('mess_member_id', $memberId))
@@ -171,6 +181,7 @@ class ReportController extends Controller
     private function bazarReport(Mess $mess, CarbonImmutable $start, CarbonImmutable $end): array
     {
         $rows = $mess->bazarRecords()
+            ->active()
             ->with(['purchaser', 'items'])
             ->whereBetween('purchase_date', [$start->toDateString(), $end->toDateString()])
             ->orderBy('purchase_date')
@@ -193,7 +204,7 @@ class ReportController extends Controller
 
     private function depositReport(Mess $mess, CarbonImmutable $start, CarbonImmutable $end): array
     {
-        $deposits = $mess->deposits()->whereBetween('deposit_date', [$start->toDateString(), $end->toDateString()])->get();
+        $deposits = $mess->deposits()->active()->whereBetween('deposit_date', [$start->toDateString(), $end->toDateString()])->get();
 
         $rows = $mess->members()
             ->orderBy('name')
@@ -220,22 +231,37 @@ class ReportController extends Controller
 
     private function balanceReport(Mess $mess, string $month): array
     {
-        $preview = $this->settlements->preview($mess, $month);
-
-        $rows = $preview['members']->map(fn (array $row): array => [
-            $row['member']->name,
+        $rows = $this->settlementRows($mess, $month)->map(fn (array $row): array => [
+            $row['member']?->name ?? '—',
+            $row['opening_balance'],
+            $row['deposits'],
+            $row['refunds'],
+            $row['adjustments'],
             $row['meals'],
             $row['meal_cost'],
-            $row['deposits'],
-            $row['other_allocated'],
+            $row['shared_allocated'],
+            $row['personal_expenses'],
             $row['balance'],
+            __('student.settlements.balance_statuses.'.$row['status']),
         ]);
 
         return [
             'title' => __('student.reports.types.balance'),
-            'columns' => [__('student.members.name'), __('student.reports.columns.meals'), __('student.reports.columns.meal_cost'), __('student.reports.columns.deposits'), __('student.reports.columns.other'), __('student.reports.columns.balance')],
+            'columns' => [
+                __('student.members.name'),
+                __('student.settlements.opening_balance'),
+                __('student.reports.columns.deposits'),
+                __('student.reports.columns.refunds'),
+                __('student.reports.columns.adjustments'),
+                __('student.reports.columns.meals'),
+                __('student.reports.columns.meal_cost'),
+                __('student.reports.columns.shared_expenses'),
+                __('student.reports.columns.personal_expenses'),
+                __('student.reports.columns.balance'),
+                __('student.reports.columns.status'),
+            ],
             'rows' => $rows,
-            'summary' => ['balance' => round((float) $rows->sum(fn (array $row): float => (float) $row[5]), 2)],
+            'summary' => ['balance' => round((float) $rows->sum(fn (array $row): float => (float) $row[9]), 2)],
         ];
     }
 
@@ -262,20 +288,37 @@ class ReportController extends Controller
             ->get()
             ->map(fn ($detail): array => [
                 $detail->member?->name ?? '—',
+                $detail->opening_balance,
                 $detail->meals,
                 $detail->meal_cost,
                 $detail->deposits,
+                $detail->refunds,
+                $detail->adjustments,
                 $detail->other_allocated,
+                $detail->personal_expenses,
                 $detail->balance,
             ]);
 
         return [
             'title' => __('student.reports.types.settlement').' — '.$settlement->month.' v'.$settlement->version,
-            'columns' => [__('student.members.name'), __('student.reports.columns.meals'), __('student.reports.columns.meal_cost'), __('student.reports.columns.deposits'), __('student.reports.columns.other'), __('student.reports.columns.balance')],
+            'columns' => [
+                __('student.members.name'),
+                __('student.settlements.opening_balance'),
+                __('student.reports.columns.meals'),
+                __('student.reports.columns.meal_cost'),
+                __('student.reports.columns.deposits'),
+                __('student.reports.columns.refunds'),
+                __('student.reports.columns.adjustments'),
+                __('student.reports.columns.shared_expenses'),
+                __('student.reports.columns.personal_expenses'),
+                __('student.reports.columns.balance'),
+            ],
             'rows' => $rows,
             'summary' => [
                 'meal_rate' => (float) $settlement->meal_rate,
                 'surplus' => (float) $settlement->total_surplus,
+                'outstanding_dues' => (float) $settlement->total_outstanding_dues,
+                'receivable' => (float) $settlement->total_receivable,
             ],
         ];
     }
@@ -289,11 +332,11 @@ class ReportController extends Controller
             $to = $cursor->endOfMonth()->toDateString();
 
             $income = (float) $mess->deposits()
+                ->active()
                 ->whereBetween('deposit_date', [$from, $to])
-                ->get()
-                ->sum(fn ($deposit): float => $deposit->signedAmount());
-            $bazar = (float) $mess->bazarRecords()->whereBetween('purchase_date', [$from, $to])->sum('total_amount');
-            $expenses = (float) $mess->expenses()->whereBetween('expense_date', [$from, $to])->sum('amount');
+                ->sum('amount');
+            $bazar = (float) $mess->bazarRecords()->active()->whereBetween('purchase_date', [$from, $to])->sum('total_amount');
+            $expenses = (float) $mess->expenses()->active()->whereBetween('expense_date', [$from, $to])->sum('amount');
 
             $rows->push([
                 $cursor->format('M Y'),
@@ -312,6 +355,113 @@ class ReportController extends Controller
         ];
     }
 
+    private function memberStatementReport(Request $request, Mess $mess, string $month): array
+    {
+        $memberId = $request->integer('member');
+
+        $empty = [
+            'title' => __('student.reports.types.member_statement'),
+            'columns' => [__('student.reports.columns.item'), __('student.reports.columns.value')],
+            'rows' => collect(),
+            'summary' => [],
+            'empty' => __('student.reports.select_member'),
+        ];
+
+        if ($memberId <= 0) {
+            return $empty;
+        }
+
+        $row = $this->settlementRows($mess, $month)
+            ->first(fn (array $entry): bool => (int) $entry['member']?->getKey() === $memberId);
+
+        if ($row === null) {
+            return $empty;
+        }
+
+        $rows = collect([
+            [__('student.settlements.opening_balance'), $row['opening_balance']],
+            [__('student.deposits.types.deposit'), $row['deposits']],
+            [__('student.deposits.types.refund'), $row['refunds']],
+            [__('student.deposits.types.adjustment'), $row['adjustments']],
+            [__('student.settlements.meals'), $row['meals']],
+            [__('student.settlements.meal_cost'), $row['meal_cost']],
+            [__('student.reports.columns.shared_expenses'), $row['shared_allocated']],
+            [__('student.reports.columns.personal_expenses'), $row['personal_expenses']],
+            [__('student.settlements.balance'), $row['balance']],
+            [__('student.reports.columns.status'), __('student.settlements.balance_statuses.'.$row['status'])],
+        ]);
+
+        return [
+            'title' => __('student.reports.types.member_statement').' — '.($row['member']?->name ?? '—'),
+            'columns' => [__('student.reports.columns.item'), __('student.reports.columns.value')],
+            'rows' => $rows,
+            'summary' => ['balance' => (float) $row['balance']],
+        ];
+    }
+
+    private function balanceStatusReport(Mess $mess, string $month, string $status): array
+    {
+        $rows = $this->settlementRows($mess, $month)
+            ->filter(fn (array $row): bool => $row['status'] === $status)
+            ->map(fn (array $row): array => [
+                $row['member']?->name ?? '—',
+                $row['meals'],
+                $row['balance'],
+                __('student.settlements.balance_statuses.'.$row['status']),
+            ])
+            ->values();
+
+        return [
+            'title' => $status === 'due'
+                ? __('student.reports.types.outstanding_dues')
+                : __('student.reports.types.receivable'),
+            'columns' => [
+                __('student.members.name'),
+                __('student.reports.columns.meals'),
+                __('student.reports.columns.balance'),
+                __('student.reports.columns.status'),
+            ],
+            'rows' => $rows,
+            'summary' => ['balance' => round((float) $rows->sum(fn (array $row): float => abs((float) $row[2])), 2)],
+        ];
+    }
+
+    /**
+     * Use the finalized snapshot when a month is settled, otherwise the live preview.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    private function settlementRows(Mess $mess, string $month): Collection
+    {
+        $settlement = $mess->settlements()
+            ->where('month', $month)
+            ->where('status', MonthlySettlement::STATUS_FINALIZED)
+            ->latest('version')
+            ->first();
+
+        if ($settlement === null) {
+            return collect($this->settlements->preview($mess, $month)['members'])->values();
+        }
+
+        return $settlement->details()
+            ->with('member')
+            ->get()
+            ->map(fn ($detail): array => [
+                'member' => $detail->member,
+                'opening_balance' => (float) $detail->opening_balance,
+                'deposits' => (float) $detail->deposits,
+                'refunds' => (float) $detail->refunds,
+                'adjustments' => (float) $detail->adjustments,
+                'meals' => (float) $detail->meals,
+                'meal_cost' => (float) $detail->meal_cost,
+                'shared_allocated' => (float) $detail->other_allocated,
+                'other_allocated' => (float) $detail->other_allocated,
+                'personal_expenses' => (float) $detail->personal_expenses,
+                'balance' => (float) $detail->balance,
+                'status' => (float) $detail->balance > 0 ? 'receivable' : ((float) $detail->balance < 0 ? 'due' : 'settled'),
+            ]);
+    }
+
     /**
      * Stream a report as Excel-friendly CSV.
      *
@@ -324,10 +474,10 @@ class ReportController extends Controller
         return response()->streamDownload(function () use ($columns, $rows): void {
             $handle = fopen('php://output', 'wb');
             fwrite($handle, "\xEF\xBB\xBF");
-            fputcsv($handle, $columns);
+            fputcsv($handle, $columns, ',', '"', '');
 
             foreach ($rows as $row) {
-                fputcsv($handle, $row);
+                fputcsv($handle, $row, ',', '"', '');
             }
 
             fclose($handle);

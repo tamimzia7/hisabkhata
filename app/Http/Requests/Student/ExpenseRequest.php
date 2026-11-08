@@ -34,6 +34,12 @@ class ExpenseRequest extends FormRequest
             'amount' => ['required', 'numeric', 'min:0.01', 'max:99999999'],
             'category' => ['nullable', 'string', 'max:60'],
             'is_meal_related' => ['nullable', 'boolean'],
+            'is_personal' => ['nullable', 'boolean'],
+            'mess_member_id' => [
+                'nullable',
+                'required_if:is_personal,1',
+                Rule::exists('mess_members', 'id')->where('mess_id', $mess?->getKey()),
+            ],
             'allocation_method' => ['required', Rule::in(MessExpense::ALLOCATIONS)],
             'account_id' => [
                 'nullable',

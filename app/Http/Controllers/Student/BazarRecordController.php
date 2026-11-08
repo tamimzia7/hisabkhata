@@ -38,6 +38,7 @@ class BazarRecordController extends Controller
         $end = $start->endOfMonth();
 
         $records = $mess->bazarRecords()
+            ->active()
             ->with(['purchaser', 'account', 'items'])
             ->whereBetween('purchase_date', [$start->toDateString(), $end->toDateString()])
             ->when($request->filled('category'), fn ($query) => $query->where('category', $request->query('category')))
@@ -54,7 +55,7 @@ class BazarRecordController extends Controller
             'members' => $mess->activeMembers()->orderBy('name')->get(),
             'accounts' => $mess->accounts()->where('is_active', true)->orderBy('name')->get(),
             'total' => (float) $records->getCollection()->sum('total_amount'),
-            'monthTotal' => (float) $mess->bazarRecords()->whereBetween('purchase_date', [$start->toDateString(), $end->toDateString()])->sum('total_amount'),
+            'monthTotal' => (float) $mess->bazarRecords()->active()->whereBetween('purchase_date', [$start->toDateString(), $end->toDateString()])->sum('total_amount'),
             'categories' => $mess->bazarRecords()->distinct()->orderBy('category')->pluck('category'),
             'locked' => $this->settlements->isLocked($mess, $month),
             'canManage' => $request->user()->can('manageBazar', $mess),

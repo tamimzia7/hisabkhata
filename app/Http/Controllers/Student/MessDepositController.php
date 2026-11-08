@@ -15,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class MessDepositController extends Controller
@@ -37,6 +38,7 @@ class MessDepositController extends Controller
         $end = $start->endOfMonth();
 
         $deposits = $mess->deposits()
+            ->active()
             ->with(['member', 'account'])
             ->whereBetween('deposit_date', [$start->toDateString(), $end->toDateString()])
             ->when($request->filled('member'), fn ($query) => $query->where('mess_member_id', $request->integer('member')))
@@ -47,6 +49,7 @@ class MessDepositController extends Controller
             ->withQueryString();
 
         $monthRows = $mess->deposits()
+            ->active()
             ->whereBetween('deposit_date', [$start->toDateString(), $end->toDateString()])
             ->get();
 
@@ -75,6 +78,7 @@ class MessDepositController extends Controller
     {
         $validated = $request->validated();
         $this->assertMemberSubmissionAllowed($request, $mess, $validated);
+        $this->ensureNoDuplicateDeposit($mess, $validated);
         $this->settlements->ensureMonthOpen($mess, $validated['deposit_date'], 'deposit_date');
 
         $deposit = DB::transaction(function () use ($request, $mess, $validated): MessDeposit {
@@ -113,6 +117,7 @@ class MessDepositController extends Controller
         $this->ensureFinanceManager($request, $mess);
         $this->ensureBelongs($mess, $deposit);
         $validated = $request->validated();
+        $this->ensureNoDuplicateDeposit($mess, $validated, $deposit);
         $this->settlements->ensureMonthOpen($mess, $deposit->deposit_date->toDateString(), 'deposit_date');
         $this->settlements->ensureMonthOpen($mess, $validated['deposit_date'], 'deposit_date');
 
@@ -188,6 +193,32 @@ class MessDepositController extends Controller
     private function ensureFinanceManager(Request $request, Mess $mess): void
     {
         abort_unless($request->user()->can('manageFinance', $mess), 403);
+    }
+
+    /**
+     * Reject an accidental duplicate deposit.
+     *
+     * @param  array<string, mixed>  $validated
+     */
+    private function ensureNoDuplicateDeposit(Mess $mess, array $validated, ?MessDeposit $ignore = null): void
+    {
+        $query = MessDeposit::query()
+            ->where('mess_id', $mess->getKey())
+            ->where('status', MessDeposit::STATUS_ACTIVE)
+            ->where('mess_member_id', $validated['mess_member_id'])
+            ->whereDate('deposit_date', $validated['deposit_date'])
+            ->where('amount', $validated['amount'])
+            ->where('type', $validated['type']);
+
+        if ($ignore !== null) {
+            $query->whereKeyNot($ignore->getKey());
+        }
+
+        if ($query->exists()) {
+            throw ValidationException::withMessages([
+                'amount' => __('student.errors.duplicate_deposit'),
+            ]);
+        }
     }
 
     private function month(Request $request): string

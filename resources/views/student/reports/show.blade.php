@@ -9,10 +9,26 @@
     <div class="glass flex flex-wrap items-center justify-between gap-2 rounded-xl p-3">
         <a href="{{ route('student.mess.reports.index', [$mess, 'month' => $month]) }}" class="btn-ghost rounded-lg px-3 py-2 text-[11px] text-gray-200 font-bn">← {{ __('student.common.back') }}</a>
         <div class="flex flex-wrap gap-2">
-            <a href="{{ route('student.mess.reports.show', [$mess, $type, 'month' => $month, 'format' => 'csv']) }}" class="btn-ghost rounded-lg px-3 py-2 text-[11px] text-emerald-300 font-bn">⤓ {{ __('student.reports.export_csv') }}</a>
+            <a href="{{ route('student.mess.reports.show', [$mess, $type, 'month' => $month, 'format' => 'csv']) . (request('member') ? '&member='.request('member') : '') }}" class="btn-ghost rounded-lg px-3 py-2 text-[11px] text-emerald-300 font-bn">⤓ {{ __('student.reports.export_csv') }}</a>
             <button onclick="window.print()" class="btn-emerald rounded-lg px-3 py-2 text-[11px] font-bold font-bn">🖨 {{ __('student.reports.print') }}</button>
         </div>
     </div>
+
+    @if($type === 'member-statement')
+        <form method="GET" action="{{ route('student.mess.reports.show', [$mess, $type]) }}" class="glass flex flex-wrap items-end gap-2 rounded-xl p-3">
+            <input type="hidden" name="month" value="{{ $month }}">
+            <div>
+                <label class="mb-1 block text-[10px] text-gray-500 font-bn">{{ __('student.members.name') }}</label>
+                <select name="member" class="field font-bn">
+                    <option value="">{{ __('student.reports.select_member') }}</option>
+                    @foreach($members as $member)
+                        <option value="{{ $member->id }}" @selected(request('member') == $member->id)>{{ $member->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <button type="submit" class="btn-emerald rounded-lg px-4 py-2 text-xs font-bold font-bn">{{ __('student.common.apply') }}</button>
+        </form>
+    @endif
 
     <div class="glass-strong rounded-2xl p-5" id="report-print">
         <div class="mb-4 flex flex-wrap items-start justify-between gap-2 border-b border-white/10 pb-3">

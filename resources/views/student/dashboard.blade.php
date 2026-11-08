@@ -56,6 +56,14 @@
             <h3 class="mb-3 text-sm font-bold font-bn">{{ __('student.dashboard.daily_bazar') }}</h3>
             <div class="h-56"><canvas id="dailyBazarChart"></canvas></div>
         </div>
+        <div class="glass-strong rounded-2xl p-4">
+            <h3 class="mb-3 text-sm font-bold font-bn">{{ __('student.dashboard.monthly_bazar') }}</h3>
+            <div class="h-56"><canvas id="monthlyBazarChart"></canvas></div>
+        </div>
+        <div class="glass-strong rounded-2xl p-4">
+            <h3 class="mb-3 text-sm font-bold font-bn">{{ __('student.dashboard.monthly_meals') }}</h3>
+            <div class="h-56"><canvas id="monthlyMealsChart"></canvas></div>
+        </div>
     </div>
 
     <div class="grid gap-4 lg:grid-cols-2">
@@ -178,6 +186,26 @@
             @endforelse
         </div>
     </div>
+
+    <div class="glass rounded-2xl p-4">
+        <h3 class="mb-3 text-sm font-bold font-bn">{{ __('student.dashboard.recent_activity') }}</h3>
+        <div class="student-scroll max-h-80 space-y-1.5 overflow-y-auto pr-1">
+            @forelse($summary['recent_activity'] as $item)
+                <div class="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2">
+                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-xs" aria-hidden="true">{{ ['deposit' => '💰', 'bazar' => '🛒', 'meal' => '🍽️', 'expense' => '🧾', 'settlement' => '📅'][$item['kind']] ?? '•' }}</span>
+                    <div class="min-w-0 flex-1">
+                        <p class="truncate text-[11px] font-bold text-white font-bn">{{ __('student.dashboard.activity.'.$item['kind']) }} · {{ $item['title'] }}</p>
+                        <p class="truncate text-[10px] text-gray-500 font-bn">{{ $item['detail'] }}</p>
+                    </div>
+                    @if($item['amount'] !== null)
+                        <span class="shrink-0 text-[11px] font-bold text-emerald-400">৳{{ localize_money($item['amount']) }}</span>
+                    @endif
+                </div>
+            @empty
+                <p class="py-4 text-center text-xs text-gray-500 font-bn">{{ __('student.dashboard.no_activity') }}</p>
+            @endforelse
+        </div>
+    </div>
 </div>
 
 <script>
@@ -185,6 +213,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const grid = { color: 'rgba(148, 163, 184, 0.12)' };
     const incomeExpense = @js($summary['income_expense']);
     const dailyBazar = @js($summary['daily_bazar']);
+    const monthlyBazar = @js($summary['monthly_bazar']);
+    const monthlyMeals = @js($summary['monthly_meals']);
 
     const incomeCanvas = document.getElementById('incomeExpenseChart');
     if (incomeCanvas) {
@@ -208,6 +238,30 @@ document.addEventListener('DOMContentLoaded', function () {
             data: {
                 labels: dailyBazar.labels,
                 datasets: [{ label: @js(__('student.dashboard.daily_bazar')), data: dailyBazar.values, borderColor: '#34D399', backgroundColor: 'rgba(52, 211, 153, 0.15)', fill: true, tension: 0.35 }],
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8' } } }, scales: { x: { grid, ticks: { color: '#94a3b8' } }, y: { grid, ticks: { color: '#94a3b8' } } } },
+        });
+    }
+
+    const monthlyBazarCanvas = document.getElementById('monthlyBazarChart');
+    if (monthlyBazarCanvas) {
+        new Chart(monthlyBazarCanvas, {
+            type: 'bar',
+            data: {
+                labels: monthlyBazar.labels,
+                datasets: [{ label: @js(__('student.dashboard.monthly_bazar')), data: monthlyBazar.values, backgroundColor: 'rgba(249, 115, 22, 0.7)', borderRadius: 4 }],
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8' } } }, scales: { x: { grid, ticks: { color: '#94a3b8' } }, y: { grid, ticks: { color: '#94a3b8' } } } },
+        });
+    }
+
+    const monthlyMealsCanvas = document.getElementById('monthlyMealsChart');
+    if (monthlyMealsCanvas) {
+        new Chart(monthlyMealsCanvas, {
+            type: 'line',
+            data: {
+                labels: monthlyMeals.labels,
+                datasets: [{ label: @js(__('student.dashboard.monthly_meals')), data: monthlyMeals.values, borderColor: '#38BDF8', backgroundColor: 'rgba(56, 189, 248, 0.15)', fill: true, tension: 0.35 }],
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8' } } }, scales: { x: { grid, ticks: { color: '#94a3b8' } }, y: { grid, ticks: { color: '#94a3b8' } } } },
         });

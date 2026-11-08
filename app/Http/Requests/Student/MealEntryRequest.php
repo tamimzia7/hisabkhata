@@ -5,6 +5,7 @@ namespace App\Http\Requests\Student;
 use App\Models\Mess;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class MealEntryRequest extends FormRequest
 {
@@ -43,18 +44,16 @@ class MealEntryRequest extends FormRequest
     /**
      * Ensure at least one meal was entered.
      */
-    public function after(): array
+    public function withValidator(Validator $validator): void
     {
-        return [
-            function ($validator): void {
-                $total = (float) $this->input('breakfast', 0)
-                    + (float) $this->input('lunch', 0)
-                    + (float) $this->input('dinner', 0);
+        $validator->after(function (Validator $validator): void {
+            $total = (float) $this->input('breakfast', 0)
+                + (float) $this->input('lunch', 0)
+                + (float) $this->input('dinner', 0);
 
-                if ($total <= 0) {
-                    $validator->errors()->add('breakfast', __('student.errors.meals_required'));
-                }
-            },
-        ];
+            if ($total <= 0) {
+                $validator->errors()->add('breakfast', __('student.errors.meals_required'));
+            }
+        });
     }
 }
