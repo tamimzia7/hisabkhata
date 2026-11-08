@@ -534,6 +534,8 @@ return [
         'name_placeholder' => 'Your name',
         'email' => 'Email',
         'password' => 'Password',
+        'show_password' => 'Show password',
+        'hide_password' => 'Hide password',
         'type' => 'Your Type',
         'student' => 'Student',
         'family' => 'Family',

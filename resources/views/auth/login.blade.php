@@ -39,14 +39,11 @@
                     <p class="text-red-400 text-xs mt-1.5 font-bn">{{ $message }}</p>
                 @enderror
             </div>
-            <div>
-                <label for="password" class="text-sm text-gray-300 font-bn">{{ __('site.auth.password') }}</label>
-                <input id="password" name="password" type="password" required placeholder="••••••••"
-                    class="w-full mt-1 glass rounded-lg px-3 sm:px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50">
+            <x-password-input id="password" name="password" :label="__('site.auth.password')" required autocomplete="current-password">
                 @error('password')
                     <p class="text-red-400 text-xs mt-1.5 font-bn">{{ $message }}</p>
                 @enderror
-            </div>
+            </x-password-input>
             <button type="submit" class="btn-shine btn-green w-full py-3 rounded-lg font-bold font-bn">{{ __('site.auth.login') }}</button>
             <p class="text-xs text-center text-gray-500 font-bn">{{ __('site.auth.secure_note') }}</p>
         </form>

@@ -534,6 +534,8 @@ return [
         'name_placeholder' => 'আপনার নাম',
         'email' => 'ইমেইল',
         'password' => 'পাসওয়ার্ড',
+        'show_password' => 'পাসওয়ার্ড দেখান',
+        'hide_password' => 'পাসওয়ার্ড লুকান',
         'type' => 'আপনার ধরন',
         'student' => 'শিক্ষার্থী',
         'family' => 'সংসার',

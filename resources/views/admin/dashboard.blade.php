@@ -957,22 +957,24 @@
                 <div class="pt-2 border-t border-white/10">
                     <p class="text-xs text-gray-500 font-bn mb-3">{{ __('site.admin.password_note') }}</p>
                     <div class="space-y-4">
-                        <div>
-                            <label for="current_password" class="block text-sm text-gray-400 mb-1 font-bn">{{ __('site.admin.current_password') }}</label>
-                            <input id="current_password" name="current_password" type="password" autocomplete="current-password" class="w-full bg-[#050B14] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 font-bn">
+                        <x-password-input id="current_password" name="current_password" :label="__('site.admin.current_password')"
+                            label-class="block text-sm text-gray-400 mb-1 font-bn"
+                            input-class="w-full bg-[#050B14] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 font-bn"
+                            autocomplete="current-password">
                             @error('current_password')<p class="text-xs text-red-400 mt-1 font-bn">{{ $message }}</p>@enderror
-                        </div>
+                        </x-password-input>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label for="password" class="block text-sm text-gray-400 mb-1 font-bn">{{ __('site.admin.new_password') }}</label>
-                                <input id="password" name="password" type="password" autocomplete="new-password" class="w-full bg-[#050B14] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 font-bn">
+                            <x-password-input id="password" name="password" :label="__('site.admin.new_password')"
+                                label-class="block text-sm text-gray-400 mb-1 font-bn"
+                                input-class="w-full bg-[#050B14] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 font-bn"
+                                autocomplete="new-password">
                                 <p class="text-xs text-gray-500 mt-1 font-bn">{{ __('site.admin.new_password_hint') }}</p>
                                 @error('password')<p class="text-xs text-red-400 mt-1 font-bn">{{ $message }}</p>@enderror
-                            </div>
-                            <div>
-                                <label for="password_confirmation" class="block text-sm text-gray-400 mb-1 font-bn">{{ __('site.admin.confirm_password') }}</label>
-                                <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" class="w-full bg-[#050B14] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 font-bn">
-                            </div>
+                            </x-password-input>
+                            <x-password-input id="password_confirmation" name="password_confirmation" :label="__('site.admin.confirm_password')"
+                                label-class="block text-sm text-gray-400 mb-1 font-bn"
+                                input-class="w-full bg-[#050B14] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 font-bn"
+                                autocomplete="new-password" />
                         </div>
                     </div>
                 </div>
@@ -990,11 +992,13 @@
             onsubmit="return confirm(@js(__('site.admin.delete_account_confirm')))">
             @csrf
             @method('DELETE')
-            <div class="flex-1">
-                <label for="delete_password" class="block text-sm text-gray-400 mb-1 font-bn">{{ __('site.admin.current_password') }}</label>
-                <input id="delete_password" name="delete_password" type="password" autocomplete="current-password" class="w-full bg-[#050B14] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-red-500 font-bn">
+            <x-password-input id="delete_password" name="delete_password" :label="__('site.admin.current_password')"
+                wrapper-class="flex-1"
+                label-class="block text-sm text-gray-400 mb-1 font-bn"
+                input-class="w-full bg-[#050B14] border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-red-500 font-bn"
+                autocomplete="current-password">
                 @error('delete_password')<p class="text-xs text-red-400 mt-1 font-bn">{{ $message }}</p>@enderror
-            </div>
+            </x-password-input>
             <button type="submit" class="bg-red-500/15 text-red-400 border border-red-500/30 px-5 py-2 rounded-lg font-bold font-bn text-sm hover:bg-red-500/25 transition shrink-0">{{ __('site.admin.delete_account_button') }}</button>
         </form>
     </div>
@@ -1024,12 +1028,13 @@
                 <input id="staff_email" name="email" type="email" value="{{ old('email') }}" class="w-full bg-[#050B14] border border-white/10 rounded-lg px-3 py-2 text-white mt-1 focus:outline-none focus:border-emerald-500">
                 @error('email')<p class="text-xs text-red-400 mt-1 font-bn">{{ $message }}</p>@enderror
             </div>
-            <div>
-                <label for="staff_password" class="text-sm text-gray-400 font-bn">{{ __('site.admin.staff_password') }}</label>
-                <input id="staff_password" name="password" type="password" autocomplete="new-password" class="w-full bg-[#050B14] border border-white/10 rounded-lg px-3 py-2 text-white mt-1 focus:outline-none focus:border-emerald-500">
+            <x-password-input id="staff_password" name="password" :label="__('site.admin.staff_password')"
+                label-class="text-sm text-gray-400 font-bn"
+                input-class="w-full bg-[#050B14] border border-white/10 rounded-lg px-3 py-2 text-white mt-1 focus:outline-none focus:border-emerald-500"
+                autocomplete="new-password">
                 <p class="text-xs text-gray-500 mt-1 font-bn">{{ __('site.admin.new_password_hint') }}</p>
                 @error('password')<p class="text-xs text-red-400 mt-1 font-bn">{{ $message }}</p>@enderror
-            </div>
+            </x-password-input>
             <div>
                 <label for="staff_role" class="text-sm text-gray-400 font-bn">{{ __('site.admin.staff_role') }}</label>
                 <select id="staff_role" name="role" class="w-full bg-[#050B14] border border-white/10 rounded-lg px-3 py-2 text-white mt-1 focus:outline-none focus:border-emerald-500 font-bn">
