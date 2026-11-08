@@ -20,6 +20,12 @@ test('renders the registration page', function () {
     $response->assertOk();
     $response->assertSee('রেজিস্ট্রেশন');
     $response->assertSee(route('login'));
+    $response->assertSee(__('site.auth.meal_management'));
+    $response->assertSee(__('site.auth.meal_management_subtitle'));
+    $response->assertSee(__('site.auth.family_finance'));
+    $response->assertSee(__('site.auth.family_finance_subtitle'));
+    $response->assertSee(__('site.auth.shop_management'));
+    $response->assertSee(__('site.auth.shop_management_subtitle'));
 });
 
 test('registers a user, logs them in, and redirects to the dashboard', function () {

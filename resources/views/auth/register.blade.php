@@ -33,10 +33,27 @@
             @csrf
             <div>
                 <label class="text-sm text-gray-300 font-bn">{{ __('site.auth.type') }}</label>
-                <div class="grid grid-cols-3 gap-2 mt-2">
-                    <button type="button" @click="regRole='student'" :class="regRole==='student' ? 'ring-2 ring-emerald-400 bg-emerald-500/20' : ''" class="glass rounded-xl p-2 sm:p-3 text-center transition"><div class="text-xl sm:text-2xl mb-1">🎓</div><div class="text-[10px] sm:text-xs leading-tight font-semibold font-bn">{{ __('site.auth.student') }}</div></button>
-                    <button type="button" @click="regRole='family'" :class="regRole==='family' ? 'ring-2 ring-emerald-400 bg-emerald-500/20' : ''" class="glass rounded-xl p-2 sm:p-3 text-center transition"><div class="text-xl sm:text-2xl mb-1">🏠</div><div class="text-[10px] sm:text-xs leading-tight font-semibold font-bn">{{ __('site.auth.family') }}</div></button>
-                    <button type="button" @click="regRole='shop'" :class="regRole==='shop' ? 'ring-2 ring-emerald-400 bg-emerald-500/20' : ''" class="glass rounded-xl p-2 sm:p-3 text-center transition"><div class="text-xl sm:text-2xl mb-1">🏪</div><div class="text-[10px] sm:text-xs leading-tight font-semibold font-bn">{{ __('site.auth.shop') }}</div></button>
+                <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
+                    @foreach ([
+                        ['role' => 'student', 'icon' => '🎓', 'name' => __('site.auth.meal_management'), 'subtitle' => __('site.auth.meal_management_subtitle')],
+                        ['role' => 'family', 'icon' => '🏠', 'name' => __('site.auth.family_finance'), 'subtitle' => __('site.auth.family_finance_subtitle')],
+                        ['role' => 'shop', 'icon' => '🏪', 'name' => __('site.auth.shop_management'), 'subtitle' => __('site.auth.shop_management_subtitle')],
+                    ] as $option)
+                        <button type="button"
+                                @click="regRole='{{ $option['role'] }}'"
+                                :aria-pressed="regRole==='{{ $option['role'] }}' ? 'true' : 'false'"
+                                :class="regRole==='{{ $option['role'] }}' ? 'ring-2 ring-emerald-400 bg-emerald-500/20' : 'hover:bg-white/5'"
+                                class="glass relative flex h-full w-full cursor-pointer items-center gap-3 rounded-xl p-3 text-left transition duration-200 sm:flex-col sm:justify-center sm:gap-1.5 sm:p-4 sm:text-center">
+                            <span class="shrink-0 text-2xl leading-none" aria-hidden="true">{{ $option['icon'] }}</span>
+                            <span class="min-w-0 flex-1 sm:flex-none">
+                                <span class="block text-sm font-bold leading-tight text-white font-bn sm:text-xs">{{ $option['name'] }}</span>
+                                <span class="mt-0.5 block text-[10px] leading-snug text-gray-400 font-bn">{{ $option['subtitle'] }}</span>
+                            </span>
+                            <span x-show="regRole==='{{ $option['role'] }}'" x-cloak
+                                  class="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-400 text-[9px] font-bold text-[#06130D]"
+                                  aria-hidden="true">✓</span>
+                        </button>
+                    @endforeach
                 </div>
                 <input type="hidden" name="role" :value="regRole">
                 @error('role')
