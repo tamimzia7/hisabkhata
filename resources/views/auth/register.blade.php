@@ -14,7 +14,7 @@
                     </defs>
                     <path d="M 40 130 Q 100 160 160 130 L 160 60 Q 100 90 40 60 Z" fill="url(#logoGreenReg)"/>
                     <rect x="65" y="50" width="16" height="75" rx="5" fill="#047857"/><rect x="119" y="50" width="16" height="75" rx="5" fill="#047857"/><rect x="65" y="80" width="70" height="16" rx="5" fill="#047857"/>
-                    <circle cx="145" cy="115" r="32" fill="url(#logoOrangeReg)"/><text x="145" y="128" font-family="Inter, sans-serif" font-size="36" font-weight="800" fill="white" text-anchor="middle">৳</text>
+                    <circle cx="145" cy="115" r="32" fill="url(#logoOrangeReg)"/><text x="145" y="128" font-family="Plus Jakarta Sans, sans-serif" font-size="36" font-weight="800" fill="white" text-anchor="middle">৳</text>
                 </svg>
                 <div>
                     <span class="text-base sm:text-lg font-bold tracking-tight font-bn text-white">{{ __('site.common.brand') }}</span>

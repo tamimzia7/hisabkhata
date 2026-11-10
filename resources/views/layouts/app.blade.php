@@ -32,11 +32,11 @@
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@100;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   html { -webkit-text-size-adjust: 100%; }
-  body { font-family: 'Inter', 'Hind Siliguri', sans-serif; }
-  .font-display { font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.03em; }
+  body { font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif; }
+  .font-display { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; letter-spacing: -0.03em; }
   .font-bn { font-family: 'Hind Siliguri', sans-serif; }
   .glass { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(16, 185, 129, 0.15); box-shadow: 0 8px 32px rgba(6, 19, 13, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08); }
   .glass-strong { background: rgba(16, 185, 129, 0.08); backdrop-filter: blur(28px) saturate(200%); -webkit-backdrop-filter: blur(28px) saturate(200%); border: 1px solid rgba(16, 185, 129, 0.25); box-shadow: 0 12px 40px rgba(6, 19, 13, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.12); }

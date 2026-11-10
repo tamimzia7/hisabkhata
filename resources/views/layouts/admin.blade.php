@@ -80,7 +80,7 @@
 <script>window.__flashToast = @js(session('toast'));</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@100;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
     :root {
         --brand-bg: #050B14;
@@ -91,9 +91,9 @@
         --brand-gold: #F59E0B;
     }
     html { -webkit-text-size-adjust: 100%; }
-    body { font-family: 'Inter', 'Hind Siliguri', sans-serif; background: var(--brand-bg); color: #f8fafc; }
+    body { font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif; background: var(--brand-bg); color: #f8fafc; }
     .font-bn { font-family: 'Hind Siliguri', sans-serif; }
-    .font-display { font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.03em; }
+    .font-display { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; letter-spacing: -0.03em; }
     .admin-bg { background: var(--brand-bg); }
     .admin-surface { background: var(--brand-surface); }
     .glass {

@@ -13,7 +13,7 @@
                     </defs>
                     <path d="M 40 130 Q 100 160 160 130 L 160 60 Q 100 90 40 60 Z" fill="url(#logoGreen)"/>
                     <rect x="65" y="50" width="16" height="75" rx="5" fill="#047857"/><rect x="119" y="50" width="16" height="75" rx="5" fill="#047857"/><rect x="65" y="80" width="70" height="16" rx="5" fill="#047857"/>
-                    <circle cx="145" cy="115" r="32" fill="url(#logoOrange)"/><text x="145" y="128" font-family="Inter, sans-serif" font-size="36" font-weight="800" fill="white" text-anchor="middle">৳</text>
+                    <circle cx="145" cy="115" r="32" fill="url(#logoOrange)"/><text x="145" y="128" font-family="Plus Jakarta Sans, sans-serif" font-size="36" font-weight="800" fill="white" text-anchor="middle">৳</text>
                 </svg>
                 <div class="hidden min-[360px]:block">
                     <span class="text-lg sm:text-xl font-bold tracking-tight font-bn text-white">{{ __('site.common.brand') }}</span>
@@ -422,7 +422,7 @@
             <div class="grid grid-cols-2 md:grid-cols-5 gap-8 sm:gap-10 mb-8 sm:mb-10">
                 <div class="col-span-2 md:col-span-2">
                     <div class="flex items-center gap-2 mb-4">
-                        <svg width="40" height="40" viewBox="0 0 200 200" fill="none"><defs><linearGradient id="footGreen" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#34D399"/><stop offset="100%" stop-color="#047857"/></linearGradient><linearGradient id="footOrange" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#EA580C"/></linearGradient></defs><path d="M 40 130 Q 100 160 160 130 L 160 60 Q 100 90 40 60 Z" fill="url(#footGreen)"/><rect x="65" y="50" width="16" height="75" rx="5" fill="#047857"/><rect x="119" y="50" width="16" height="75" rx="5" fill="#047857"/><rect x="65" y="80" width="70" height="16" rx="5" fill="#047857"/><circle cx="145" cy="115" r="32" fill="url(#footOrange)"/><text x="145" y="128" font-family="Inter" font-size="36" font-weight="800" fill="white" text-anchor="middle">৳</text></svg>
+                        <svg width="40" height="40" viewBox="0 0 200 200" fill="none"><defs><linearGradient id="footGreen" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#34D399"/><stop offset="100%" stop-color="#047857"/></linearGradient><linearGradient id="footOrange" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#EA580C"/></linearGradient></defs><path d="M 40 130 Q 100 160 160 130 L 160 60 Q 100 90 40 60 Z" fill="url(#footGreen)"/><rect x="65" y="50" width="16" height="75" rx="5" fill="#047857"/><rect x="119" y="50" width="16" height="75" rx="5" fill="#047857"/><rect x="65" y="80" width="70" height="16" rx="5" fill="#047857"/><circle cx="145" cy="115" r="32" fill="url(#footOrange)"/><text x="145" y="128" font-family="Plus Jakarta Sans, sans-serif" font-size="36" font-weight="800" fill="white" text-anchor="middle">৳</text></svg>
                         <div><span class="text-lg font-bold font-display font-bn">{{ __('site.common.brand') }}</span><p class="text-[10px] tracking-[0.2em] text-emerald-400/70 -mt-0.5">{{ __('site.common.smart_finance') }}</p></div>
                     </div>
                     <p class="text-sm text-gray-500 leading-relaxed mb-4 font-bn">{{ __('site.footer.desc') }}</p>
