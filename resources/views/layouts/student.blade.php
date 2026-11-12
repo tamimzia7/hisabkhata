@@ -83,7 +83,12 @@
         --brand-input: #FFFFFF;
         color-scheme: light;
     }
-    html { -webkit-text-size-adjust: 100%; }
+    html { -webkit-text-size-adjust: 100%; font-size: 18px; }
+    .text-\[8px\] { font-size: 10px !important; }
+    .text-\[9px\] { font-size: 11px !important; }
+    .text-\[10px\] { font-size: 12px !important; }
+    .text-\[11px\] { font-size: 13px !important; }
+    .text-\[13px\] { font-size: 15px !important; }
     body { font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif; background: var(--brand-bg); color: var(--brand-text); }
     .student-sidebar { background-color: var(--brand-sidebar); }
     .student-topbar { background-color: var(--brand-topbar); }

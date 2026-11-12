@@ -34,7 +34,12 @@
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  html { -webkit-text-size-adjust: 100%; }
+  html { -webkit-text-size-adjust: 100%; font-size: 18px; }
+  .text-\[8px\] { font-size: 10px !important; }
+  .text-\[9px\] { font-size: 11px !important; }
+  .text-\[10px\] { font-size: 12px !important; }
+  .text-\[11px\] { font-size: 13px !important; }
+  .text-\[13px\] { font-size: 15px !important; }
   body { font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif; }
   .font-display { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; letter-spacing: -0.03em; }
   .font-bn { font-family: 'Hind Siliguri', sans-serif; }

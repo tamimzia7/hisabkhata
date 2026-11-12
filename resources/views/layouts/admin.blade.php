@@ -90,7 +90,12 @@
         --brand-emerald-dark: #047857;
         --brand-gold: #F59E0B;
     }
-    html { -webkit-text-size-adjust: 100%; }
+    html { -webkit-text-size-adjust: 100%; font-size: 18px; }
+    .text-\[8px\] { font-size: 10px !important; }
+    .text-\[9px\] { font-size: 11px !important; }
+    .text-\[10px\] { font-size: 12px !important; }
+    .text-\[11px\] { font-size: 13px !important; }
+    .text-\[13px\] { font-size: 15px !important; }
     body { font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif; background: var(--brand-bg); color: #f8fafc; }
     .font-bn { font-family: 'Hind Siliguri', sans-serif; }
     .font-display { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; letter-spacing: -0.03em; }
