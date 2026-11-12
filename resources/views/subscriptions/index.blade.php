@@ -1,64 +1,203 @@
 @extends('layouts.app')
 
-@section('title', __('subscription.title'))
+@section('title', __('subscription.page.title'))
+
+@php
+    $productIcons = [
+        'utensils' => '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
+        'users' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+        'store' => '<path d="m2 7 1.5-4.5A2 2 0 0 1 5.4 1h13.2a2 2 0 0 1 1.9 1.5L22 7"/><path d="M2 7v1a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0V7"/><path d="M4 11v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9"/><path d="M9 21v-6h6v6"/>',
+    ];
+
+    $statusStyles = [
+        'active' => 'border-emerald-500/25 bg-emerald-500/15 text-emerald-400',
+        'trial' => 'border-sky-500/25 bg-sky-500/15 text-sky-400',
+        'expired' => 'border-red-500/25 bg-red-500/15 text-red-400',
+        'suspended' => 'border-amber-500/25 bg-amber-500/15 text-amber-400',
+        'pending' => 'border-orange-500/25 bg-orange-500/15 text-orange-400',
+        'cancelled' => 'border-white/10 bg-white/10 text-gray-400',
+        'inactive' => 'border-white/10 bg-white/5 text-gray-400',
+    ];
+@endphp
 
 @section('content')
-<div class="min-h-screen flex relative z-10" x-data="{}">
+<div class="min-h-screen flex relative z-10" x-data="{ billing: 'monthly' }">
     @include('partials.client-sidebar')
 
     <main class="flex-1 overflow-x-hidden p-3 md:p-6">
-        <div class="mx-auto max-w-5xl">
-            <div class="mb-5">
+        <div class="mx-auto max-w-6xl space-y-6">
+            <header>
                 <p class="text-[10px] uppercase tracking-[0.2em] text-emerald-400">{{ __('site.common.brand') }}</p>
-                <h1 class="text-xl font-bold font-display font-bn text-white sm:text-2xl">{{ __('subscription.title') }}</h1>
-                <p class="mt-1 text-sm text-gray-400 font-bn">{{ __('subscription.subtitle') }}</p>
-            </div>
+                <h1 class="mt-1 text-2xl font-bold font-display text-white sm:text-3xl">{{ __('subscription.page.title') }}</h1>
+                <p class="mt-1 max-w-2xl text-sm text-gray-400 font-bn">{{ __('subscription.page.description') }}</p>
+            </header>
 
-            <div class="grid gap-4 md:grid-cols-3">
-                @foreach($products as $item)
-                    @php
-                        $active = $item['activeSubscription'];
-                        $current = $item['currentSubscription'];
-                        $badge = $active ? 'active' : ($current?->status === 'suspended' ? 'suspended' : ($current && $current->isExpired() ? 'expired' : 'inactive'));
-                        $badgeClass = [
-                            'active' => 'bg-emerald-500/15 text-emerald-400',
-                            'expired' => 'bg-red-500/15 text-red-400',
-                            'suspended' => 'bg-amber-500/15 text-amber-400',
-                            'inactive' => 'bg-orange-500/15 text-orange-400',
-                        ][$badge];
-                    @endphp
-
-                    <div class="glass rounded-2xl p-5">
-                        <div class="flex items-start justify-between gap-2">
-                            <h2 class="text-base font-bold font-bn text-white">{{ $item['productName'] }}</h2>
-                            <span class="rounded-full px-2.5 py-1 text-[10px] font-bold font-bn {{ $badgeClass }}">{{ __('subscription.status.'.$badge) }}</span>
-                        </div>
-
-                        <div class="mt-3 space-y-1.5 text-xs text-gray-400 font-bn">
-                            <p>{{ __('subscription.current.plan') }}: <span class="text-gray-200">{{ $current?->plan?->name ?? '—' }}</span></p>
-                            <p>{{ __('subscription.current.expires') }}: <span class="text-gray-200">{{ $current?->ends_at?->format('d M Y') ?? '—' }}</span></p>
-                            <p>{{ __('subscription.current.payment_status') }}: <span class="text-gray-200">{{ $item['latestPayment'] ? __('subscription.status.'.$item['latestPayment']->status) : __('subscription.status.inactive') }}</span></p>
-                            @if($item['trial'])
-                                <p>{{ __('subscription.trial.remaining_days') }}: <span class="text-gray-200">{{ localize_number($item['trialRemainingDays']) }} {{ __('subscription.plans.days') }}</span></p>
-                            @elseif($item['trialEligible'])
-                                <p class="text-amber-400">{{ __('subscription.trial.eligible') }}</p>
-                            @endif
-                        </div>
-
-                        <div class="mt-4 grid grid-cols-2 gap-2">
-                            @foreach($item['plans'] as $plan)
-                                <span class="rounded-lg bg-white/5 px-2 py-2 text-center text-[11px] text-gray-300 font-bn">৳{{ localize_money($plan->price) }} {{ $plan->billing_cycle === \App\Models\SubscriptionPlan::BILLING_CYCLE_YEARLY ? __('subscription.plans.per_year') : __('subscription.plans.per_month') }}</span>
-                            @endforeach
-                        </div>
-
-                        @if($item['trialEligible'])
-                            <p class="mt-3 text-center text-[11px] text-amber-400 font-bn">{{ __('subscription.trial.exact_duration') }}</p>
-                        @endif
-
-                        <a href="{{ route('subscriptions.show', $item['product']) }}" class="btn-emerald mt-4 block rounded-lg px-4 py-2.5 text-center text-sm font-bold font-bn">{{ __('subscription.plans.choose') }}</a>
+            <section class="grid gap-3 sm:grid-cols-3">
+                <div class="glass flex items-center gap-3 rounded-2xl p-4">
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 11 3 3L22 4"/></svg>
+                    </span>
+                    <div class="min-w-0">
+                        <p class="text-2xl font-bold font-display text-white">{{ localize_number($overview['active']) }}</p>
+                        <p class="truncate text-[11px] text-gray-400 font-bn">{{ __('subscription.overview.active') }}</p>
+                        <p class="truncate text-[10px] text-gray-500 font-bn">{{ __('subscription.overview.across_products') }}</p>
                     </div>
-                @endforeach
-            </div>
+                </div>
+
+                <div class="glass flex items-center gap-3 rounded-2xl p-4">
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-400">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m12 3 1.9 5.8L20 10l-6.1 1.2L12 17l-1.9-5.8L4 10l6.1-1.2L12 3Z"/></svg>
+                    </span>
+                    <div class="min-w-0">
+                        <p class="text-2xl font-bold font-display text-white">{{ localize_number($overview['trialEligible']) }}</p>
+                        <p class="truncate text-[11px] text-gray-400 font-bn">{{ __('subscription.overview.trial_eligible') }}</p>
+                        <p class="truncate text-[10px] text-gray-500 font-bn">{{ __('subscription.overview.available_now') }}</p>
+                    </div>
+                </div>
+
+                <div class="glass flex items-center gap-3 rounded-2xl p-4">
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 2"/></svg>
+                    </span>
+                    <div class="min-w-0">
+                        <p class="text-2xl font-bold font-display text-white">{{ localize_number($overview['upcoming']) }}</p>
+                        <p class="truncate text-[11px] text-gray-400 font-bn">{{ __('subscription.overview.upcoming') }}</p>
+                        <p class="truncate text-[10px] text-gray-500 font-bn">{{ __('subscription.overview.window', ['days' => localize_number($overview['windowDays'])]) }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold font-display text-white sm:text-xl">{{ __('subscription.choose_product') }}</h2>
+                    </div>
+
+                    <div class="inline-flex w-full rounded-xl border border-white/10 bg-white/5 p-1 sm:w-auto" role="group" aria-label="{{ __('subscription.billing.label') }}">
+                        <button type="button" @click="billing = 'monthly'"
+                                :class="billing === 'monthly' ? 'bg-emerald-500 text-black shadow' : 'text-gray-300 hover:text-white'"
+                                class="flex-1 rounded-lg px-4 py-1.5 text-xs font-bold transition font-bn sm:flex-none">{{ __('subscription.billing.monthly') }}</button>
+                        <button type="button" @click="billing = 'yearly'"
+                                :class="billing === 'yearly' ? 'bg-emerald-500 text-black shadow' : 'text-gray-300 hover:text-white'"
+                                class="flex-1 rounded-lg px-4 py-1.5 text-xs font-bold transition font-bn sm:flex-none">{{ __('subscription.billing.yearly') }}</button>
+                    </div>
+                </div>
+
+                <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    @foreach($products as $item)
+                        <article class="glass card-hover flex h-full flex-col rounded-2xl p-5">
+                            <div class="flex items-start justify-between gap-3">
+                                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
+                                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">{!! $productIcons[$item['icon']] ?? $productIcons['store'] !!}</svg>
+                                </span>
+                                <span class="rounded-full border px-2.5 py-1 text-[10px] font-bold font-bn {{ $statusStyles[$item['status']] ?? $statusStyles['inactive'] }}">
+                                    {{ __('subscription.status.'.$item['status']) }}
+                                </span>
+                            </div>
+
+                            <h3 class="mt-4 text-base font-bold font-bn text-white">{{ $item['productName'] }}</h3>
+                            <p class="mt-0.5 text-[11px] uppercase tracking-wide text-emerald-400 font-bn">{{ $item['audience'] }}</p>
+                            <p class="mt-2 text-xs leading-relaxed text-gray-400 font-bn">{{ $item['description'] }}</p>
+
+                            <ul class="mt-4 space-y-1.5">
+                                @foreach($item['features'] as $feature)
+                                    <li class="flex items-start gap-2 text-xs text-gray-300 font-bn">
+                                        <svg class="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                        <span>{{ $feature }}</span>
+                                    </li>
+                                @endforeach
+                            </ul>
+
+                            <div class="mt-auto space-y-3 pt-5">
+                                @if($item['currentSubscription'])
+                                    <div class="space-y-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] text-gray-400 font-bn">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <span>{{ __('subscription.card.plan') }}</span>
+                                            <span class="truncate text-right text-gray-200">{{ $item['currentSubscription']->plan?->name ?? '—' }}</span>
+                                        </div>
+                                        @if($item['currentSubscription']->ends_at)
+                                            <div class="flex items-center justify-between gap-2">
+                                                <span>{{ __('subscription.card.expires') }}</span>
+                                                <span class="text-gray-200">{{ $item['currentSubscription']->ends_at->format('d M Y') }}</span>
+                                            </div>
+                                        @endif
+                                        @if(in_array($item['status'], ['active', 'trial'], true) && $item['remainingDays'] > 0)
+                                            <div class="flex items-center justify-between gap-2">
+                                                <span>{{ __('subscription.card.remaining') }}</span>
+                                                <span class="text-gray-200">{{ localize_number($item['remainingDays']) }} {{ __('subscription.plans.days') }}</span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endif
+
+                                @if($item['status'] === 'trial')
+                                    <p class="rounded-lg bg-sky-500/10 px-3 py-2 text-[11px] text-sky-300 font-bn">{{ __('subscription.card.trial_active', ['days' => localize_number($item['trialRemainingDays'])]) }}</p>
+                                @elseif($item['trialEligible'])
+                                    <p class="rounded-lg bg-emerald-500/10 px-3 py-2 text-[11px] text-emerald-300 font-bn">{{ __('subscription.card.trial_available', ['days' => localize_number($item['trialDays'])]) }}</p>
+                                @elseif($item['trial'])
+                                    <p class="rounded-lg bg-white/5 px-3 py-2 text-[11px] text-gray-400 font-bn">{{ __('subscription.trial.used') }}</p>
+                                @endif
+
+                                @if($item['status'] === 'expired')
+                                    <p class="rounded-lg bg-red-500/10 px-3 py-2 text-[11px] text-red-300 font-bn">{{ __('subscription.card.expired_hint') }}</p>
+                                @elseif($item['status'] === 'cancelled')
+                                    <p class="rounded-lg bg-white/5 px-3 py-2 text-[11px] text-gray-400 font-bn">{{ __('subscription.card.cancelled_hint') }}</p>
+                                @endif
+
+                                <div class="rounded-xl border border-white/10 bg-white/5 px-3 py-2.5">
+                                    <p class="text-[10px] uppercase tracking-wide text-gray-500 font-bn">{{ __('subscription.billing.starting_at') }}</p>
+
+                                    <div x-show="billing === 'monthly'">
+                                        @if($item['monthlyPlan'])
+                                            <p class="mt-0.5 flex items-baseline gap-1">
+                                                <span class="text-2xl font-bold font-display text-white">৳{{ localize_money($item['monthlyPrice']) }}</span>
+                                                <span class="text-[11px] text-gray-400 font-bn">{{ __('subscription.billing.per_month') }}</span>
+                                            </p>
+                                            <p class="text-[10px] text-gray-500 font-bn">{{ __('subscription.billing.billed_monthly') }}</p>
+                                        @else
+                                            <p class="mt-1 text-[11px] text-gray-500 font-bn">{{ __('subscription.plans.no_plans') }}</p>
+                                        @endif
+                                    </div>
+
+                                    <div x-show="billing === 'yearly'" x-cloak>
+                                        @if($item['yearlyPlan'])
+                                            <p class="mt-0.5 flex items-baseline gap-1">
+                                                <span class="text-2xl font-bold font-display text-white">৳{{ localize_money($item['yearlyPrice']) }}</span>
+                                                <span class="text-[11px] text-gray-400 font-bn">{{ __('subscription.billing.per_year') }}</span>
+                                            </p>
+                                            <p class="text-[10px] text-gray-500 font-bn">
+                                                {{ __('subscription.billing.billed_yearly') }}
+                                                @if($item['annualSavings'] > 0)
+                                                    · <span class="text-emerald-400">{{ __('subscription.billing.save', ['amount' => '৳'.localize_money($item['annualSavings'])]) }}</span>
+                                                @endif
+                                            </p>
+                                        @else
+                                            <p class="mt-1 text-[11px] text-gray-500 font-bn">{{ __('subscription.plans.no_plans') }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                @if($item['cta']['method'] === 'post')
+                                    <form method="POST" action="{{ $item['cta']['url'] }}" onsubmit="this.querySelector('button').disabled = true;">
+                                        @csrf
+                                        <button type="submit" class="btn-green flex w-full items-center justify-center rounded-xl px-4 py-2.5 text-sm font-bold font-bn">{{ $item['cta']['label'] }}</button>
+                                    </form>
+
+                                    @if($item['secondaryCta'])
+                                        <a href="{{ $item['secondaryCta']['url'] }}"
+                                           :href="@js($item['secondaryCta']['url']) + '?billing=' + billing"
+                                           class="flex w-full items-center justify-center rounded-xl border border-white/10 px-4 py-2.5 text-sm font-bold text-gray-300 transition hover:bg-white/5 font-bn">{{ $item['secondaryCta']['label'] }}</a>
+                                    @endif
+                                @else
+                                    <a href="{{ $item['cta']['url'] }}"
+                                       :href="@js($item['cta']['url']) + '?billing=' + billing"
+                                       class="btn-green flex w-full items-center justify-center rounded-xl px-4 py-2.5 text-sm font-bold font-bn">{{ $item['cta']['label'] }}</a>
+                                @endif
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            </section>
         </div>
     </main>
 </div>

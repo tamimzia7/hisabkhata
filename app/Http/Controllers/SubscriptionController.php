@@ -25,8 +25,11 @@ class SubscriptionController extends Controller
      */
     public function index(Request $request): View
     {
+        $products = $this->pageData->allProducts($request->user());
+
         return view('subscriptions.index', [
-            'products' => $this->pageData->allProducts($request->user()),
+            'products' => $products,
+            'overview' => $this->pageData->overview($products),
             'currency' => SubscriptionPlan::CURRENCY_BDT,
         ]);
     }

@@ -27,6 +27,11 @@
     };
 
     $openRoute = $product === \App\Models\SubscriptionPlan::PRODUCT_STUDENT ? route('student.dashboard') : route('dashboard');
+
+    $preferredBilling = request()->query('billing');
+    $preferredBilling = in_array($preferredBilling, \App\Models\SubscriptionPlan::PAID_BILLING_CYCLES, true)
+        ? $preferredBilling
+        : null;
 @endphp
 
 <div class="space-y-5">
@@ -129,12 +134,29 @@
             </div>
         </div>
 
+        @if(!empty($features))
+            <div class="mt-4 rounded-xl border border-white/10 bg-white/5 p-4">
+                <p class="text-[10px] uppercase tracking-wide text-gray-500 font-bn">{{ __('subscription.plans.included') }}</p>
+                <div class="mt-2 grid gap-1.5 sm:grid-cols-2">
+                    @foreach($features as $feature)
+                        <div class="flex items-start gap-2 text-xs text-gray-300 font-bn">
+                            <svg class="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                            <span>{{ $feature }}</span>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         <div class="mt-4 grid gap-3 md:grid-cols-2">
             @forelse($plans as $plan)
                 @php
                     $isYearly = $plan->billing_cycle === \App\Models\SubscriptionPlan::BILLING_CYCLE_YEARLY;
+                    $isPreferred = $preferredBilling === $plan->billing_cycle;
+                    $planClasses = $isYearly ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-white/10 bg-white/5';
+                    $planClasses .= $isPreferred ? ' ring-2 ring-emerald-400/70' : '';
                 @endphp
-                <div class="rounded-xl border {{ $isYearly ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-white/10 bg-white/5' }} p-4">
+                <div class="rounded-xl border {{ $planClasses }} p-4">
                     <div class="flex items-start justify-between gap-3">
                         <div>
                             <h4 class="text-sm font-bold font-bn text-white">{{ $isYearly ? __('subscription.plans.yearly') : __('subscription.plans.monthly') }}</h4>

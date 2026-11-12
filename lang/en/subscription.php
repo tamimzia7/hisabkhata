@@ -8,6 +8,67 @@ return [
     'back' => 'Back to subscriptions',
     'open' => 'Open dashboard',
 
+    'page' => [
+        'title' => 'Manage Your Subscriptions',
+        'description' => 'Choose the right plan for your needs and manage all your HisabKhata products in one place.',
+    ],
+
+    'overview' => [
+        'active' => 'Active Subscriptions',
+        'trial_eligible' => 'Trial Eligible Products',
+        'upcoming' => 'Upcoming Expirations',
+        'across_products' => 'Across all products',
+        'available_now' => 'Available right now',
+        'window' => 'Next :days days',
+    ],
+
+    'choose_product' => 'Choose Your Product',
+
+    'billing' => [
+        'label' => 'Billing cycle',
+        'monthly' => 'Monthly',
+        'yearly' => 'Yearly',
+        'starting_at' => 'Starting at',
+        'per_month' => '/month',
+        'per_year' => '/year',
+        'billed_monthly' => 'Billed monthly',
+        'billed_yearly' => 'Billed yearly',
+        'save' => 'Save :amount per year',
+    ],
+
+    'cta' => [
+        'explore' => 'Explore plans',
+        'start_trial' => 'Start free trial',
+        'manage' => 'Manage subscription',
+        'renew' => 'Renew subscription',
+        'view_plans' => 'View plans',
+    ],
+
+    'card' => [
+        'plan' => 'Plan',
+        'expires' => 'Expires',
+        'remaining' => 'Remaining',
+        'trial_available' => ':days-day free trial available',
+        'trial_active' => 'Trial active · :days days left',
+        'expired_hint' => 'Your previous plan has ended. Renew to keep using this product.',
+        'cancelled_hint' => 'This subscription was cancelled. You can renew it anytime.',
+    ],
+
+    'catalog' => [
+        'student' => [
+            'audience' => 'For students and mess members',
+            'description' => 'Manage your mess activities, meals, members and shared expenses effortlessly.',
+        ],
+        'family' => [
+            'audience' => 'For individuals and families',
+            'description' => 'Take control of your household finances, income, expenses and savings.',
+        ],
+        'shop' => [
+            'audience' => 'For shop owners and small businesses',
+            'description' => 'Manage your business transactions and financial performance.',
+        ],
+    ],
+
     'products' => [
         'student' => 'Meal Management',
         'family' => 'Family Finance',
@@ -58,6 +119,7 @@ return [
 
     'plans' => [
         'heading' => 'Paid plans',
+        'included' => 'What is included',
         'monthly' => 'Monthly Subscription',
         'yearly' => 'Yearly Subscription',
         'per_month' => '/month',
@@ -71,14 +133,21 @@ return [
     ],
 
     'features' => [
+        'member_management' => 'Member management',
+        'meal_tracking' => 'Daily meal tracking',
+        'member_balance' => 'Member-wise balance',
         'meals' => 'Daily meal tracking for every member',
         'bazar' => 'Bazar purchases and receipts',
         'settlement' => 'Automatic meal rate and monthly settlement',
         'reports' => 'Printable financial reports',
         'income' => 'Family income and expense tracking',
+        'expense_management' => 'Expense management',
         'budget' => 'Category budgets and savings goals',
+        'savings' => 'Savings overview',
         'shop_sales' => 'Sales, purchases and inventory',
+        'shop_invoices' => 'Invoice management',
         'shop_dues' => 'Customer dues and supplier ledger',
+        'shop_profit' => 'Monthly profit overview',
         'shop_reports' => 'Profit-loss and business reports',
     ],
 
