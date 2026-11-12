@@ -7,7 +7,7 @@
     @include('partials.client-sidebar')
 
     <main class="flex-1 overflow-x-hidden p-3 md:p-4 lg:p-5">
-        <div class="mx-auto max-w-6xl">
+        <div class="mx-auto max-w-7xl">
             @include('subscriptions._details')
         </div>
     </main>

@@ -32,6 +32,7 @@
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   html { -webkit-text-size-adjust: 100%; font-size: 18px; }
@@ -123,6 +124,14 @@
     <div x-show="showToast" x-transition x-init="showToast && setTimeout(() => showToast = false, 2500)" class="fixed top-20 right-6 z-[100] glass-strong text-emerald-300 px-5 py-3 rounded-xl shadow-2xl text-sm font-bn" x-text="toastMsg" x-cloak></div>
 
 @yield('content')
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+    });
+</script>
 
 @stack('scripts')
 </body>

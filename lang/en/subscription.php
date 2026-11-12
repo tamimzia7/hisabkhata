@@ -107,6 +107,7 @@ return [
         'expires' => 'Subscription expiration date',
         'started' => 'Started',
         'remaining' => 'Days remaining',
+        'status' => 'Status',
         'payment_status' => 'Payment status',
         'no_subscription' => 'No subscription for this product yet.',
         'active_subscription' => 'Your subscription is active.',
@@ -122,6 +123,7 @@ return [
         'description' => 'Try every :product feature free for 30 days. Each product trial can only be used once.',
         'started' => 'Your 30-day free trial is active. Enjoy full access!',
         'button' => 'Start 30-Day Free Trial',
+        'activating' => 'Activating trial…',
         'used' => 'Free trial already used.',
         'eligible' => 'You are eligible for a one-time 30-day free trial.',
         'not_eligible' => 'The free trial for this product is no longer available.',
@@ -145,6 +147,7 @@ return [
         'no_plans' => 'No paid plans are available right now.',
         'monthly_description' => '30 days of paid access',
         'yearly_description' => '365 days of paid access',
+        'recommended' => 'Recommended',
     ],
 
     'features' => [
