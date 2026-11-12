@@ -8,6 +8,10 @@ return [
     'back' => 'Back to subscriptions',
     'open' => 'Open dashboard',
 
+    'details' => [
+        'title' => ':product Subscription',
+    ],
+
     'page' => [
         'title' => 'Manage Your Subscriptions',
         'description' => 'Choose the right plan for your needs and manage all your HisabKhata products in one place.',
@@ -95,10 +99,11 @@ return [
         'started' => 'Started',
         'remaining' => 'Days remaining',
         'payment_status' => 'Payment status',
-        'no_subscription' => 'You do not have a subscription for this product yet.',
+        'no_subscription' => 'No subscription for this product yet.',
         'active_subscription' => 'Your subscription is active.',
-        'expired_subscription' => 'Your subscription has expired. Choose a plan below to continue.',
-        'suspended_subscription' => 'Your subscription has been suspended. Please contact support.',
+        'expired_subscription' => 'Subscription expired. Choose a plan below.',
+        'suspended_subscription' => 'Subscription suspended. Please contact support.',
+        'cancelled_subscription' => 'Subscription cancelled. Choose a plan to renew.',
     ],
 
     'trial' => [
@@ -108,9 +113,10 @@ return [
         'description' => 'Try every :product feature free for 30 days. Each product trial can only be used once.',
         'started' => 'Your 30-day free trial is active. Enjoy full access!',
         'button' => 'Start 30-Day Free Trial',
-        'used' => 'The free trial for this product has already been used.',
+        'used' => 'Free trial already used.',
         'eligible' => 'You are eligible for a one-time 30-day free trial.',
         'not_eligible' => 'The free trial for this product is no longer available.',
+        'unavailable_active' => 'The one-time trial is not available while a subscription is active.',
         'start_date' => 'Trial start date',
         'end_date' => 'Trial expiration date',
         'remaining_days' => 'Remaining trial days',
@@ -118,7 +124,7 @@ return [
     ],
 
     'plans' => [
-        'heading' => 'Paid plans',
+        'heading' => 'Choose Your Subscription',
         'included' => 'What is included',
         'monthly' => 'Monthly Subscription',
         'yearly' => 'Yearly Subscription',
@@ -154,6 +160,7 @@ return [
     'payment' => [
         'heading' => 'Payment',
         'secure_note' => 'Payments are processed securely by SSLCommerz. Your subscription is activated only after the gateway verifies the payment.',
+        'secure_note_short' => 'Secured by SSLCommerz. Access activates after payment verification.',
         'methods' => 'bKash, Nagad, Rocket, Visa and Mastercard are supported through SSLCommerz.',
         'redirecting' => 'Redirecting to SSLCommerz…',
         'history' => 'Payment history',
