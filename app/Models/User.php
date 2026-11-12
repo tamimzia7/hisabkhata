@@ -6,6 +6,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -289,6 +290,17 @@ class User extends Authenticatable
     public function hasActiveSubscription(string $product = SubscriptionPlan::PRODUCT_STUDENT): bool
     {
         return $this->activeSubscription($product) !== null;
+    }
+
+    /**
+     * Determine whether the user has active access to any product.
+     */
+    public function hasAnyActiveSubscription(): bool
+    {
+        return $this->subscriptions()
+            ->active()
+            ->whereHas('plan', fn (Builder $query): Builder => $query->whereIn('product', SubscriptionPlan::PRODUCTS))
+            ->exists();
     }
 
     /**

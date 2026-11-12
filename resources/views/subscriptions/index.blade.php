@@ -1,8 +1,9 @@
 @extends('layouts.app')
 
-@section('title', __('subscription.page.title'))
-
 @php
+    $onboarding = $onboarding ?? false;
+    $recommendedProduct = $recommendedProduct ?? null;
+
     $productIcons = [
         'utensils' => '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
         'users' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
@@ -20,19 +21,44 @@
     ];
 @endphp
 
+@section('title', $onboarding ? __('subscription.onboarding.title') : __('subscription.page.title'))
+
 @section('content')
 <div class="min-h-screen flex relative z-10" x-data="{ billing: 'monthly' }">
     @include('partials.client-sidebar')
 
     <main class="flex-1 overflow-x-hidden p-3 md:p-6">
         <div class="mx-auto max-w-6xl space-y-6">
-            <header>
-                <p class="text-[10px] uppercase tracking-[0.2em] text-emerald-400">{{ __('site.common.brand') }}</p>
-                <h1 class="mt-1 text-2xl font-bold font-display text-white sm:text-3xl">{{ __('subscription.page.title') }}</h1>
-                <p class="mt-1 max-w-2xl text-sm text-gray-400 font-bn">{{ __('subscription.page.description') }}</p>
+            <header class="flex flex-wrap items-start justify-between gap-3">
+                <div class="min-w-0">
+                    @if($onboarding)
+                        <p class="text-[10px] uppercase tracking-[0.2em] text-emerald-400">{{ __('subscription.onboarding.eyebrow') }}</p>
+                        <h1 class="mt-1 text-2xl font-bold font-display text-white sm:text-3xl">{{ __('subscription.onboarding.title') }}</h1>
+                        <p class="mt-1 max-w-2xl text-sm text-gray-400 font-bn">{{ __('subscription.onboarding.description') }}</p>
+                    @else
+                        <p class="text-[10px] uppercase tracking-[0.2em] text-emerald-400">{{ __('site.common.brand') }}</p>
+                        <h1 class="mt-1 text-2xl font-bold font-display text-white sm:text-3xl">{{ __('subscription.page.title') }}</h1>
+                        <p class="mt-1 max-w-2xl text-sm text-gray-400 font-bn">{{ __('subscription.page.description') }}</p>
+                    @endif
+                </div>
+
+                <x-notifications.bell />
             </header>
 
-            <section class="grid gap-3 sm:grid-cols-3">
+            @if($onboarding)
+                <section class="glass-strong rounded-2xl p-4 sm:p-5">
+                    <div class="flex items-start gap-3">
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+                        </span>
+                        <div class="min-w-0">
+                            <p class="text-sm font-bold text-white font-bn">{{ __('subscription.onboarding.notice') }}</p>
+                            <p class="mt-1 text-xs text-gray-400 font-bn">{{ __('subscription.onboarding.notice_hint') }}</p>
+                        </div>
+                    </div>
+                </section>
+            @else
+                <section class="grid gap-3 sm:grid-cols-3">
                 <div class="glass flex items-center gap-3 rounded-2xl p-4">
                     <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 11 3 3L22 4"/></svg>
@@ -65,7 +91,8 @@
                         <p class="truncate text-[10px] text-gray-500 font-bn">{{ __('subscription.overview.window', ['days' => localize_number($overview['windowDays'])]) }}</p>
                     </div>
                 </div>
-            </section>
+                </section>
+            @endif
 
             <section>
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -97,6 +124,11 @@
 
                             <h3 class="mt-4 text-base font-bold font-bn text-white">{{ $item['productName'] }}</h3>
                             <p class="mt-0.5 text-[11px] uppercase tracking-wide text-emerald-400 font-bn">{{ $item['audience'] }}</p>
+                            @if($onboarding && $recommendedProduct === $item['product'])
+                                <span class="mt-2 inline-flex w-fit rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold font-bn text-emerald-400">
+                                    {{ __('subscription.onboarding.recommended') }}
+                                </span>
+                            @endif
                             <p class="mt-2 text-xs leading-relaxed text-gray-400 font-bn">{{ $item['description'] }}</p>
 
                             <ul class="mt-4 space-y-1.5">

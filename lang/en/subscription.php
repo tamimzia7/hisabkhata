@@ -17,6 +17,15 @@ return [
         'description' => 'Choose the right plan for your needs and manage all your HisabKhata products in one place.',
     ],
 
+    'onboarding' => [
+        'eyebrow' => 'Required step',
+        'title' => 'Choose a subscription to get started',
+        'description' => 'Your account is ready. Select a product and plan, or start a free trial, to unlock your workspace.',
+        'notice' => 'Your dashboard is locked until you activate a subscription or a free trial.',
+        'notice_hint' => 'Choose a plan below or start a free trial for the product you need.',
+        'recommended' => 'Recommended for your account',
+    ],
+
     'overview' => [
         'active' => 'Active Subscriptions',
         'trial_eligible' => 'Trial Eligible Products',

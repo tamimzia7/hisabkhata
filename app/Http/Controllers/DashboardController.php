@@ -11,6 +11,7 @@ use App\Models\Ticket;
 use App\Models\User;
 use App\Models\UserSubscription;
 use App\Services\SslCommerzGateway;
+use App\Services\SubscriptionPageData;
 use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -44,16 +45,41 @@ class DashboardController extends Controller
         'admin-profile',
     ];
 
+    public function __construct(private readonly SubscriptionPageData $subscriptionPageData) {}
+
     /**
      * Show the dashboard for the authenticated user's mode.
      */
     public function __invoke(Request $request): View
     {
-        if (! $request->user()->isAdmin()) {
-            return view('dashboard');
+        $user = $request->user();
+
+        if (! $user->isAdmin()) {
+            return $user->hasAnyActiveSubscription()
+                ? view('dashboard')
+                : $this->onboardingView($user);
         }
 
         return $this->adminView($request, $this->requestedPage($request));
+    }
+
+    /**
+     * Show the mandatory subscription selection for clients without access.
+     */
+    private function onboardingView(User $user): View
+    {
+        $products = collect($this->subscriptionPageData->allProducts($user))
+            ->sortBy(fn (array $item): int => $item['product'] === $user->role ? 0 : 1)
+            ->values()
+            ->all();
+
+        return view('subscriptions.index', [
+            'products' => $products,
+            'overview' => $this->subscriptionPageData->overview($products),
+            'currency' => SubscriptionPlan::CURRENCY_BDT,
+            'onboarding' => true,
+            'recommendedProduct' => $user->role,
+        ]);
     }
 
     /**

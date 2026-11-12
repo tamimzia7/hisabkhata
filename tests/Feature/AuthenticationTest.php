@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\SubscriptionPlan;
 use App\Models\User;
+use App\Models\UserSubscription;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 
@@ -145,6 +147,24 @@ test('redirects authenticated users away from the login page', function () {
 
 test('shows the student dashboard to a student user', function () {
     $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
+    $plan = SubscriptionPlan::query()->firstOrCreate(['slug' => 'authentication-student-monthly'], [
+        'name' => 'Authentication Student',
+        'product' => SubscriptionPlan::PRODUCT_STUDENT,
+        'billing_cycle' => SubscriptionPlan::BILLING_CYCLE_MONTHLY,
+        'price' => 50,
+        'currency' => SubscriptionPlan::CURRENCY_BDT,
+        'duration_days' => 30,
+        'is_active' => true,
+    ]);
+
+    UserSubscription::query()->create([
+        'user_id' => $user->getKey(),
+        'subscription_plan_id' => $plan->getKey(),
+        'billing_cycle' => SubscriptionPlan::BILLING_CYCLE_MONTHLY,
+        'status' => UserSubscription::STATUS_ACTIVE,
+        'starts_at' => now(),
+        'ends_at' => now()->addDays(30),
+    ]);
 
     $response = $this->actingAs($user)->get('/dashboard');
 
