@@ -71,8 +71,6 @@ class NotificationController extends Controller
                     'label' => __('site.admin.role_'.str_replace('-', '_', $role)),
                     'icon' => match ($role) {
                         User::ROLE_STUDENT => '🎓',
-                        User::ROLE_FAMILY => '🏠',
-                        User::ROLE_SHOP => '🏪',
                         default => '👤',
                     },
                 ])

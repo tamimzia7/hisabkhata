@@ -107,7 +107,7 @@ test('an expired student subscription is blocked without affecting other product
         ->get(route('student.dashboard'))
         ->assertRedirect(route('student.subscription.show'));
 
-    $family = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $family = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     $this->actingAs($family)->get(route('dashboard'))->assertOk();
 });

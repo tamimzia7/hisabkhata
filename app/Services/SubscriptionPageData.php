@@ -28,28 +28,6 @@ class SubscriptionPageData
                 'subscription.features.reports',
             ],
         ],
-        SubscriptionPlan::PRODUCT_FAMILY => [
-            'icon' => 'users',
-            'audience' => 'subscription.catalog.family.audience',
-            'description' => 'subscription.catalog.family.description',
-            'features' => [
-                'subscription.features.income',
-                'subscription.features.expense_management',
-                'subscription.features.budget',
-                'subscription.features.savings',
-            ],
-        ],
-        SubscriptionPlan::PRODUCT_SHOP => [
-            'icon' => 'store',
-            'audience' => 'subscription.catalog.shop.audience',
-            'description' => 'subscription.catalog.shop.description',
-            'features' => [
-                'subscription.features.shop_sales',
-                'subscription.features.shop_invoices',
-                'subscription.features.shop_dues',
-                'subscription.features.shop_profit',
-            ],
-        ],
     ];
 
     /**

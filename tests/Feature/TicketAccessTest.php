@@ -48,7 +48,7 @@ test('a client can create a ticket', function () {
 });
 
 test('ticket numbers are generated sequentially in the required format', function () {
-    $client = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $client = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     foreach (['First ticket', 'Second ticket', 'Third ticket'] as $subject) {
         $this->actingAs($client)->post(route('tickets.store'), [
@@ -95,7 +95,7 @@ test('ticket creation validates the required fields', function () {
 
 test('a client cannot open another clients ticket', function () {
     $owner = User::factory()->create(['role' => User::ROLE_STUDENT]);
-    $otherClient = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $otherClient = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     $ticket = Ticket::factory()->create(['user_id' => $owner->getKey()]);
 
@@ -132,7 +132,7 @@ test('a super admin can open every ticket', function () {
 
 test('the ticket list only shows tickets the user is allowed to see', function () {
     $alice = User::factory()->create(['role' => User::ROLE_STUDENT]);
-    $bob = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $bob = User::factory()->create(['role' => User::ROLE_STUDENT]);
     $assignee = User::factory()->create(['role' => User::ROLE_CUSTOMER_CARE]);
     $superAdmin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 
@@ -200,7 +200,7 @@ test('the ticket list supports search and status filters', function () {
 });
 
 test('the sidebar exposes the tickets menu for every role', function () {
-    $client = User::factory()->create(['role' => User::ROLE_SHOP]);
+    $client = User::factory()->create(['role' => User::ROLE_STUDENT]);
     $staff = User::factory()->create(['role' => User::ROLE_DEVELOPER]);
     $superAdmin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 

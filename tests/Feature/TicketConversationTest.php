@@ -28,7 +28,7 @@ test('the assigned system user and super admin are notified about a client reply
 });
 
 test('the ticket owner is notified when the assigned system user replies', function () {
-    $client = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $client = User::factory()->create(['role' => User::ROLE_STUDENT]);
     $assignee = User::factory()->create(['role' => User::ROLE_CUSTOMER_CARE]);
 
     $ticket = Ticket::factory()->assigned($assignee)->create(['user_id' => $client->getKey()]);
@@ -43,7 +43,7 @@ test('the ticket owner is notified when the assigned system user replies', funct
 });
 
 test('only the super admin is notified when an unassigned ticket receives a client reply', function () {
-    $client = User::factory()->create(['role' => User::ROLE_SHOP]);
+    $client = User::factory()->create(['role' => User::ROLE_STUDENT]);
     $superAdmin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
 
     $ticket = Ticket::factory()->create(['user_id' => $client->getKey()]);
@@ -57,7 +57,7 @@ test('only the super admin is notified when an unassigned ticket receives a clie
 
 test('users without access cannot post messages', function () {
     $owner = User::factory()->create(['role' => User::ROLE_STUDENT]);
-    $otherClient = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $otherClient = User::factory()->create(['role' => User::ROLE_STUDENT]);
     $unassignedStaff = User::factory()->create(['role' => User::ROLE_DEVELOPER]);
 
     $ticket = Ticket::factory()->create(['user_id' => $owner->getKey()]);
@@ -198,7 +198,7 @@ test('the conversation polling endpoint only returns new messages and marks them
 
 test('the polling endpoint rejects users who cannot view the ticket', function () {
     $owner = User::factory()->create(['role' => User::ROLE_STUDENT]);
-    $otherClient = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $otherClient = User::factory()->create(['role' => User::ROLE_STUDENT]);
     $ticket = Ticket::factory()->create(['user_id' => $owner->getKey()]);
 
     $this->actingAs($otherClient)

@@ -60,9 +60,7 @@
     $planName = $currentSubscription?->plan?->name;
     $planLabel = $planName ? \Illuminate\Support\Str::after($planName, '— ') : null;
 
-    $openRoute = $product === \App\Models\SubscriptionPlan::PRODUCT_STUDENT
-        ? route('student.dashboard')
-        : route('dashboard');
+    $openRoute = route('student.dashboard');
 
     $preferredBilling = request()->query('billing');
     $preferredBilling = in_array($preferredBilling, \App\Models\SubscriptionPlan::PAID_BILLING_CYCLES, true)
@@ -91,8 +89,6 @@
 
     $featureIcons = match ($product) {
         \App\Models\SubscriptionPlan::PRODUCT_STUDENT => ['users', 'utensils', 'shopping-cart', 'wallet', 'file-text'],
-        \App\Models\SubscriptionPlan::PRODUCT_FAMILY => ['trending-up', 'receipt', 'pie-chart', 'piggy-bank'],
-        \App\Models\SubscriptionPlan::PRODUCT_SHOP => ['shopping-bag', 'file-text', 'coins', 'trending-up'],
         default => ['check', 'check', 'check', 'check', 'check'],
     };
 @endphp

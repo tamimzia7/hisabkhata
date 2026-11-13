@@ -124,15 +124,15 @@ test('a verified yearly payment activates exactly three hundred sixty five days 
     $start = now()->setDate(2026, 4, 1)->setTime(10, 0);
     $this->travelTo($start);
 
-    $user = User::factory()->create(['role' => User::ROLE_FAMILY]);
-    $plan = paymentTestPlan('family', SubscriptionPlan::BILLING_CYCLE_YEARLY);
+    $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
+    $plan = paymentTestPlan('student', SubscriptionPlan::BILLING_CYCLE_YEARLY);
     $payment = pendingPaymentFor($user, $plan);
     fakeGatewayValidation($payment);
 
     $this->post(route('payments.sslcommerz.success'), [
         'tran_id' => $payment->transaction_id,
         'val_id' => 'VAL-'.$payment->getKey(),
-    ])->assertRedirect(route('subscriptions.show', 'family'));
+    ])->assertRedirect(route('subscriptions.show', 'student'));
 
     $subscription = UserSubscription::query()->where('payment_id', $payment->getKey())->firstOrFail();
 
@@ -191,24 +191,24 @@ test('the paid amount and currency must match the plan before activation', funct
 test('failed and cancelled payments are recorded without access', function () {
     configurePaymentGateway();
 
-    $user = User::factory()->create(['role' => User::ROLE_SHOP]);
-    $failed = pendingPaymentFor($user, paymentTestPlan('shop'));
-    $cancelled = pendingPaymentFor($user, paymentTestPlan('shop', SubscriptionPlan::BILLING_CYCLE_YEARLY));
+    $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
+    $failed = pendingPaymentFor($user, paymentTestPlan('student'));
+    $cancelled = pendingPaymentFor($user, paymentTestPlan('student', SubscriptionPlan::BILLING_CYCLE_YEARLY));
 
     $this->post(route('payments.sslcommerz.fail'), [
         'tran_id' => $failed->transaction_id,
         'status' => 'FAILED',
-    ])->assertRedirect(route('subscriptions.show', 'shop'));
+    ])->assertRedirect(route('subscriptions.show', 'student'));
 
     $this->post(route('payments.sslcommerz.cancel'), [
         'tran_id' => $cancelled->transaction_id,
         'status' => 'CANCELLED',
-    ])->assertRedirect(route('subscriptions.show', 'shop'));
+    ])->assertRedirect(route('subscriptions.show', 'student'));
 
     expect($failed->fresh()->status)->toBe(Payment::STATUS_FAILED)
         ->and($cancelled->fresh()->status)->toBe(Payment::STATUS_CANCELLED)
         ->and(UserSubscription::query()->count())->toBe(0)
-        ->and($user->fresh()->hasActiveSubscription('shop'))->toBeFalse();
+        ->and($user->fresh()->hasActiveSubscription('student'))->toBeFalse();
 });
 
 test('duplicate success callbacks and IPNs are idempotent', function () {
@@ -231,8 +231,8 @@ test('duplicate success callbacks and IPNs are idempotent', function () {
 test('a verified IPN activates the subscription server to server', function () {
     configurePaymentGateway();
 
-    $user = User::factory()->create(['role' => User::ROLE_SHOP]);
-    $payment = pendingPaymentFor($user, paymentTestPlan('shop'));
+    $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
+    $payment = pendingPaymentFor($user, paymentTestPlan('student'));
     fakeGatewayValidation($payment);
 
     $this->post(route('payments.sslcommerz.ipn'), [
@@ -241,7 +241,7 @@ test('a verified IPN activates the subscription server to server', function () {
     ])->assertOk()->assertSee('OK');
 
     expect($payment->fresh()->status)->toBe(Payment::STATUS_SUCCESSFUL)
-        ->and($user->fresh()->hasActiveSubscription('shop'))->toBeTrue();
+        ->and($user->fresh()->hasActiveSubscription('student'))->toBeTrue();
 });
 
 test('a gateway transaction can only activate one subscription', function () {
@@ -315,34 +315,34 @@ test('a renewal extends the existing paid expiration date', function () {
     expect($renewal->ends_at->getTimestamp())->toBe($existing->ends_at->copy()->addDays(30)->getTimestamp());
 });
 
-test('product access stays isolated when another product subscription expires', function () {
+test('an expired subscription does not grant access while an active one does', function () {
     $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
-    $familyPlan = paymentTestPlan('family');
-    $studentPlan = paymentTestPlan();
+    $plan = paymentTestPlan();
 
     UserSubscription::query()->create([
         'user_id' => $user->getKey(),
-        'subscription_plan_id' => $familyPlan->getKey(),
+        'subscription_plan_id' => $plan->getKey(),
         'billing_cycle' => SubscriptionPlan::BILLING_CYCLE_MONTHLY,
         'status' => UserSubscription::STATUS_ACTIVE,
         'starts_at' => now()->subDays(40),
         'ends_at' => now()->subDay(),
     ]);
 
+    expect($user->fresh()->hasActiveSubscription('student'))->toBeFalse();
+
+    $this->actingAs($user)->get(route('student.dashboard'))->assertRedirect(route('student.subscription.show'));
+
     UserSubscription::query()->create([
         'user_id' => $user->getKey(),
-        'subscription_plan_id' => $studentPlan->getKey(),
+        'subscription_plan_id' => $plan->getKey(),
         'billing_cycle' => SubscriptionPlan::BILLING_CYCLE_MONTHLY,
         'status' => UserSubscription::STATUS_ACTIVE,
         'starts_at' => now(),
         'ends_at' => now()->addDays(30),
     ]);
 
-    expect($user->fresh()->hasActiveSubscription('student'))->toBeTrue()
-        ->and($user->fresh()->hasActiveSubscription('family'))->toBeFalse();
+    expect($user->fresh()->hasActiveSubscription('student'))->toBeTrue();
 
-    $this->actingAs($user)->get(route('family.dashboard'))->assertRedirect(route('subscriptions.show', 'family'));
-    $this->actingAs($user)->get(route('shop.dashboard'))->assertRedirect(route('subscriptions.show', 'shop'));
     $this->actingAs($user)->get(route('student.dashboard'))->assertRedirect(route('student.messes.index'));
 });
 

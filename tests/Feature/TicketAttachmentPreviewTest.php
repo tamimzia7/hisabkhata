@@ -27,7 +27,7 @@ test('image attachments are previewed inline for authorized participants', funct
     Storage::fake('local');
 
     $owner = User::factory()->create(['role' => User::ROLE_STUDENT]);
-    $otherClient = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $otherClient = User::factory()->create(['role' => User::ROLE_STUDENT]);
     $assignee = User::factory()->create(['role' => User::ROLE_CUSTOMER_CARE]);
 
     $ticket = uploadTicketWithAttachments($this, $owner, [

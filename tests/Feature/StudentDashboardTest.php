@@ -340,22 +340,9 @@ test('dashboard is isolated and rejects expired student subscriptions while othe
     $this->actingAs($expired)->get(route('student.dashboard'))
         ->assertRedirect(route('student.subscription.show'));
 
-    UserSubscription::create([
-        'user_id' => $expired->getKey(),
-        'subscription_plan_id' => SubscriptionPlan::create([
-            'slug' => 'dashboard-family',
-            'name' => 'Family Plan',
-            'product' => SubscriptionPlan::PRODUCT_FAMILY,
-            'price' => 0,
-            'duration_days' => 30,
-            'is_active' => true,
-        ])->getKey(),
-        'status' => UserSubscription::STATUS_ACTIVE,
-        'starts_at' => now(),
-        'ends_at' => now()->addDays(30),
-    ]);
+    $this->actingAs($expired)->get(route('dashboard'))
+        ->assertOk()
+        ->assertSee(__('subscription.onboarding.title'));
 
-    $this->actingAs($expired)->get(route('dashboard'))->assertOk();
-    expect($expired->hasActiveSubscription(SubscriptionPlan::PRODUCT_FAMILY))->toBeTrue()
-        ->and($expired->hasActiveStudentSubscription())->toBeFalse();
+    expect($expired->hasActiveStudentSubscription())->toBeFalse();
 });

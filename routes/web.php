@@ -51,13 +51,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/subscriptions/{product}/trial', [SubscriptionController::class, 'startTrial'])->name('subscriptions.trial');
     Route::post('/subscriptions/{product}/checkout', [SubscriptionController::class, 'checkout'])->name('subscriptions.checkout');
 
-    Route::middleware('product.subscription:family')
-        ->get('/family', fn () => redirect()->route('dashboard'))
-        ->name('family.dashboard');
-    Route::middleware('product.subscription:shop')
-        ->get('/shop', fn () => redirect()->route('dashboard'))
-        ->name('shop.dashboard');
-
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/create', [NotificationController::class, 'create'])->name('notifications.create');
     Route::get('/notifications/feed', [NotificationController::class, 'feed'])->name('notifications.get');

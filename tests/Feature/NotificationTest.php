@@ -37,7 +37,7 @@ test('the notification bell and sidebar link render on both dashboards', functio
 
 test('the feed returns only the authenticated user notifications', function () {
     $alice = User::factory()->create(['role' => User::ROLE_STUDENT]);
-    $bob = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $bob = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     $alice->notify(new SystemNotification('Alice only', 'Alice body', '/dashboard'));
     $alice->notify(new SystemNotification('Alice second', 'Alice body 2', '/notifications'));
@@ -55,7 +55,7 @@ test('the feed returns only the authenticated user notifications', function () {
 
 test('a notification can only be marked read by its owner', function () {
     $alice = User::factory()->create(['role' => User::ROLE_STUDENT]);
-    $bob = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $bob = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     $alice->notify(new SystemNotification('Alice only', 'Alice body', '/dashboard'));
     $bob->notify(new SystemNotification('Bob only', 'Bob body', '/dashboard'));
@@ -80,7 +80,7 @@ test('a notification can only be marked read by its owner', function () {
 
 test('mark all read only affects the authenticated user', function () {
     $alice = User::factory()->create(['role' => User::ROLE_STUDENT]);
-    $bob = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $bob = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     $alice->notify(new SystemNotification('Alice one', 'Body', '/dashboard'));
     $alice->notify(new SystemNotification('Alice two', 'Body', '/dashboard'));
@@ -97,7 +97,7 @@ test('mark all read only affects the authenticated user', function () {
 
 test('a user can delete only their own notification', function () {
     $alice = User::factory()->create(['role' => User::ROLE_STUDENT]);
-    $bob = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $bob = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     $alice->notify(new SystemNotification('Alice only', 'Body', '/dashboard'));
     $bob->notify(new SystemNotification('Bob only', 'Body', '/dashboard'));
@@ -120,7 +120,7 @@ test('a user can delete only their own notification', function () {
 });
 
 test('opening a notification marks it read and redirects to an internal destination', function () {
-    $user = User::factory()->create(['role' => User::ROLE_SHOP]);
+    $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     $user->notify(new SystemNotification('Open me', 'Body', '/dashboard?page=client-users'));
 
@@ -134,7 +134,7 @@ test('opening a notification marks it read and redirects to an internal destinat
 });
 
 test('opening a notification never redirects to an external URL', function () {
-    $user = User::factory()->create(['role' => User::ROLE_SHOP]);
+    $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     $user->notify(new SystemNotification('Unsafe', 'Body', 'https://example.com/phishing'));
 
@@ -203,7 +203,7 @@ test('the notification service can deliver to one user, many users and roles', f
     $service = app(NotificationService::class);
 
     $student = User::factory()->create(['role' => User::ROLE_STUDENT]);
-    $family = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $family = User::factory()->create(['role' => User::ROLE_STUDENT]);
     $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
     $service->sendToUser($student, 'Single', 'Body');

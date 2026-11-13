@@ -133,7 +133,7 @@
     <section class="py-6 border-y border-emerald-500/10 overflow-hidden relative z-10">
         <div class="flex marquee whitespace-nowrap gap-10 sm:gap-16 text-gray-500 font-medium text-sm sm:text-base font-bn">
             @foreach (range(1, 2) as $repeat)
-                @foreach (['students', 'shops', 'families', 'rating', 'bangla', 'secure'] as $item)
+                @foreach (['students', 'rating', 'bangla', 'secure'] as $item)
                     <span>{{ __('site.marquee.'.$item) }}</span><span class="text-emerald-500/50">◆</span>
                 @endforeach
             @endforeach
@@ -141,20 +141,15 @@
     </section>
 
     <!-- SHOWCASE -->
-    <section id="showcase" class="py-16 sm:py-20 md:py-24 relative z-10 scroll-mt-20 sm:scroll-mt-24" x-data="{ showcaseTab: 'student' }">
+    <section id="showcase" class="py-16 sm:py-20 md:py-24 relative z-10 scroll-mt-20 sm:scroll-mt-24">
         <div class="max-w-7xl mx-auto px-4 sm:px-6">
             <div class="text-center max-w-2xl mx-auto mb-12">
                 <span class="inline-block glass text-emerald-300 text-[10px] sm:text-xs font-semibold px-3 sm:px-4 py-1.5 rounded-full mb-5 tracking-[0.15em] sm:tracking-[0.2em] font-bn">{{ __('site.showcase.badge') }}</span>
                 <h2 class="text-2xl sm:text-3xl md:text-5xl font-display mb-4 font-bn">{{ __('site.showcase.title_before') }} <span class="gradient-green">{{ __('site.showcase.title_highlight') }}</span></h2>
                 <p class="text-base sm:text-lg text-gray-400 font-bn">{{ __('site.showcase.subtitle') }}</p>
             </div>
-            <div class="flex justify-center gap-2 mb-8 sm:mb-10 flex-wrap">
-                <button @click="showcaseTab = 'student'" :class="showcaseTab === 'student' ? 'tab-btn active' : 'glass'" class="px-4 sm:px-6 py-2.5 sm:py-3 rounded-full font-semibold text-xs sm:text-sm transition-all hover:scale-105 font-bn">{{ __('site.showcase.tab_student') }}</button>
-                <button @click="showcaseTab = 'personal'" :class="showcaseTab === 'personal' ? 'tab-btn active' : 'glass'" class="px-4 sm:px-6 py-2.5 sm:py-3 rounded-full font-semibold text-xs sm:text-sm transition-all hover:scale-105 font-bn">{{ __('site.showcase.tab_personal') }}</button>
-                <button @click="showcaseTab = 'business'" :class="showcaseTab === 'business' ? 'tab-btn active' : 'glass'" class="px-4 sm:px-6 py-2.5 sm:py-3 rounded-full font-semibold text-xs sm:text-sm transition-all hover:scale-105 font-bn">{{ __('site.showcase.tab_business') }}</button>
-            </div>
             <div class="glass-strong rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-10 glow-green">
-                <div x-show="showcaseTab === 'student'" x-transition class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="grid md:grid-cols-2 gap-8 items-center">
                     <div>
                         <h3 class="text-2xl sm:text-3xl font-bold font-display mb-4 font-bn">{{ __('site.showcase.student_title') }}</h3>
                         <p class="text-sm sm:text-base text-gray-400 mb-6 font-bn">{{ __('site.showcase.student_desc') }}</p>
@@ -174,44 +169,6 @@
                         <div class="mt-4 pt-4 border-t border-white/10 flex justify-between text-sm font-bn"><span class="text-gray-400">{{ __('site.showcase.meal_rate') }}</span><span class="font-bold text-emerald-400">{{ __('site.showcase.meal_rate_value') }}</span></div>
                     </div>
                 </div>
-                <div x-show="showcaseTab === 'personal'" x-transition class="grid md:grid-cols-2 gap-8 items-center">
-                    <div>
-                        <h3 class="text-2xl sm:text-3xl font-bold font-display mb-4 font-bn">{{ __('site.showcase.personal_title') }}</h3>
-                        <p class="text-sm sm:text-base text-gray-400 mb-6 font-bn">{{ __('site.showcase.personal_desc') }}</p>
-                        <ul class="space-y-3 text-sm font-bn">
-                            <li class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 text-xs">✓</span> {{ __('site.showcase.personal_f1') }}</li>
-                            <li class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 text-xs">✓</span> {{ __('site.showcase.personal_f2') }}</li>
-                            <li class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 text-xs">✓</span> {{ __('site.showcase.personal_f3') }}</li>
-                        </ul>
-                    </div>
-                    <div class="glass rounded-2xl p-4 sm:p-6">
-                        <h4 class="text-sm font-semibold mb-4 text-teal-300 font-bn">{{ __('site.showcase.budget_title') }}</h4>
-                        <div class="space-y-4">
-                            <div><div class="flex justify-between text-sm mb-2 font-bn"><span>{{ __('site.showcase.food') }}</span><span class="font-medium">{{ __('site.showcase.food_amount') }}</span></div><div class="h-2 bg-white/10 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full" style="width:70%"></div></div></div>
-                            <div><div class="flex justify-between text-sm mb-2 font-bn"><span>{{ __('site.showcase.transport') }}</span><span class="font-medium">{{ __('site.showcase.transport_amount') }}</span></div><div class="h-2 bg-white/10 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-teal-400 to-cyan-500 rounded-full" style="width:80%"></div></div></div>
-                            <div><div class="flex justify-between text-sm mb-2 font-bn"><span>{{ __('site.showcase.rent') }}</span><span class="font-medium">{{ __('site.showcase.rent_amount') }}</span></div><div class="h-2 bg-white/10 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-orange-400 to-red-500 rounded-full" style="width:100%"></div></div></div>
-                        </div>
-                    </div>
-                </div>
-                <div x-show="showcaseTab === 'business'" x-transition class="grid md:grid-cols-2 gap-8 items-center">
-                    <div>
-                        <h3 class="text-2xl sm:text-3xl font-bold font-display mb-4 font-bn">{{ __('site.showcase.business_title') }}</h3>
-                        <p class="text-sm sm:text-base text-gray-400 mb-6 font-bn">{{ __('site.showcase.business_desc') }}</p>
-                        <ul class="space-y-3 text-sm font-bn">
-                            <li class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400 text-xs">✓</span> {{ __('site.showcase.business_f1') }}</li>
-                            <li class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400 text-xs">✓</span> {{ __('site.showcase.business_f2') }}</li>
-                            <li class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400 text-xs">✓</span> {{ __('site.showcase.business_f3') }}</li>
-                        </ul>
-                    </div>
-                    <div class="glass rounded-2xl p-4 sm:p-6">
-                        <h4 class="text-sm font-semibold mb-4 text-orange-300 font-bn">{{ __('site.showcase.recent_invoices') }}</h4>
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg"><div><p class="text-xs font-mono text-gray-400">INV-1024</p><p class="text-sm font-medium font-bn">{{ __('site.showcase.customer_karim') }}</p></div><div class="text-right"><p class="text-sm font-bold font-bn">{{ __('site.showcase.invoice_karim_amount') }}</p><span class="text-xs text-emerald-400 font-bn">{{ __('site.showcase.paid') }}</span></div></div>
-                            <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg"><div><p class="text-xs font-mono text-gray-400">INV-1023</p><p class="text-sm font-medium font-bn">{{ __('site.showcase.customer_rahim') }}</p></div><div class="text-right"><p class="text-sm font-bold font-bn">{{ __('site.showcase.invoice_rahim_amount') }}</p><span class="text-xs text-amber-400 font-bn">{{ __('site.showcase.due') }}</span></div></div>
-                            <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg"><div><p class="text-xs font-mono text-gray-400">INV-1022</p><p class="text-sm font-medium font-bn">{{ __('site.showcase.customer_salam') }}</p></div><div class="text-right"><p class="text-sm font-bold font-bn">{{ __('site.showcase.invoice_salam_amount') }}</p><span class="text-xs text-emerald-400 font-bn">{{ __('site.showcase.paid') }}</span></div></div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </section>
@@ -226,8 +183,6 @@
             </div>
             <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 <div class="card-3d glass rounded-2xl p-6 sm:p-8"><div class="w-14 h-14 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center text-2xl mb-5 shadow-lg shadow-emerald-500/30">🎓</div><h3 class="text-lg font-bold mb-2 font-bn">{{ __('site.features.mess_title') }}</h3><p class="text-sm text-gray-400 leading-relaxed font-bn">{{ __('site.features.mess_desc') }}</p></div>
-                <div class="card-3d glass rounded-2xl p-6 sm:p-8"><div class="w-14 h-14 bg-gradient-to-br from-teal-400 to-teal-600 rounded-xl flex items-center justify-center text-2xl mb-5 shadow-lg shadow-teal-500/30">🏠</div><h3 class="text-lg font-bold mb-2 font-bn">{{ __('site.features.budget_title') }}</h3><p class="text-sm text-gray-400 leading-relaxed font-bn">{{ __('site.features.budget_desc') }}</p></div>
-                <div class="card-3d glass rounded-2xl p-6 sm:p-8"><div class="w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center text-2xl mb-5 shadow-lg shadow-orange-500/30">🧾</div><h3 class="text-lg font-bold mb-2 font-bn">{{ __('site.features.invoice_title') }}</h3><p class="text-sm text-gray-400 leading-relaxed font-bn">{{ __('site.features.invoice_desc') }}</p></div>
                 <div class="card-3d glass rounded-2xl p-6 sm:p-8"><div class="w-14 h-14 bg-gradient-to-br from-lime-400 to-lime-600 rounded-xl flex items-center justify-center text-2xl mb-5 shadow-lg shadow-lime-500/30">📊</div><h3 class="text-lg font-bold mb-2 font-bn">{{ __('site.features.reports_title') }}</h3><p class="text-sm text-gray-400 leading-relaxed font-bn">{{ __('site.features.reports_desc') }}</p></div>
                 <div class="card-3d glass rounded-2xl p-6 sm:p-8"><div class="w-14 h-14 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-xl flex items-center justify-center text-2xl mb-5 shadow-lg shadow-cyan-500/30">📱</div><h3 class="text-lg font-bold mb-2 font-bn">{{ __('site.features.anywhere_title') }}</h3><p class="text-sm text-gray-400 leading-relaxed font-bn">{{ __('site.features.anywhere_desc') }}</p></div>
                 <div class="card-3d glass rounded-2xl p-6 sm:p-8"><div class="w-14 h-14 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center text-2xl mb-5 shadow-lg shadow-amber-500/30">🔒</div><h3 class="text-lg font-bold mb-2 font-bn">{{ __('site.features.privacy_title') }}</h3><p class="text-sm text-gray-400 leading-relaxed font-bn">{{ __('site.features.privacy_desc') }}</p></div>
@@ -249,7 +204,6 @@
                         <tbody class="divide-y divide-white/5">
                             <tr><td class="p-4 text-sm font-bn">{{ __('site.compare.mess_meal_rate') }}</td><td class="p-4 text-center text-emerald-400">✓</td><td class="p-4 text-center text-gray-500">✗</td><td class="p-4 text-center text-gray-500">✗</td></tr>
                             <tr><td class="p-4 text-sm font-bn">{{ __('site.compare.auto_meal') }}</td><td class="p-4 text-center text-emerald-400">✓</td><td class="p-4 text-center text-gray-500">✗</td><td class="p-4 text-center text-gray-500">✗</td></tr>
-                            <tr><td class="p-4 text-sm font-bn">{{ __('site.compare.shop_invoice') }}</td><td class="p-4 text-center text-emerald-400">✓</td><td class="p-4 text-center text-yellow-400 font-bn">{{ __('site.compare.some') }}</td><td class="p-4 text-center text-yellow-400 font-bn">{{ __('site.compare.some') }}</td></tr>
                             <tr><td class="p-4 text-sm font-bn">{{ __('site.compare.fully_bangla') }}</td><td class="p-4 text-center text-emerald-400">✓</td><td class="p-4 text-center text-gray-500">✗</td><td class="p-4 text-center text-gray-500">✗</td></tr>
                             <tr><td class="p-4 text-sm font-semibold font-bn">{{ __('site.compare.monthly_cost') }}</td><td class="p-4 text-center text-emerald-400 font-bold font-bn">{{ __('site.compare.price') }}</td><td class="p-4 text-center text-gray-400 font-bn">{{ __('site.compare.other_price') }}</td><td class="p-4 text-center text-gray-400 font-bn">{{ __('site.compare.free') }}</td></tr>
                         </tbody>
@@ -330,29 +284,13 @@
                 <h2 class="text-2xl sm:text-3xl md:text-5xl font-display mb-4 font-bn">{{ __('site.testimonials.title_before') }} <span class="gradient-green">{{ __('site.testimonials.title_highlight') }}</span></h2>
                 <p class="text-base sm:text-lg text-gray-400 font-bn">{{ __('site.testimonials.subtitle') }}</p>
             </div>
-            <div class="grid gap-4 sm:gap-6 md:grid-cols-3">
+            <div class="grid gap-4 sm:gap-6 max-w-md mx-auto">
                 <div class="glass rounded-2xl p-6 sm:p-8">
                     <div class="text-amber-400 mb-3">★★★★★</div>
                     <p class="text-sm text-gray-300 leading-relaxed mb-5 font-bn">{{ __('site.testimonials.t1_quote') }}</p>
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full"></div>
                         <div><p class="text-sm font-semibold font-bn">{{ __('site.testimonials.t1_name') }}</p><p class="text-xs text-gray-500 font-bn">{{ __('site.testimonials.t1_role') }}</p></div>
-                    </div>
-                </div>
-                <div class="glass rounded-2xl p-6 sm:p-8">
-                    <div class="text-amber-400 mb-3">★★★★★</div>
-                    <p class="text-sm text-gray-300 leading-relaxed mb-5 font-bn">{{ __('site.testimonials.t2_quote') }}</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full"></div>
-                        <div><p class="text-sm font-semibold font-bn">{{ __('site.testimonials.t2_name') }}</p><p class="text-xs text-gray-500 font-bn">{{ __('site.testimonials.t2_role') }}</p></div>
-                    </div>
-                </div>
-                <div class="glass rounded-2xl p-6 sm:p-8">
-                    <div class="text-amber-400 mb-3">★★★★★</div>
-                    <p class="text-sm text-gray-300 leading-relaxed mb-5 font-bn">{{ __('site.testimonials.t3_quote') }}</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full"></div>
-                        <div><p class="text-sm font-semibold font-bn">{{ __('site.testimonials.t3_name') }}</p><p class="text-xs text-gray-500 font-bn">{{ __('site.testimonials.t3_role') }}</p></div>
                     </div>
                 </div>
             </div>

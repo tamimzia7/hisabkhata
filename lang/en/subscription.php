@@ -72,20 +72,10 @@ return [
             'audience' => 'For students and mess members',
             'description' => 'Manage your mess activities, meals, members and shared expenses effortlessly.',
         ],
-        'family' => [
-            'audience' => 'For individuals and families',
-            'description' => 'Take control of your household finances, income, expenses and savings.',
-        ],
-        'shop' => [
-            'audience' => 'For shop owners and small businesses',
-            'description' => 'Manage your business transactions and financial performance.',
-        ],
     ],
 
     'products' => [
         'student' => 'Meal Management',
-        'family' => 'Family Finance',
-        'shop' => 'Shop Management',
     ],
 
     'status' => [
@@ -158,15 +148,6 @@ return [
         'bazar' => 'Bazar purchases and receipts',
         'settlement' => 'Automatic meal rate and monthly settlement',
         'reports' => 'Printable financial reports',
-        'income' => 'Family income and expense tracking',
-        'expense_management' => 'Expense management',
-        'budget' => 'Category budgets and savings goals',
-        'savings' => 'Savings overview',
-        'shop_sales' => 'Sales, purchases and inventory',
-        'shop_invoices' => 'Invoice management',
-        'shop_dues' => 'Customer dues and supplier ledger',
-        'shop_profit' => 'Monthly profit overview',
-        'shop_reports' => 'Profit-loss and business reports',
     ],
 
     'payment' => [

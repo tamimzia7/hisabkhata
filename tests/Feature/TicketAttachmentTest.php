@@ -104,7 +104,7 @@ test('ticket attachments are only downloadable by users who can view the ticket'
     Storage::fake('local');
 
     $owner = User::factory()->create(['role' => User::ROLE_STUDENT]);
-    $otherClient = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $otherClient = User::factory()->create(['role' => User::ROLE_STUDENT]);
     $assignee = User::factory()->create(['role' => User::ROLE_CUSTOMER_CARE]);
 
     $this->actingAs($owner)->post(route('tickets.store'), [

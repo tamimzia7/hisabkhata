@@ -21,8 +21,6 @@ class DatabaseSeeder extends Seeder
         User::ROLE_DEVELOPER => ['name' => 'Developer', 'email' => 'developer@hisabkhata.com'],
         User::ROLE_CUSTOMER_CARE => ['name' => 'Customer Care', 'email' => 'customercare@hisabkhata.com'],
         User::ROLE_STUDENT => ['name' => 'Student', 'email' => 'student@hisabkhata.com'],
-        User::ROLE_FAMILY => ['name' => 'Family', 'email' => 'family@hisabkhata.com'],
-        User::ROLE_SHOP => ['name' => 'Shop', 'email' => 'shop@hisabkhata.com'],
     ];
 
     /**

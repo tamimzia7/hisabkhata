@@ -495,26 +495,9 @@ test('unauthorized roles cannot perform financial operations and expired subscri
         ->get(route('student.dashboard'))
         ->assertRedirect(route('student.subscription.show'));
 
-    $familyPlan = SubscriptionPlan::firstOrCreate(['slug' => 'engine-family'], [
-        'name' => 'Family Plan',
-        'product' => SubscriptionPlan::PRODUCT_FAMILY,
-        'price' => 0,
-        'duration_days' => 30,
-        'is_active' => true,
-    ]);
-    UserSubscription::create([
-        'user_id' => $expiredUser->getKey(),
-        'subscription_plan_id' => $familyPlan->getKey(),
-        'status' => UserSubscription::STATUS_ACTIVE,
-        'starts_at' => now(),
-        'ends_at' => now()->addDays(30),
-    ]);
+    $this->actingAs($expiredUser)->get(route('dashboard'))->assertOk()->assertSee(__('subscription.onboarding.title'));
 
-    $this->actingAs($expiredUser)->get(route('dashboard'))->assertOk();
-    $this->actingAs($expiredUser)->get(route('student.dashboard'))->assertRedirect(route('student.subscription.show'));
-
-    expect($expiredUser->hasActiveSubscription(SubscriptionPlan::PRODUCT_FAMILY))->toBeTrue()
-        ->and($expiredUser->hasActiveStudentSubscription())->toBeFalse()
+    expect($expiredUser->hasActiveStudentSubscription())->toBeFalse()
         ->and($member->isActive())->toBeTrue();
 });
 

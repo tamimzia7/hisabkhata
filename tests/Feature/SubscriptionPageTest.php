@@ -31,8 +31,6 @@ test('the subscription overview counts only real active records', function () {
     $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     subscriptionPageSubscribe($user, subscriptionPagePlan('student', 'monthly'), UserSubscription::STATUS_ACTIVE, now()->addDays(30)->toDateTimeString());
-    subscriptionPageSubscribe($user, subscriptionPagePlan('family', 'monthly'), UserSubscription::STATUS_ACTIVE, now()->subDay()->toDateTimeString());
-    subscriptionPageSubscribe($user, subscriptionPagePlan('shop', 'yearly'), UserSubscription::STATUS_CANCELLED, now()->addDays(60)->toDateTimeString());
 
     $this->actingAs($user)
         ->get(route('subscriptions.index'))
@@ -40,29 +38,24 @@ test('the subscription overview counts only real active records', function () {
         ->assertSee(__('subscription.page.title'))
         ->assertSee(__('subscription.choose_product'))
         ->assertViewHas('overview', fn (array $overview): bool => $overview['active'] === 1
-            && $overview['trialEligible'] === 2
+            && $overview['trialEligible'] === 0
             && $overview['upcoming'] === 0);
 });
 
 test('upcoming expirations include only active subscriptions inside the window', function () {
-    $user = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     subscriptionPageSubscribe($user, subscriptionPagePlan('student', 'monthly'), UserSubscription::STATUS_ACTIVE, now()->addDays(3)->toDateTimeString());
-    subscriptionPageSubscribe($user, subscriptionPagePlan('family', 'monthly'), UserSubscription::STATUS_ACTIVE, now()->addDays(6)->toDateTimeString());
-    subscriptionPageSubscribe($user, subscriptionPagePlan('shop', 'monthly'), UserSubscription::STATUS_ACTIVE, now()->addDays(20)->toDateTimeString());
 
     $this->actingAs($user)
         ->get(route('subscriptions.index'))
         ->assertOk()
-        ->assertViewHas('overview', fn (array $overview): bool => $overview['active'] === 3
-            && $overview['upcoming'] === 2);
+        ->assertViewHas('overview', fn (array $overview): bool => $overview['active'] === 1
+            && $overview['upcoming'] === 1);
 });
 
 test('product cards expose the correct call to action for each lifecycle state', function () {
-    $user = User::factory()->create(['role' => User::ROLE_SHOP]);
-
-    subscriptionPageSubscribe($user, subscriptionPagePlan('family', 'monthly'), UserSubscription::STATUS_ACTIVE, now()->addDays(20)->toDateTimeString());
-    subscriptionPageSubscribe($user, subscriptionPagePlan('shop', 'monthly'), UserSubscription::STATUS_ACTIVE, now()->subDay()->toDateTimeString());
+    $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     $this->actingAs($user)
         ->get(route('subscriptions.index'))
@@ -73,12 +66,7 @@ test('product cards expose the correct call to action for each lifecycle state',
             return $items['student']['status'] === 'inactive'
                 && $items['student']['cta']['method'] === 'post'
                 && $items['student']['cta']['label'] === __('subscription.cta.start_trial')
-                && $items['student']['secondaryCta']['label'] === __('subscription.cta.explore')
-                && $items['family']['status'] === 'active'
-                && $items['family']['cta']['method'] === 'link'
-                && $items['family']['cta']['label'] === __('subscription.cta.manage')
-                && $items['shop']['status'] === 'expired'
-                && $items['shop']['cta']['label'] === __('subscription.cta.renew');
+                && $items['student']['secondaryCta']['label'] === __('subscription.cta.explore');
         });
 });
 
@@ -97,7 +85,7 @@ test('billing data reflects the configured monthly and yearly prices', function 
         ->and($student['annualSavings'])->toBe(120.0);
 });
 
-test('starting a trial for one product leaves the other products untouched', function () {
+test('starting a trial keeps the product payload consistent', function () {
     $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     $this->actingAs($user)->post(route('subscriptions.trial', 'student'))->assertRedirect();
@@ -109,11 +97,7 @@ test('starting a trial for one product leaves the other products untouched', fun
             $items = collect($products)->keyBy('product');
 
             return $items['student']['status'] === 'trial'
-                && $items['student']['cta']['label'] === __('subscription.cta.manage')
-                && $items['family']['activeSubscription'] === null
-                && $items['family']['trialEligible'] === true
-                && $items['shop']['activeSubscription'] === null
-                && $items['shop']['trialEligible'] === true;
+                && $items['student']['cta']['label'] === __('subscription.cta.manage');
         });
 });
 

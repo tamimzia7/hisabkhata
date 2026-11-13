@@ -38,7 +38,7 @@ test('a super admin can assign a ticket to an eligible system user', function ()
 
 test('reassignment keeps an assignment history and notifies both system users', function () {
     $superAdmin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
-    $client = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $client = User::factory()->create(['role' => User::ROLE_STUDENT]);
     $firstAssignee = User::factory()->create(['role' => User::ROLE_CUSTOMER_CARE]);
     $secondAssignee = User::factory()->create(['role' => User::ROLE_DEVELOPER]);
 
@@ -87,7 +87,7 @@ test('a super admin can unassign a ticket', function () {
 test('tickets cannot be assigned to client users', function () {
     $superAdmin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
     $client = User::factory()->create(['role' => User::ROLE_STUDENT]);
-    $otherClient = User::factory()->create(['role' => User::ROLE_SHOP]);
+    $otherClient = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     $ticket = Ticket::factory()->create(['user_id' => $client->getKey()]);
 
@@ -164,7 +164,7 @@ test('a client cannot force an arbitrary status on their ticket', function () {
 
 test('the super admin can change the status of any ticket and reopen a closed one', function () {
     $superAdmin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
-    $client = User::factory()->create(['role' => User::ROLE_SHOP]);
+    $client = User::factory()->create(['role' => User::ROLE_STUDENT]);
     $ticket = Ticket::factory()->create([
         'user_id' => $client->getKey(),
         'status' => Ticket::STATUS_CLOSED,

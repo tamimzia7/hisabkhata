@@ -10,8 +10,6 @@
         'developer' => __('site.admin.role_developer'),
         'customer-care' => __('site.admin.role_customer_care'),
         'student' => __('site.admin.role_student'),
-        'family' => __('site.admin.role_family'),
-        'shop' => __('site.admin.role_shop'),
     ];
     $roleStyles = [
         'super-admin' => 'text-teal-400 bg-teal-500/10',
@@ -19,8 +17,6 @@
         'developer' => 'text-sky-400 bg-sky-500/10',
         'customer-care' => 'text-orange-400 bg-orange-500/10',
         'student' => 'text-emerald-400 bg-emerald-500/10',
-        'family' => 'text-cyan-400 bg-cyan-500/10',
-        'shop' => 'text-amber-400 bg-amber-500/10',
     ];
     $staffCanManage = $admin->canCreateSystemUsers();
     $staffCanRemove = $admin->canRemoveSystemUsers();

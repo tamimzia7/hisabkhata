@@ -59,8 +59,6 @@ test('a newly registered client sees subscription onboarding instead of the prod
         ->assertSee(__('subscription.onboarding.recommended'))
         ->assertSee(__('subscription.choose_product'))
         ->assertSee(__('subscription.products.student'))
-        ->assertSee(__('subscription.products.family'))
-        ->assertSee(__('subscription.products.shop'))
         ->assertDontSee(__('site.dashboard.heading_student'));
 });
 
@@ -81,19 +79,19 @@ test('starting a trial from onboarding unlocks the dashboard', function () {
 });
 
 test('an active paid subscription unlocks the dashboard', function () {
-    $user = User::factory()->create(['role' => User::ROLE_FAMILY]);
-    $plan = onboardingTestPlan(SubscriptionPlan::PRODUCT_FAMILY);
+    $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
+    $plan = onboardingTestPlan(SubscriptionPlan::PRODUCT_STUDENT);
     onboardingTestSubscribe($user, $plan);
 
     $this->actingAs($user)->get(route('dashboard'))
         ->assertOk()
-        ->assertSee(__('site.dashboard.heading_family'))
+        ->assertSee(__('site.dashboard.heading_student'))
         ->assertDontSee(__('subscription.onboarding.title'));
 });
 
 test('non-active subscriptions keep the onboarding gate closed', function (string $status, string $endsAt, bool $suspended) {
-    $user = User::factory()->create(['role' => User::ROLE_SHOP]);
-    $plan = onboardingTestPlan(SubscriptionPlan::PRODUCT_SHOP);
+    $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
+    $plan = onboardingTestPlan(SubscriptionPlan::PRODUCT_STUDENT);
 
     onboardingTestSubscribe($user, $plan, [
         'status' => $status,
@@ -133,12 +131,6 @@ test('unsubscribed clients cannot bypass onboarding through direct product URLs'
 
     $this->actingAs($user)->get(route('student.dashboard'))
         ->assertRedirect(route('student.subscription.show'));
-
-    $this->get(route('family.dashboard'))
-        ->assertRedirect(route('subscriptions.show', SubscriptionPlan::PRODUCT_FAMILY));
-
-    $this->get(route('shop.dashboard'))
-        ->assertRedirect(route('subscriptions.show', SubscriptionPlan::PRODUCT_SHOP));
 
     $this->get(route('dashboard'))
         ->assertOk()

@@ -38,21 +38,13 @@ test('a second trial activation is blocked and never creates a duplicate record'
         ->and(UserSubscription::query()->whereNotNull('subscription_trial_id')->count())->toBe(1);
 });
 
-test('trial eligibility is independent for every product', function () {
-    $user = User::factory()->create(['role' => User::ROLE_FAMILY]);
+test('retired products are no longer valid trial targets', function () {
+    $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
-    $this->actingAs($user)->post(route('subscriptions.trial', 'student'))->assertRedirect();
-    $this->actingAs($user)->post(route('subscriptions.trial', 'family'))->assertRedirect();
-    $this->actingAs($user)->post(route('subscriptions.trial', 'shop'))->assertRedirect();
+    $this->actingAs($user)->post(route('subscriptions.trial', 'family'))->assertNotFound();
+    $this->actingAs($user)->post(route('subscriptions.trial', 'shop'))->assertNotFound();
 
-    expect(SubscriptionTrial::query()->where('user_id', $user->getKey())->count())->toBe(3)
-        ->and($user->fresh()->hasUsedTrial('student'))->toBeTrue()
-        ->and($user->fresh()->hasUsedTrial('family'))->toBeTrue()
-        ->and($user->fresh()->hasUsedTrial('shop'))->toBeTrue();
-
-    $this->actingAs($user)->post(route('subscriptions.trial', 'family'))->assertRedirect();
-
-    expect(SubscriptionTrial::query()->where('user_id', $user->getKey())->where('product', 'family')->count())->toBe(1);
+    expect(SubscriptionTrial::query()->where('user_id', $user->getKey())->count())->toBe(0);
 });
 
 test('trial access ends after exactly thirty days while eligibility history is preserved', function () {
@@ -140,12 +132,7 @@ test('subscription page shows the trial option and paid plans only while the tri
     $this->actingAs($user)
         ->get(route('subscriptions.index'))
         ->assertOk()
-        ->assertSee(__('subscription.products.family'))
-        ->assertSee(__('subscription.products.shop'));
-
-    $this->actingAs($user)
-        ->get(route('subscriptions.show', 'family'))
-        ->assertOk();
+        ->assertSee(__('subscription.products.student'));
 
     $this->actingAs($user)
         ->get(route('subscriptions.show', 'student'))
@@ -166,11 +153,11 @@ test('subscription page shows the trial option and paid plans only while the tri
 });
 
 test('a user with active paid access cannot start the same product trial', function () {
-    $user = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
     $plan = SubscriptionPlan::query()->create([
-        'slug' => 'active-family-monthly',
-        'name' => 'Active Family Monthly',
-        'product' => SubscriptionPlan::PRODUCT_FAMILY,
+        'slug' => 'active-student-monthly',
+        'name' => 'Active Student Monthly',
+        'product' => SubscriptionPlan::PRODUCT_STUDENT,
         'billing_cycle' => SubscriptionPlan::BILLING_CYCLE_MONTHLY,
         'price' => 50,
         'currency' => 'BDT',
@@ -187,7 +174,7 @@ test('a user with active paid access cannot start the same product trial', funct
         'ends_at' => now()->addDays(30),
     ]);
 
-    $this->actingAs($user)->post(route('subscriptions.trial', 'family'))->assertRedirect();
+    $this->actingAs($user)->post(route('subscriptions.trial', 'student'))->assertRedirect();
 
     expect(SubscriptionTrial::query()->where('user_id', $user->getKey())->exists())->toBeFalse();
 });

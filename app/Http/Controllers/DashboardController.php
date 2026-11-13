@@ -68,17 +68,14 @@ class DashboardController extends Controller
      */
     private function onboardingView(User $user): View
     {
-        $products = collect($this->subscriptionPageData->allProducts($user))
-            ->sortBy(fn (array $item): int => $item['product'] === $user->role ? 0 : 1)
-            ->values()
-            ->all();
+        $products = $this->subscriptionPageData->allProducts($user);
 
         return view('subscriptions.index', [
             'products' => $products,
             'overview' => $this->subscriptionPageData->overview($products),
             'currency' => SubscriptionPlan::CURRENCY_BDT,
             'onboarding' => true,
-            'recommendedProduct' => $user->role,
+            'recommendedProduct' => SubscriptionPlan::PRODUCT_STUDENT,
         ]);
     }
 

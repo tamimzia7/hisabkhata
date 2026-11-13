@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Middleware\EnsureActiveStudentSubscription;
-use App\Http\Middleware\EnsureProductSubscription;
 use App\Http\Middleware\ResolveStudentMess;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
@@ -26,7 +25,6 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'student.subscription' => EnsureActiveStudentSubscription::class,
-            'product.subscription' => EnsureProductSubscription::class,
             'student.mess' => ResolveStudentMess::class,
         ]);
     })

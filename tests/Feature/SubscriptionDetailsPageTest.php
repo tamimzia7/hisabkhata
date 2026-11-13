@@ -192,46 +192,25 @@ test('a used trial is indicated without offering another trial', function () {
     $response->assertDontSeeText(__('subscription.trial.button'));
 });
 
-test('each product keeps its own summary and checkout options', function () {
+test('the student summary shows only its own checkout options', function () {
     $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
-    $startsAt = now()->subDay();
-    $endsAt = now()->addDays(29);
-
-    $trial = detailsPageTrial($user, 'student', $startsAt->toDateTimeString(), $endsAt->toDateTimeString());
-    detailsPageSubscribe(
-        $user,
-        detailsPagePlan('student', 'trial'),
-        UserSubscription::STATUS_ACTIVE,
-        $startsAt->toDateTimeString(),
-        $endsAt->toDateTimeString(),
-        $trial,
-    );
 
     detailsPageSubscribe(
         $user,
-        detailsPagePlan('family', 'monthly'),
+        detailsPagePlan('student', 'monthly'),
         UserSubscription::STATUS_ACTIVE,
         now()->subDays(2)->toDateTimeString(),
         now()->addDays(28)->toDateTimeString(),
     );
 
-    $familyResponse = $this->actingAs($user)
-        ->get(route('subscriptions.show', 'family'))
+    $response = $this->actingAs($user)
+        ->get(route('subscriptions.show', 'student'))
         ->assertOk();
 
-    $familyResponse->assertSeeText(__('subscription.status.active'));
-    $familyResponse->assertSee('value="'.detailsPagePlan('family', 'monthly')->slug.'"', false);
-    $familyResponse->assertDontSee('value="'.detailsPagePlan('shop', 'monthly')->slug.'"', false);
-    $familyResponse->assertDontSeeText(__('subscription.trial.button'));
-
-    $shopResponse = $this->actingAs($user)
-        ->get(route('subscriptions.show', 'shop'))
-        ->assertOk();
-
-    $shopResponse->assertSeeText(__('subscription.status.inactive'));
-    $shopResponse->assertSeeText(__('subscription.trial.button'));
-    $shopResponse->assertSee(route('subscriptions.trial', 'shop'), false);
-    $shopResponse->assertDontSee('value="'.detailsPagePlan('family', 'yearly')->slug.'"', false);
+    $response->assertSeeText(__('subscription.status.active'));
+    $response->assertSee('value="'.detailsPagePlan('student', 'monthly')->slug.'"', false);
+    $response->assertSee('value="'.detailsPagePlan('student', 'yearly')->slug.'"', false);
+    $response->assertDontSeeText(__('subscription.trial.button'));
 });
 
 test('verified payments appear in the compact history table', function () {

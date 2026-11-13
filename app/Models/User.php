@@ -30,10 +30,6 @@ class User extends Authenticatable
 
     public const ROLE_STUDENT = 'student';
 
-    public const ROLE_FAMILY = 'family';
-
-    public const ROLE_SHOP = 'shop';
-
     /**
      * Roles that may sign in to the admin panel.
      *
@@ -53,8 +49,6 @@ class User extends Authenticatable
      */
     public const CLIENT_ROLES = [
         self::ROLE_STUDENT,
-        self::ROLE_FAMILY,
-        self::ROLE_SHOP,
     ];
 
     /**
@@ -68,8 +62,6 @@ class User extends Authenticatable
         self::ROLE_DEVELOPER,
         self::ROLE_CUSTOMER_CARE,
         self::ROLE_STUDENT,
-        self::ROLE_FAMILY,
-        self::ROLE_SHOP,
     ];
 
     /**

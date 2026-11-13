@@ -12,10 +12,6 @@ class SubscriptionPlan extends Model
 {
     public const PRODUCT_STUDENT = 'student';
 
-    public const PRODUCT_FAMILY = 'family';
-
-    public const PRODUCT_SHOP = 'shop';
-
     public const BILLING_CYCLE_TRIAL = 'trial';
 
     public const BILLING_CYCLE_MONTHLY = 'monthly';
@@ -35,8 +31,6 @@ class SubscriptionPlan extends Model
      */
     public const PRODUCTS = [
         self::PRODUCT_STUDENT,
-        self::PRODUCT_FAMILY,
-        self::PRODUCT_SHOP,
     ];
 
     /**

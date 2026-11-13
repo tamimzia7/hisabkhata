@@ -176,7 +176,7 @@ return [
         'trial_note' => 'full access to every Student/Mess feature',
         'activate' => 'Activate Subscription',
         'no_plans' => 'No Student plans are currently available.',
-        'expiry_note' => 'Expiry only restricts the Student/Mess module. Family and Shop workspaces are not affected.',
+        'expiry_note' => 'Expiry restricts access to the Student/Mess module. Renew to continue using it.',
         'required' => 'An active Student subscription is required to access the Student/Mess module.',
         'activated' => 'Student subscription activated. Welcome!',
         'bullets' => [

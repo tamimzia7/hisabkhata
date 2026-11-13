@@ -281,7 +281,7 @@ test('shows the saved client settings when the panel loads', function () {
 });
 
 test('forbids client users from saving client app settings', function () {
-    $client = User::factory()->create(['role' => User::ROLE_FAMILY]);
+    $client = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     $this->actingAs($client)->put(route('admin.client-settings.update'), [
         'free_trial' => '1',
@@ -308,7 +308,7 @@ test('renders the panel in english', function () {
         ->get(route('dashboard', ['page' => 'client-users']));
 
     $response->assertOk();
-    $response->assertSee('People using the app (student, family, shop).');
+    $response->assertSee('People using the student app.');
 });
 
 test('shows the real role of the admin on the profile page', function () {

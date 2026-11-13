@@ -24,10 +24,6 @@ test('renders the registration page', function () {
     $response->assertSee(route('login'));
     $response->assertSee(__('site.auth.meal_management'));
     $response->assertSee(__('site.auth.meal_management_subtitle'));
-    $response->assertSee(__('site.auth.family_finance'));
-    $response->assertSee(__('site.auth.family_finance_subtitle'));
-    $response->assertSee(__('site.auth.shop_management'));
-    $response->assertSee(__('site.auth.shop_management_subtitle'));
 });
 
 test('registers a user, logs them in, and redirects to the dashboard', function () {
@@ -55,7 +51,7 @@ test('rejects registration when the email is already taken', function () {
         'name' => 'Someone',
         'email' => 'taken@example.com',
         'password' => 'secret1234',
-        'role' => User::ROLE_FAMILY,
+        'role' => User::ROLE_STUDENT,
     ]);
 
     $response->assertSessionHasErrors(['email' => 'এই ইমেইল দিয়ে আগে থেকেই অ্যাকাউন্ট আছে।']);
@@ -81,7 +77,7 @@ test('rejects registration with a password shorter than eight characters', funct
         'name' => 'Someone',
         'email' => 'someone@example.com',
         'password' => 'short',
-        'role' => User::ROLE_SHOP,
+        'role' => User::ROLE_STUDENT,
     ]);
 
     $response->assertSessionHasErrors(['password' => 'পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।']);

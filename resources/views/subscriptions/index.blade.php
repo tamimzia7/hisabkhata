@@ -6,8 +6,6 @@
 
     $productIcons = [
         'utensils' => '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
-        'users' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
-        'store' => '<path d="m2 7 1.5-4.5A2 2 0 0 1 5.4 1h13.2a2 2 0 0 1 1.9 1.5L22 7"/><path d="M2 7v1a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0V7"/><path d="M4 11v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9"/><path d="M9 21v-6h6v6"/>',
     ];
 
     $statusStyles = [
@@ -115,7 +113,7 @@
                         <article class="glass card-hover flex h-full flex-col rounded-2xl p-5">
                             <div class="flex items-start justify-between gap-3">
                                 <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
-                                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">{!! $productIcons[$item['icon']] ?? $productIcons['store'] !!}</svg>
+                                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">{!! $productIcons[$item['icon']] ?? $productIcons['utensils'] !!}</svg>
                                 </span>
                                 <span class="rounded-full border px-2.5 py-1 text-[10px] font-bold font-bn {{ $statusStyles[$item['status']] ?? $statusStyles['inactive'] }}">
                                     {{ __('subscription.status.'.$item['status']) }}
