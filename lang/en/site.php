@@ -524,6 +524,7 @@ return [
     'dashboard' => [
         'title' => 'Dashboard — HisabKhata',
         'dashboard' => 'Dashboard',
+        'my_profile' => 'My Profile',
         'entries' => 'Entries',
         'reports' => 'Reports',
         'settings' => 'Settings',

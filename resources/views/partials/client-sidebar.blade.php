@@ -2,10 +2,17 @@
     $user = auth()->user();
     $unreadNotificationCount ??= $user?->unreadNotifications()->count() ?? 0;
     $ticketUnreadCount ??= $user ? \App\Models\Ticket::unreadTicketCountFor($user) : 0;
+    $clientNavigation ??= ['products' => [], 'activeProducts' => [], 'hasActiveProduct' => false];
     $navItem = fn (bool $active): string => $active
         ? 'border-emerald-400/20 bg-emerald-500/15 text-emerald-200 shadow-sm'
         : 'border-transparent text-gray-300 hover:border-white/10 hover:bg-white/5 hover:text-white';
     $navIcon = 'h-4 w-4 shrink-0 transition-colors';
+    $accountLinks = [];
+    foreach ($clientNavigation['products'] as $product) {
+        foreach ($product['settings'] as $link) {
+            $accountLinks[$link['url']] = $link;
+        }
+    }
 @endphp
 
 <aside class="hidden md:flex w-64 flex-col glass-strong m-3 rounded-2xl p-3 sticky top-3 h-[calc(100vh-1.5rem)] overflow-hidden">
@@ -20,21 +27,47 @@
     <nav class="mt-4 flex-1 space-y-1.5 overflow-y-auto text-sm font-bn">
         <p class="px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500">{{ __('site.dashboard.dashboard') }}</p>
 
-        <a href="{{ route('dashboard') }}" class="group flex items-center gap-3 rounded-xl border px-3 py-2.5 transition {{ $navItem(request()->routeIs('dashboard')) }}">
+        <a href="{{ route('dashboard') }}" class="group flex items-center gap-3 rounded-xl border px-3 py-2.5 transition {{ $navItem(request()->routeIs('dashboard')) }}" @if(request()->routeIs('dashboard')) aria-current="page" @endif>
             <i data-lucide="layout-dashboard" class="{{ $navIcon }}"></i>
             <span>{{ __('site.dashboard.dashboard') }}</span>
         </a>
 
-        <a href="{{ route('subscriptions.index') }}" class="group flex items-center gap-3 rounded-xl border px-3 py-2.5 transition {{ $navItem(request()->routeIs('subscriptions.*')) }}">
+        <a href="{{ route('subscriptions.index') }}" class="group flex items-center gap-3 rounded-xl border px-3 py-2.5 transition {{ $navItem(request()->routeIs('subscriptions.*')) }}" @if(request()->routeIs('subscriptions.*')) aria-current="page" @endif>
             <i data-lucide="credit-card" class="{{ $navIcon }}"></i>
             <span>{{ __('subscription.title') }}</span>
         </a>
 
-        @if($user?->role === \App\Models\User::ROLE_STUDENT)
-            <a href="{{ route('student.dashboard') }}" class="group flex items-center gap-3 rounded-xl border px-3 py-2.5 transition {{ $navItem(request()->routeIs('student.*')) }}">
-                <i data-lucide="utensils-crossed" class="{{ $navIcon }}"></i>
-                <span>{{ __('student.nav.module_link') }}</span>
-            </a>
+        @foreach($clientNavigation['products'] as $product)
+            @unless($product['active'])
+                <a href="{{ $product['activationUrl'] }}" class="group flex items-center gap-3 rounded-xl border px-3 py-2.5 transition {{ $navItem(request()->routeIs('subscriptions.show') && request()->route('product') === $product['product']) }}">
+                    <i data-lucide="{{ $product['icon'] }}" class="{{ $navIcon }}"></i>
+                    <span>{{ $product['navLabel'] }}</span>
+                </a>
+            @endunless
+        @endforeach
+
+        @foreach($clientNavigation['products'] as $product)
+            @continue(! $product['active'])
+
+            <p class="px-3 pb-1 pt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500">{{ $product['label'] }}</p>
+
+            @foreach($product['main'] as $link)
+                <a href="{{ $link['url'] }}" class="group flex items-center gap-3 rounded-xl border px-3 py-2.5 transition {{ $navItem(request()->routeIs($link['pattern'])) }}" @if(request()->routeIs($link['pattern'])) aria-current="page" @endif>
+                    <i data-lucide="{{ $link['icon'] }}" class="{{ $navIcon }}"></i>
+                    <span>{{ $link['label'] }}</span>
+                </a>
+            @endforeach
+        @endforeach
+
+        @if($accountLinks !== [])
+            <p class="px-3 pb-1 pt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500">{{ __('site.dashboard.settings') }}</p>
+
+            @foreach($accountLinks as $link)
+                <a href="{{ $link['url'] }}" class="group flex items-center gap-3 rounded-xl border px-3 py-2.5 transition {{ $navItem(request()->routeIs($link['pattern'])) }}" @if(request()->routeIs($link['pattern'])) aria-current="page" @endif>
+                    <i data-lucide="{{ $link['icon'] }}" class="{{ $navIcon }}"></i>
+                    <span>{{ $link['pattern'] === 'student.profile.*' ? __('site.dashboard.my_profile') : $link['label'] }}</span>
+                </a>
+            @endforeach
         @endif
 
         <p class="px-3 pb-1 pt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500">{{ __('tickets.support') }}</p>
@@ -52,7 +85,8 @@
 
             <div x-show="open" x-collapse x-cloak class="nav-sublist mt-1 ml-3 space-y-1 border-l border-white/10 pl-2">
                 <a href="{{ route('tickets.index') }}"
-                   class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bn transition-colors {{ request()->routeIs('tickets.index') || request()->routeIs('tickets.show') ? 'bg-emerald-500/15 text-emerald-300' : 'text-gray-300 hover:bg-white/5 hover:text-white' }}">
+                   class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bn transition-colors {{ request()->routeIs('tickets.index') || request()->routeIs('tickets.show') ? 'bg-emerald-500/15 text-emerald-300' : 'text-gray-300 hover:bg-white/5 hover:text-white' }}"
+                   @if(request()->routeIs('tickets.index') || request()->routeIs('tickets.show')) aria-current="page" @endif>
                     <i data-lucide="ticket" class="h-4 w-4 shrink-0"></i>
                     <span>{{ __('tickets.title') }}</span>
                     @if($ticketUnreadCount > 0)

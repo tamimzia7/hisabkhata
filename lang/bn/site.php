@@ -524,6 +524,7 @@ return [
     'dashboard' => [
         'title' => 'ড্যাশবোর্ড — হিসাবখাতা',
         'dashboard' => 'ড্যাশবোর্ড',
+        'my_profile' => 'আমার প্রোফাইল',
         'entries' => 'এন্ট্রি',
         'reports' => 'রিপোর্ট',
         'settings' => 'সেটিংস',

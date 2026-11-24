@@ -80,6 +80,16 @@ class User extends Authenticatable
     }
 
     /**
+     * The products this account may subscribe to and use.
+     *
+     * @return list<string>
+     */
+    public function availableProducts(): array
+    {
+        return $this->isClient() ? SubscriptionPlan::PRODUCTS : [];
+    }
+
+    /**
      * Determine whether the user is a system (admin panel) user.
      */
     public function isSystemUser(): bool

@@ -41,6 +41,19 @@ php artisan boost:install
 
 Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
 
+## Client Navigation
+
+Client sidebar navigation is shared by the dashboard and Student workspace through `ProductNavigationService` and `ClientSidebarComposer`.
+
+- `/dashboard` remains the landing page after login; active subscribers are not redirected to a product route.
+- Available products come from `User::availableProducts()`, while visible product features require an active free trial or paid subscription via `User::hasActiveSubscription()`.
+- Inactive, expired, cancelled, or suspended subscriptions show a subscribe call-to-action instead of product workspace links.
+- Product routes remain protected by existing middleware; sidebar visibility does not replace authorization.
+- Mess-specific links are shown only when the active product has a Mess and the user passes the relevant `MessMember` authorization check.
+- Admin and super-admin navigation remains unchanged.
+
+Verify with `vendor/bin/pint --dirty --format agent` and `php artisan test --compact -c phpunit.mysql.xml tests/Feature/ClientSidebarNavigationTest.php`.
+
 ## Contributing
 
 Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).

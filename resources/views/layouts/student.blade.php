@@ -7,6 +7,7 @@
     $isMessOwner = $navMess && $studentUser && $navMess->owner_id === $studentUser->id;
     $can = fn (string $ability): bool => (bool) ($navMember?->allows($ability));
     $navLink = fn (string $name): string => $navMess ? route($name, $navMess) : route('student.messes.index');
+    $activeProductNavigation = collect($clientNavigation['products'] ?? [])->firstWhere('active', true) ?? ['main' => [], 'settings' => []];
 @endphp
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" x-data="{
@@ -236,29 +237,18 @@
             <div>
                 <p class="px-2 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-600" :class="collapsed ? 'md:hidden' : ''">{{ __('student.nav.main') }}</p>
                 <div class="space-y-0.5">
-                    <x-student.nav-link :href="route('student.dashboard')" icon="layout-dashboard" :label="__('student.nav.dashboard')" :active="request()->routeIs('student.dashboard')" />
-                    <x-student.nav-link :href="$navLink('student.mess.members.index')" icon="users" :label="__('student.nav.members')" :active="request()->routeIs('student.mess.members.*')" />
-                    <x-student.nav-link :href="$navLink('student.mess.meals.index')" icon="utensils-crossed" :label="__('student.nav.meals')" :active="request()->routeIs('student.mess.meals.*')" />
-                    <x-student.nav-link :href="$navLink('student.mess.bazar.index')" icon="shopping-cart" :label="__('student.nav.bazar')" :active="request()->routeIs('student.mess.bazar.*')" />
-                    <x-student.nav-link :href="$navLink('student.mess.deposits.index')" icon="wallet" :label="__('student.nav.deposits')" :active="request()->routeIs('student.mess.deposits.*')" />
-                    <x-student.nav-link :href="$navLink('student.mess.expenses.index')" icon="receipt" :label="__('student.nav.expenses')" :active="request()->routeIs('student.mess.expenses.*')" />
-                    @if($can('manage_finance'))
-                        <x-student.nav-link :href="$navLink('student.mess.accounts.index')" icon="landmark" :label="__('student.nav.accounts')" :active="request()->routeIs('student.mess.accounts.*')" />
-                        <x-student.nav-link :href="$navLink('student.mess.transactions.index')" icon="arrow-left-right" :label="__('student.nav.transactions')" :active="request()->routeIs('student.mess.transactions.*')" />
-                    @endif
-                    <x-student.nav-link :href="$navLink('student.mess.settlements.index')" icon="calendar-check" :label="__('student.nav.settlements')" :active="request()->routeIs('student.mess.settlements.*')" />
-                    <x-student.nav-link :href="$navLink('student.mess.reports.index')" icon="bar-chart-3" :label="__('student.nav.reports')" :active="request()->routeIs('student.mess.reports.*')" />
+                    @foreach($activeProductNavigation['main'] as $link)
+                        <x-student.nav-link :href="$link['url']" :icon="$link['icon']" :label="$link['label']" :active="request()->routeIs($link['pattern'])" />
+                    @endforeach
                 </div>
             </div>
 
             <div>
                 <p class="px-2 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-600" :class="collapsed ? 'md:hidden' : ''">{{ __('student.nav.settings') }}</p>
                 <div class="space-y-0.5">
-                    @if($isMessOwner)
-                        <x-student.nav-link :href="$navLink('student.mess.settings.edit')" icon="settings" :label="__('student.nav.mess_settings')" :active="request()->routeIs('student.mess.settings.*')" />
-                        <x-student.nav-link :href="$navLink('student.mess.permissions.index')" icon="shield-check" :label="__('student.nav.member_permissions')" :active="request()->routeIs('student.mess.permissions.*')" />
-                    @endif
-                    <x-student.nav-link :href="route('student.profile.edit')" icon="user-cog" :label="__('student.nav.profile')" :active="request()->routeIs('student.profile.*')" />
+                    @foreach($activeProductNavigation['settings'] as $link)
+                        <x-student.nav-link :href="$link['url']" :icon="$link['icon']" :label="$link['label']" :active="request()->routeIs($link['pattern'])" />
+                    @endforeach
                 </div>
             </div>
 
