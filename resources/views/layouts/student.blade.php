@@ -73,16 +73,27 @@
         color-scheme: dark;
     }
     html:not(.dark) {
-        --brand-bg: #F1F5F9;
-        --brand-surface: #FFFFFF;
-        --brand-text: #0F172A;
-        --brand-sidebar: rgba(255, 255, 255, 0.97);
-        --brand-topbar: rgba(248, 250, 252, 0.92);
-        --brand-popover: #FFFFFF;
-        --brand-border: rgba(15, 23, 42, 0.10);
-        --brand-hover: rgba(15, 23, 42, 0.05);
-        --brand-input: #FFFFFF;
-        color-scheme: light;
+        --ui-bg: #F8FAFC;
+        --ui-surface: #FFFFFF;
+        --ui-muted: #F1F5F9;
+        --ui-text: #0F172A;
+        --ui-secondary: #64748B;
+        --ui-navy: #1E3A5F;
+        --ui-blue: #2563EB;
+        --ui-border: #E2E8F0;
+        --ui-success: #0D9488;
+        --ui-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        --ui-shadow-md: 0 8px 24px rgba(15, 23, 42, 0.06);
+        --brand-bg: var(--ui-bg);
+        --brand-surface: var(--ui-surface);
+        --brand-text: var(--ui-text);
+        --brand-sidebar: var(--ui-surface);
+        --brand-topbar: var(--ui-surface);
+        --brand-popover: var(--ui-surface);
+        --brand-border: var(--ui-border);
+        --brand-hover: var(--ui-muted);
+        --brand-input: var(--ui-surface);
+        color-scheme: light !important;
     }
     html { -webkit-text-size-adjust: 100%; font-size: 18px; }
     .text-\[8px\] { font-size: 10px !important; }
@@ -118,86 +129,189 @@
     .data-table tbody tr:hover { background: rgba(255,255,255,0.03); }
     .card-hover { transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
     .card-hover:hover { transform: translateY(-2px); border-color: rgba(52,211,153,0.4); box-shadow: 0 18px 45px -18px rgba(16,185,129,0.45); }
-
-    /* Light Mode: keep the same layout and brand accents, only swap the palette. */
-    html:not(.dark) .glass {
-        background: rgba(255, 255, 255, 0.82);
-        border-color: rgba(16, 185, 129, 0.22);
-        box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-    }
-    html:not(.dark) .glass-strong {
-        background: rgba(255, 255, 255, 0.95);
-        border-color: rgba(16, 185, 129, 0.28);
-        box-shadow: 0 12px 36px rgba(15, 23, 42, 0.10), inset 0 1px 0 #FFFFFF;
-    }
-    html:not(.dark) .btn-ghost {
-        background: rgba(15, 23, 42, 0.05);
-        border-color: rgba(15, 23, 42, 0.12);
-        color: #0F172A;
-    }
-    html:not(.dark) .btn-ghost:hover { background: rgba(15, 23, 42, 0.09); }
-    html:not(.dark) .field {
-        background: #FFFFFF;
-        border-color: rgba(15, 23, 42, 0.16);
-        color: #0F172A;
-    }
-    html:not(.dark) .field::placeholder { color: #94A3B8; }
-    html:not(.dark) .field option { background: #FFFFFF; color: #0F172A; }
-    html:not(.dark) .kpi-label { color: #64748B; }
-    html:not(.dark) .student-popover { box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12); }
-    html:not(.dark) .glass-strong.bg-red-500 { background-color: #EF4444; color: #FFFFFF; }
-    html:not(.dark) .data-table th {
-        color: #475569;
-        border-bottom-color: rgba(15, 23, 42, 0.10);
-    }
-    html:not(.dark) .data-table td { border-bottom-color: rgba(15, 23, 42, 0.06); }
-    html:not(.dark) .data-table tbody tr:hover { background: rgba(15, 23, 42, 0.03); }
-    html:not(.dark) .student-scroll::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.20); }
-    html:not(.dark) .card-hover:hover {
-        border-color: rgba(16, 185, 129, 0.40);
-        box-shadow: 0 18px 45px -18px rgba(15, 23, 42, 0.18);
-    }
-
-    /* Text utilities that are light-on-dark in night mode. */
-    html:not(.dark) .text-white { color: #0F172A; }
-    html:not(.dark) .text-gray-200 { color: #1E293B; }
-    html:not(.dark) .text-gray-300 { color: #334155; }
-    html:not(.dark) .text-gray-400 { color: #475569; }
-    html:not(.dark) .text-gray-500 { color: #64748B; }
-    html:not(.dark) .text-gray-600 { color: #475569; }
-    html:not(.dark) .text-emerald-200 { color: #065F46; }
-    html:not(.dark) .text-emerald-300 { color: #047857; }
-    html:not(.dark) .text-emerald-400 { color: #059669; }
-    html:not(.dark) .text-emerald-500 { color: #047857; }
-    html:not(.dark) .text-orange-300 { color: #C2410C; }
-    html:not(.dark) .text-orange-400 { color: #C2410C; }
-    html:not(.dark) .text-red-300 { color: #B91C1C; }
-    html:not(.dark) .text-red-400 { color: #B91C1C; }
-    html:not(.dark) .text-amber-300 { color: #B45309; }
-    html:not(.dark) .text-amber-400 { color: #B45309; }
-    html:not(.dark) .text-teal-300 { color: #0F766E; }
-    html:not(.dark) .text-teal-400 { color: #0F766E; }
-    html:not(.dark) .text-sky-300 { color: #0369A1; }
-    html:not(.dark) .text-sky-400 { color: #0369A1; }
-    html:not(.dark) .text-violet-300 { color: #6D28D9; }
-    html:not(.dark) .text-lime-300 { color: #4D7C0F; }
-    html:not(.dark) .text-lime-400 { color: #4D7C0F; }
-    html:not(.dark) .hover\:text-white:hover { color: #0F172A; }
-    html:not(.dark) .hover\:text-emerald-300:hover { color: #047857; }
     .bg-emerald-500.text-white { color: #04120B; }
 
-    /* Surface utilities. */
-    html:not(.dark) .bg-white\/5 { background-color: rgba(15, 23, 42, 0.04); }
-    html:not(.dark) .bg-white\/10 { background-color: rgba(15, 23, 42, 0.08); }
-    html:not(.dark) .bg-black\/30 { background-color: #FFFFFF; }
-    html:not(.dark) .bg-black\/60 { background-color: rgba(15, 23, 42, 0.35); }
-    html:not(.dark) .hover\:bg-white\/5:hover { background-color: rgba(15, 23, 42, 0.05); }
-    html:not(.dark) .hover\:bg-white\/10:hover { background-color: rgba(15, 23, 42, 0.09); }
-    html:not(.dark) .border-white\/5 { border-color: rgba(15, 23, 42, 0.06); }
-    html:not(.dark) .border-white\/10 { border-color: rgba(15, 23, 42, 0.10); }
-    html:not(.dark) .border-white\/20 { border-color: rgba(15, 23, 42, 0.16); }
-    html:not(.dark) .divide-white\/5 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(15, 23, 42, 0.06); }
-    html:not(.dark) .divide-white\/10 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(15, 23, 42, 0.10); }
+    html:not(.dark) body { background: var(--ui-bg) !important; color: var(--ui-text) !important; }
+    html:not(.dark) body,
+    html:not(.dark) body * { font-weight: 400 !important; }
+    html:not(.dark) body h1,
+    html:not(.dark) body h2,
+    html:not(.dark) body h3,
+    html:not(.dark) body h4,
+    html:not(.dark) body h5,
+    html:not(.dark) body h6,
+    html:not(.dark) body th,
+    html:not(.dark) body strong,
+    html:not(.dark) body b,
+    html:not(.dark) body .font-display,
+    html:not(.dark) body .font-bold,
+    html:not(.dark) body .font-semibold { font-weight: 600 !important; }
+    html:not(.dark) body .font-medium { font-weight: 500 !important; }
+    html:not(.dark) body .font-extrabold,
+    html:not(.dark) body .font-black { font-weight: 700 !important; }
+    html:not(.dark) ::selection { background: #DBEAFE; color: var(--ui-navy); }
+    html:not(.dark) .glass,
+    html:not(.dark) .glass-strong,
+    html:not(.dark) .glass-nav,
+    html:not(.dark) .student-sidebar,
+    html:not(.dark) .student-topbar,
+    html:not(.dark) .student-popover,
+    html:not(.dark) .admin-bg,
+    html:not(.dark) .admin-surface,
+    html:not(.dark) [role="dialog"],
+    html:not(.dark) [role="menu"] { background-color: var(--ui-surface) !important; border-color: var(--ui-border) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow: var(--ui-shadow) !important; }
+    html:not(.dark) .card-hover,
+    html:not(.dark) .card-3d { background-color: var(--ui-surface) !important; border-color: var(--ui-border) !important; box-shadow: var(--ui-shadow) !important; }
+    html:not(.dark) .card-hover:hover,
+    html:not(.dark) .card-3d:hover { transform: none !important; border-color: var(--ui-border) !important; box-shadow: var(--ui-shadow-md) !important; }
+    html:not(.dark) .text-white,
+    html:not(.dark) .text-gray-200,
+    html:not(.dark) .text-gray-300 { color: var(--ui-text) !important; }
+    html:not(.dark) .text-gray-400,
+    html:not(.dark) .text-gray-500,
+    html:not(.dark) .text-gray-600 { color: var(--ui-secondary) !important; }
+    html:not(.dark) .text-emerald-200,
+    html:not(.dark) .text-emerald-300,
+    html:not(.dark) .text-emerald-400,
+    html:not(.dark) .text-emerald-500 { color: var(--ui-navy) !important; }
+    html:not(.dark) .text-teal-300,
+    html:not(.dark) .text-teal-400,
+    html:not(.dark) .text-teal-500 { color: var(--ui-success) !important; }
+    html:not(.dark) .text-sky-300,
+    html:not(.dark) .text-sky-400,
+    html:not(.dark) .text-blue-400,
+    html:not(.dark) .text-blue-500 { color: var(--ui-blue) !important; }
+    html:not(.dark) .text-orange-300,
+    html:not(.dark) .text-orange-400,
+    html:not(.dark) .text-amber-300,
+    html:not(.dark) .text-amber-400 { color: #B45309 !important; }
+    html:not(.dark) .text-red-300,
+    html:not(.dark) .text-red-400 { color: #B91C1C !important; }
+    html:not(.dark) .text-lime-300,
+    html:not(.dark) .text-lime-400 { color: var(--ui-success) !important; }
+    html:not(.dark) .text-violet-300 { color: #6D28D9 !important; }
+    html:not(.dark) .hover\:text-white:hover,
+    html:not(.dark) .hover\:text-emerald-300:hover { color: var(--ui-navy) !important; }
+    html:not(.dark) aside a:hover,
+    html:not(.dark) nav a:hover { color: var(--ui-navy) !important; }
+    html:not(.dark) .btn-green,
+    html:not(.dark) .btn-emerald,
+    html:not(.dark) .tab-btn.active,
+    html:not(.dark) .bg-emerald-500,
+    html:not(.dark) .bg-emerald-600,
+    html:not(.dark) .bg-emerald-700 { background-color: var(--ui-navy) !important; background-image: none !important; border-color: var(--ui-navy) !important; box-shadow: none !important; color: #FFFFFF !important; }
+    html:not(.dark) .btn-green:hover,
+    html:not(.dark) .btn-emerald:hover,
+    html:not(.dark) .hover\:bg-emerald-400:hover,
+    html:not(.dark) .hover\:bg-emerald-500:hover { background-color: var(--ui-blue) !important; box-shadow: var(--ui-shadow) !important; color: #FFFFFF !important; transform: none !important; }
+    html:not(.dark) .bg-emerald-400,
+    html:not(.dark) .bg-teal-500,
+    html:not(.dark) .bg-teal-600 { background-color: var(--ui-success) !important; box-shadow: none !important; color: #FFFFFF !important; }
+    html:not(.dark) .bg-emerald-400\/10,
+    html:not(.dark) .bg-emerald-500\/10,
+    html:not(.dark) .bg-emerald-500\/15,
+    html:not(.dark) .bg-emerald-500\/20,
+    html:not(.dark) .bg-teal-500\/10 { background-color: var(--ui-muted) !important; }
+    html:not(.dark) .btn-ghost,
+    html:not(.dark) .btn-secondary { background-color: var(--ui-surface) !important; border-color: var(--ui-border) !important; color: var(--ui-navy) !important; }
+    html:not(.dark) .btn-ghost:hover,
+    html:not(.dark) .btn-secondary:hover { background-color: var(--ui-muted) !important; }
+    html:not(.dark) input,
+    html:not(.dark) select,
+    html:not(.dark) textarea,
+    html:not(.dark) .field { background-color: var(--ui-surface) !important; border-color: var(--ui-border) !important; box-shadow: none !important; color: var(--ui-text) !important; }
+    html:not(.dark) input::placeholder,
+    html:not(.dark) textarea::placeholder,
+    html:not(.dark) .field::placeholder { color: var(--ui-secondary) !important; }
+    html:not(.dark) input:focus,
+    html:not(.dark) select:focus,
+    html:not(.dark) textarea:focus,
+    html:not(.dark) .field:focus { border-color: var(--ui-blue) !important; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important; outline: none !important; }
+    html:not(.dark) option { background-color: var(--ui-surface) !important; color: var(--ui-text) !important; }
+    html:not(.dark) input[type="checkbox"],
+    html:not(.dark) input[type="radio"],
+    html:not(.dark) input[type="range"],
+    html:not(.dark) progress { accent-color: var(--ui-blue) !important; }
+    html:not(.dark) .\[color-scheme\:dark\] { color-scheme: light !important; }
+    html:not(.dark) .focus\:border-emerald-500:focus,
+    html:not(.dark) .focus\:border-emerald-500\/60:focus { border-color: var(--ui-blue) !important; }
+    html:not(.dark) .focus\:ring-emerald-400\/50:focus,
+    html:not(.dark) .focus\:ring-emerald-500\/40:focus,
+    html:not(.dark) .focus\:ring-emerald-500\/60:focus,
+    html:not(.dark) .ring-emerald-400\/40 { --tw-ring-color: rgba(37, 99, 235, 0.25) !important; }
+    html:not(.dark) table { background-color: var(--ui-surface) !important; }
+    html:not(.dark) thead th,
+    html:not(.dark) .data-table th { background-color: var(--ui-muted) !important; border-bottom-color: var(--ui-border) !important; color: var(--ui-secondary) !important; }
+    html:not(.dark) tbody td,
+    html:not(.dark) .data-table td { border-bottom-color: var(--ui-border) !important; color: var(--ui-text) !important; }
+    html:not(.dark) tbody tr:hover,
+    html:not(.dark) .data-table tbody tr:hover { background-color: var(--ui-muted) !important; }
+    html:not(.dark) .bg-black\/20,
+    html:not(.dark) .bg-black\/30,
+    html:not(.dark) .bg-black\/40,
+    html:not(.dark) .bg-emerald-500\/5,
+    html:not(.dark) .bg-white\/5,
+    html:not(.dark) .bg-white\/10,
+    html:not(.dark) .bg-\[\#050B14\],
+    html:not(.dark) .bg-\[\#06130D\],
+    html:not(.dark) .bg-\[\#091C14\] { background-color: var(--ui-muted) !important; }
+    html:not(.dark) .bg-black\/60 { background-color: rgba(15, 23, 42, 0.24) !important; }
+    html:not(.dark) .bg-red-500\/10 { background-color: #FEF2F2 !important; }
+    html:not(.dark) .border-emerald-400\/20,
+    html:not(.dark) .border-emerald-400\/25,
+    html:not(.dark) .border-emerald-400\/30,
+    html:not(.dark) .border-emerald-400\/40,
+    html:not(.dark) .border-emerald-400\/60,
+    html:not(.dark) .border-emerald-500\/10,
+    html:not(.dark) .border-emerald-500\/15,
+    html:not(.dark) .border-emerald-500\/20,
+    html:not(.dark) .border-emerald-500\/25,
+    html:not(.dark) .border-emerald-500\/30,
+    html:not(.dark) .border-emerald-500\/40,
+    html:not(.dark) .hover\:border-emerald-400\/20:hover,
+    html:not(.dark) .hover\:border-emerald-400\/25:hover,
+    html:not(.dark) .hover\:border-emerald-400\/30:hover,
+    html:not(.dark) .hover\:border-emerald-400\/40:hover,
+    html:not(.dark) .border-white\/5,
+    html:not(.dark) .border-white\/10,
+    html:not(.dark) .border-white\/20,
+    html:not(.dark) .border-\[\#06130D\] { border-color: var(--ui-border) !important; }
+    html:not(.dark) .divide-white\/5 > :not([hidden]) ~ :not([hidden]),
+    html:not(.dark) .divide-white\/10 > :not([hidden]) ~ :not([hidden]) { border-color: var(--ui-border) !important; }
+    html:not(.dark) .hover\:bg-emerald-400\/10:hover,
+    html:not(.dark) .hover\:bg-emerald-500\/5:hover,
+    html:not(.dark) .hover\:bg-emerald-500\/10:hover,
+    html:not(.dark) .hover\:bg-emerald-500\/15:hover,
+    html:not(.dark) .hover\:bg-emerald-500\/20:hover,
+    html:not(.dark) .hover\:bg-white\/5:hover,
+    html:not(.dark) .hover\:bg-white\/10:hover { background-color: var(--ui-muted) !important; }
+    html:not(.dark) .peer:checked ~ .peer-checked\:border-emerald-400\/60 { border-color: var(--ui-blue) !important; }
+    html:not(.dark) .peer:checked ~ .peer-checked\:bg-emerald-500\/15 { background-color: #EFF6FF !important; }
+    html:not(.dark) .peer:checked ~ .peer-checked\:text-emerald-300 { color: var(--ui-navy) !important; }
+    html:not(.dark) .nav-child.active,
+    html:not(.dark) .nav-active { background-color: #EFF6FF !important; border-left-color: var(--ui-blue) !important; color: var(--ui-blue) !important; }
+    html:not(.dark) [aria-current="page"] { background-color: #EFF6FF !important; border-color: #BFDBFE !important; color: var(--ui-navy) !important; }
+    html:not(.dark) .gradient-green,
+    html:not(.dark) .gradient-shimmer { background-image: none !important; color: var(--ui-navy) !important; -webkit-text-fill-color: currentColor !important; }
+    html:not(.dark) .from-emerald-300,
+    html:not(.dark) .from-emerald-400,
+    html:not(.dark) .from-emerald-500 { background-image: none !important; background-color: var(--ui-navy) !important; color: #FFFFFF !important; }
+    html:not(.dark) .from-emerald-500\/10,
+    html:not(.dark) .from-emerald-500\/15,
+    html:not(.dark) .via-emerald-500\/5,
+    html:not(.dark) .via-emerald-950\/20 { background-image: none !important; background-color: var(--ui-muted) !important; }
+    html:not(.dark) .glow-green::before,
+    html:not(.dark) .btn-shine::before { display: none !important; }
+    html:not(.dark) .shadow-emerald-500\/20,
+    html:not(.dark) .shadow-emerald-500\/30,
+    html:not(.dark) .shadow-emerald-950\/20,
+    html:not(.dark) .shadow-emerald-950\/30 { box-shadow: var(--ui-shadow) !important; }
+    html:not(.dark) .cursor { background-color: var(--ui-blue) !important; }
+    html:not(.dark) .glass-strong.bg-red-500 { background-color: #DC2626 !important; border-color: #FECACA !important; color: #FFFFFF !important; }
+    html:not(.dark) .kpi-label { color: var(--ui-secondary) !important; }
+    html:not(.dark) ::-webkit-scrollbar-thumb,
+    html:not(.dark) .student-scroll::-webkit-scrollbar-thumb,
+    html:not(.dark) .admin-scroll::-webkit-scrollbar-thumb { background-color: #CBD5E1 !important; }
 </style>
 </head>
 <body class="min-h-screen">
