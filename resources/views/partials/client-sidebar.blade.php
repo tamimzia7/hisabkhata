@@ -25,17 +25,19 @@
     </a>
 
     <nav class="mt-4 flex-1 space-y-1.5 overflow-y-auto text-sm font-bn">
-        <p class="px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500">{{ __('site.dashboard.dashboard') }}</p>
+        @unless($user?->isClient())
+            <p class="px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500">{{ __('site.dashboard.dashboard') }}</p>
 
-        <a href="{{ route('dashboard') }}" class="group flex items-center gap-3 rounded-xl border px-3 py-2.5 transition {{ $navItem(request()->routeIs('dashboard')) }}" @if(request()->routeIs('dashboard')) aria-current="page" @endif>
-            <i data-lucide="layout-dashboard" class="{{ $navIcon }}"></i>
-            <span>{{ __('site.dashboard.dashboard') }}</span>
-        </a>
+            <a href="{{ route('dashboard') }}" class="group flex items-center gap-3 rounded-xl border px-3 py-2.5 transition {{ $navItem(request()->routeIs('dashboard')) }}" @if(request()->routeIs('dashboard')) aria-current="page" @endif>
+                <i data-lucide="layout-dashboard" class="{{ $navIcon }}"></i>
+                <span>{{ __('site.dashboard.dashboard') }}</span>
+            </a>
 
-        <a href="{{ route('subscriptions.index') }}" class="group flex items-center gap-3 rounded-xl border px-3 py-2.5 transition {{ $navItem(request()->routeIs('subscriptions.*')) }}" @if(request()->routeIs('subscriptions.*')) aria-current="page" @endif>
-            <i data-lucide="credit-card" class="{{ $navIcon }}"></i>
-            <span>{{ __('subscription.title') }}</span>
-        </a>
+            <a href="{{ route('subscriptions.index') }}" class="group flex items-center gap-3 rounded-xl border px-3 py-2.5 transition {{ $navItem(request()->routeIs('subscriptions.*')) }}" @if(request()->routeIs('subscriptions.*')) aria-current="page" @endif>
+                <i data-lucide="credit-card" class="{{ $navIcon }}"></i>
+                <span>{{ __('subscription.title') }}</span>
+            </a>
+        @endunless
 
         @foreach($clientNavigation['products'] as $product)
             @unless($product['active'])

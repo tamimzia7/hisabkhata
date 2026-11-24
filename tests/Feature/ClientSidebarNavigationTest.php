@@ -81,8 +81,6 @@ test('a newly registered client sees only onboarding and global navigation', fun
     $sidebarText = clientNavSidebarText($html);
 
     $response
-        ->assertSee(__('site.dashboard.dashboard'))
-        ->assertSee(__('subscription.title'))
         ->assertSee(__('student.nav.module_link'))
         ->assertSee(__('tickets.support'))
         ->assertSee(__('notifications.sidebar_label'))
@@ -90,8 +88,12 @@ test('a newly registered client sees only onboarding and global navigation', fun
 
     expect($html)
         ->toContain(route('subscriptions.show', SubscriptionPlan::PRODUCT_STUDENT))
-        ->not->toContain(route('student.dashboard'))
-        ->and($sidebarText)
+        ->not->toContain(route('student.dashboard'));
+
+    expect(clientNavSidebarLinkCount($html, route('dashboard')))->toBe(0)
+        ->and(clientNavSidebarLinkCount($html, route('subscriptions.index')))->toBe(0);
+
+    expect($sidebarText)
         ->not->toContain(__('student.nav.members'))
         ->not->toContain(__('student.nav.meals'))
         ->not->toContain(__('site.dashboard.my_profile'));
@@ -103,6 +105,7 @@ test('an active free trial reveals the product workspace navigation', function (
     $mess = clientNavMess($client);
 
     $response = $this->actingAs($client)->get(route('dashboard'))->assertOk();
+    $html = $response->getContent();
 
     $response
         ->assertSee(__('subscription.products.student'))
@@ -115,6 +118,10 @@ test('an active free trial reveals the product workspace navigation', function (
         ->assertSee(route('student.mess.members.index', $mess), false)
         ->assertSee(route('student.profile.edit'), false)
         ->assertSee('aria-current="page"', false);
+
+    expect(clientNavSidebarLinkCount($html, route('dashboard')))->toBe(0)
+        ->and(clientNavSidebarLinkCount($html, route('subscriptions.index')))->toBe(0)
+        ->and(clientNavSidebarLinkCount($html, route('student.dashboard')))->toBe(1);
 });
 
 test('an active paid subscription reveals the product workspace navigation', function () {
@@ -123,14 +130,18 @@ test('an active paid subscription reveals the product workspace navigation', fun
     $mess = clientNavMess($client);
 
     $response = $this->actingAs($client)->get(route('dashboard'))->assertOk();
+    $html = $response->getContent();
 
     $response
         ->assertSee(__('student.nav.accounts'))
         ->assertSee(__('student.nav.transactions'))
         ->assertSee(__('student.nav.settlements'))
         ->assertSee(route('student.mess.accounts.index', $mess), false)
-        ->assertSee(route('student.mess.transactions.index', $mess), false)
-        ->assertSee(route('subscriptions.index'), false);
+        ->assertSee(route('student.mess.transactions.index', $mess), false);
+
+    expect(clientNavSidebarLinkCount($html, route('dashboard')))->toBe(0)
+        ->and(clientNavSidebarLinkCount($html, route('subscriptions.index')))->toBe(0)
+        ->and(clientNavSidebarLinkCount($html, route('student.dashboard')))->toBe(1);
 });
 
 test('non-active subscription states hide the product workspace navigation', function (string $status, string $endsAt, bool $suspended) {
@@ -192,4 +203,15 @@ test('the student workspace keeps global account links without duplicating produ
         ->assertSee(__('student.nav.members'))
         ->assertSee(__('student.nav.profile'))
         ->assertSee(__('student.nav.logout'));
+});
+
+test('system users keep the admin dashboard sidebar navigation', function () {
+    $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+    $this->actingAs($admin)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertSee("setPage('admin-dashboard')", false)
+        ->assertSee(__('site.admin.dashboard'))
+        ->assertSee(__('site.admin.subscriptions'));
 });
