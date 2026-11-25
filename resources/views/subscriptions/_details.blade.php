@@ -98,96 +98,98 @@
 </style>
 
 <div class="subscription-details space-y-5">
-    <section class="relative overflow-hidden rounded-3xl border border-emerald-400/20 bg-gradient-to-br from-emerald-500/15 via-emerald-950/20 to-transparent p-5 shadow-2xl shadow-emerald-950/30 sm:p-6">
-        <div class="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-emerald-400/10 blur-3xl"></div>
-        <div class="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-teal-400/10 blur-3xl"></div>
+    <div class="grid gap-5 xl:grid-cols-12">
+        <section class="relative overflow-hidden rounded-3xl border border-emerald-400/20 bg-gradient-to-br from-emerald-500/15 via-emerald-950/20 to-transparent p-5 shadow-2xl shadow-emerald-950/30 sm:p-6 xl:col-span-7">
+            <div class="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-emerald-400/10 blur-3xl"></div>
+            <div class="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-teal-400/10 blur-3xl"></div>
 
-        <div class="relative flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-            <div class="min-w-0">
-                <div class="flex flex-wrap items-center gap-2">
-                    <span class="inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-300 font-bn">
-                        <i data-lucide="sparkles" class="h-3.5 w-3.5"></i>
-                        {{ __('subscription.title') }}
-                    </span>
-                    <span class="rounded-full border px-3 py-1 text-[11px] font-bold font-bn {{ $statusBadgeClasses }}">
-                        {{ __('subscription.status.'.$displayStatus) }}
-                    </span>
-                    @if($latestPayment)
-                        <span class="rounded-full px-3 py-1 text-[11px] font-bold font-bn {{ $paymentStatusClasses }}">
-                            {{ __('subscription.current.payment_status') }} · {{ __('subscription.status.'.$latestPayment->status) }}
+            <div class="relative flex flex-col gap-5 2xl:flex-row 2xl:items-center 2xl:justify-between">
+                <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-300 font-bn">
+                            <i data-lucide="sparkles" class="h-3.5 w-3.5"></i>
+                            {{ __('subscription.title') }}
                         </span>
-                    @endif
-                </div>
-
-                <h1 class="mt-4 text-2xl font-display text-white sm:text-3xl">{{ __('subscription.details.title', ['product' => $productName]) }}</h1>
-                <p class="mt-2 max-w-2xl text-sm leading-relaxed text-gray-300 font-bn">{{ $audience }}</p>
-                <p class="mt-1 max-w-2xl text-xs leading-relaxed text-gray-500 font-bn">{{ $description ?? '' }}</p>
-            </div>
-
-            <div class="flex flex-wrap gap-2.5">
-                @if($activeSubscription)
-                    <a href="{{ $openRoute }}" class="btn-emerald inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold font-bn">
-                        <i data-lucide="layout-dashboard" class="h-4 w-4"></i>
-                        {{ __('subscription.open') }}
-                    </a>
-                @endif
-
-                <a href="{{ route('subscriptions.index') }}" class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-bold text-gray-200 transition hover:border-emerald-400/20 hover:bg-white/10 font-bn">
-                    <i data-lucide="credit-card" class="h-4 w-4"></i>
-                    {{ __('subscription.view_all') }}
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <div class="flex flex-col gap-5 lg:flex-row">
-        @if($statusMessage)
-            <div class="flex flex-1 items-start gap-3 rounded-2xl border px-4 py-3.5 {{ $statusMessageContainerClasses }}">
-                <i data-lucide="{{ $statusIcon }}" class="mt-0.5 h-4 w-4 shrink-0 {{ $statusMessageClasses }}"></i>
-                <p class="text-sm leading-relaxed font-bn {{ $statusMessageClasses }}">{{ $statusMessage }}</p>
-            </div>
-        @endif
-
-        <section class="glass flex-1 rounded-2xl p-4 sm:p-5">
-            <div class="flex flex-col gap-4 2xl:flex-row 2xl:items-center 2xl:justify-between">
-                <div class="flex items-start gap-3">
-                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-300">
-                        <i data-lucide="gift" class="h-5 w-5"></i>
-                    </span>
-                    <div class="min-w-0">
-                        <div class="flex flex-wrap items-center gap-2">
-                            <h2 class="text-base font-bold text-white font-bn">{{ __('subscription.trial.title') }}</h2>
-                            <span class="rounded-full bg-amber-500/15 px-2.5 py-1 text-[10px] font-bold text-amber-300 font-bn">{{ __('subscription.trial.badge') }}</span>
-                        </div>
-                        <p class="mt-1 text-sm leading-relaxed font-bn {{ $trialMessageClasses }}">{{ $trialMessage }}</p>
-
-                        @if($trialActive && $trial)
-                            <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 font-bn">
-                                <span>{{ __('subscription.trial.start_date') }}: <span class="font-bold text-gray-300">{{ $trial->starts_at?->format('d M Y') ?? '—' }}</span></span>
-                                <span>{{ __('subscription.trial.end_date') }}: <span class="font-bold text-gray-300">{{ $trial->ends_at?->format('d M Y') ?? '—' }}</span></span>
-                                <span>{{ __('subscription.trial.remaining_days') }}: <span class="font-bold text-gray-300">{{ localize_number($trial->remainingDays()) }} {{ __('subscription.plans.days') }}</span></span>
-                            </div>
+                        <span class="rounded-full border px-3 py-1 text-[11px] font-bold font-bn {{ $statusBadgeClasses }}">
+                            {{ __('subscription.status.'.$displayStatus) }}
+                        </span>
+                        @if($latestPayment)
+                            <span class="rounded-full px-3 py-1 text-[11px] font-bold font-bn {{ $paymentStatusClasses }}">
+                                {{ __('subscription.current.payment_status') }} · {{ __('subscription.status.'.$latestPayment->status) }}
+                            </span>
                         @endif
                     </div>
+
+                    <h1 class="mt-4 text-2xl font-display text-white sm:text-3xl">{{ __('subscription.details.title', ['product' => $productName]) }}</h1>
+                    <p class="mt-2 max-w-2xl text-sm leading-relaxed text-gray-300 font-bn">{{ $audience }}</p>
+                    <p class="mt-1 max-w-2xl text-xs leading-relaxed text-gray-500 font-bn">{{ $description ?? '' }}</p>
                 </div>
 
-                @if($trialEligible)
-                    <form method="POST" action="{{ route('subscriptions.trial', $product) }}" x-data="{ submitting: false }" @submit="submitting = true" class="shrink-0">
-                        @csrf
-                        <button type="submit" :disabled="submitting" class="btn-emerald flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold font-bn transition disabled:cursor-not-allowed disabled:opacity-60 2xl:w-auto">
-                            <span x-show="!submitting" class="inline-flex items-center gap-2">
-                                <i data-lucide="gift" class="h-4 w-4"></i>
-                                {{ __('subscription.trial.button') }}
-                            </span>
-                            <span x-show="submitting" x-cloak class="inline-flex items-center gap-2">
-                                <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
-                                {{ __('subscription.trial.activating') }}
-                            </span>
-                        </button>
-                    </form>
-                @endif
+                <div class="flex flex-wrap gap-2.5">
+                    @if($activeSubscription)
+                        <a href="{{ $openRoute }}" class="btn-emerald inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold font-bn">
+                            <i data-lucide="layout-dashboard" class="h-4 w-4"></i>
+                            {{ __('subscription.open') }}
+                        </a>
+                    @endif
+
+                    <a href="{{ route('subscriptions.index') }}" class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-bold text-gray-200 transition hover:border-emerald-400/20 hover:bg-white/10 font-bn">
+                        <i data-lucide="credit-card" class="h-4 w-4"></i>
+                        {{ __('subscription.view_all') }}
+                    </a>
+                </div>
             </div>
         </section>
+
+        <div class="flex flex-col gap-5 xl:col-span-5">
+            @if($statusMessage)
+                <div class="flex items-start gap-3 rounded-2xl border px-4 py-3.5 {{ $statusMessageContainerClasses }}">
+                    <i data-lucide="{{ $statusIcon }}" class="mt-0.5 h-4 w-4 shrink-0 {{ $statusMessageClasses }}"></i>
+                    <p class="text-sm leading-relaxed font-bn {{ $statusMessageClasses }}">{{ $statusMessage }}</p>
+                </div>
+            @endif
+
+            <section class="glass flex-1 rounded-2xl p-4 sm:p-5">
+                <div class="flex flex-col gap-4 2xl:flex-row 2xl:items-center 2xl:justify-between">
+                    <div class="flex items-start gap-3">
+                        <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-300">
+                            <i data-lucide="gift" class="h-5 w-5"></i>
+                        </span>
+                        <div class="min-w-0">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <h2 class="text-base font-bold text-white font-bn">{{ __('subscription.trial.title') }}</h2>
+                                <span class="rounded-full bg-amber-500/15 px-2.5 py-1 text-[10px] font-bold text-amber-300 font-bn">{{ __('subscription.trial.badge') }}</span>
+                            </div>
+                            <p class="mt-1 text-sm leading-relaxed font-bn {{ $trialMessageClasses }}">{{ $trialMessage }}</p>
+
+                            @if($trialActive && $trial)
+                                <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 font-bn">
+                                    <span>{{ __('subscription.trial.start_date') }}: <span class="font-bold text-gray-300">{{ $trial->starts_at?->format('d M Y') ?? '—' }}</span></span>
+                                    <span>{{ __('subscription.trial.end_date') }}: <span class="font-bold text-gray-300">{{ $trial->ends_at?->format('d M Y') ?? '—' }}</span></span>
+                                    <span>{{ __('subscription.trial.remaining_days') }}: <span class="font-bold text-gray-300">{{ localize_number($trial->remainingDays()) }} {{ __('subscription.plans.days') }}</span></span>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    @if($trialEligible)
+                        <form method="POST" action="{{ route('subscriptions.trial', $product) }}" x-data="{ submitting: false }" @submit="submitting = true" class="shrink-0">
+                            @csrf
+                            <button type="submit" :disabled="submitting" class="btn-emerald flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold font-bn transition disabled:cursor-not-allowed disabled:opacity-60 2xl:w-auto">
+                                <span x-show="!submitting" class="inline-flex items-center gap-2">
+                                    <i data-lucide="gift" class="h-4 w-4"></i>
+                                    {{ __('subscription.trial.button') }}
+                                </span>
+                                <span x-show="submitting" x-cloak class="inline-flex items-center gap-2">
+                                    <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+                                    {{ __('subscription.trial.activating') }}
+                                </span>
+                            </button>
+                        </form>
+                    @endif
+                </div>
+            </section>
+        </div>
     </div>
 
     <div class="grid gap-5 xl:grid-cols-12">
