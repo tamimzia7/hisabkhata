@@ -95,18 +95,15 @@
                                 </div>
                                 <p class="mt-2 max-w-xl text-sm leading-relaxed text-gray-400 font-bn">{{ __('subscription.landing.trial_description') }}</p>
 
-                                <div class="mt-4 flex flex-wrap gap-x-4 gap-y-2">
-                                    <span class="inline-flex items-center gap-1.5 text-xs text-gray-300 font-bn">
-                                        <i data-lucide="check" class="h-3.5 w-3.5 text-emerald-400"></i>
-                                        {{ __('subscription.landing.trial_no_card') }}
+                                <div class="mt-4 flex flex-wrap items-center gap-2">
+                                    <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-400/20 bg-emerald-400/10 text-emerald-400" title="{{ __('subscription.landing.trial_no_card') }}" aria-label="{{ __('subscription.landing.trial_no_card') }}">
+                                        <i data-lucide="credit-card-off" class="h-4 w-4"></i>
                                     </span>
-                                    <span class="inline-flex items-center gap-1.5 text-xs text-gray-300 font-bn">
-                                        <i data-lucide="check" class="h-3.5 w-3.5 text-emerald-400"></i>
-                                        {{ __('subscription.landing.trial_cancel') }}
+                                    <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-400/20 bg-emerald-400/10 text-emerald-400" title="{{ __('subscription.landing.trial_cancel') }}" aria-label="{{ __('subscription.landing.trial_cancel') }}">
+                                        <i data-lucide="calendar-x" class="h-4 w-4"></i>
                                     </span>
-                                    <span class="inline-flex items-center gap-1.5 text-xs text-gray-300 font-bn">
-                                        <i data-lucide="check" class="h-3.5 w-3.5 text-emerald-400"></i>
-                                        {{ __('subscription.landing.trial_unlocked') }}
+                                    <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-400/20 bg-emerald-400/10 text-emerald-400" title="{{ __('subscription.landing.trial_unlocked') }}" aria-label="{{ __('subscription.landing.trial_unlocked') }}">
+                                        <i data-lucide="unlock" class="h-4 w-4"></i>
                                     </span>
                                 </div>
                             </div>
