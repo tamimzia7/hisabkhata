@@ -47,6 +47,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');
+    Route::get('/subscriptions/meal-management', [SubscriptionController::class, 'mealManagement'])->name('subscriptions.meal-management');
     Route::get('/subscriptions/{product}', [SubscriptionController::class, 'show'])->name('subscriptions.show');
     Route::post('/subscriptions/{product}/trial', [SubscriptionController::class, 'startTrial'])->name('subscriptions.trial');
     Route::post('/subscriptions/{product}/checkout', [SubscriptionController::class, 'checkout'])->name('subscriptions.checkout');

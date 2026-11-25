@@ -21,15 +21,6 @@
         default => 'circle',
     };
 
-    $statusIconClasses = match ($displayStatus) {
-        'active' => 'bg-emerald-500/15 text-emerald-400',
-        'trial' => 'bg-sky-500/15 text-sky-400',
-        'expired' => 'bg-red-500/15 text-red-400',
-        'suspended' => 'bg-amber-500/15 text-amber-400',
-        'pending' => 'bg-orange-500/15 text-orange-400',
-        default => 'bg-white/10 text-gray-400',
-    };
-
     $paymentStatusClasses = match ($latestPayment?->status) {
         'successful' => 'bg-emerald-500/15 text-emerald-400',
         'pending' => 'bg-amber-500/15 text-amber-400',
@@ -56,9 +47,6 @@
         'suspended' => 'border-amber-500/20 bg-amber-500/10',
         default => 'border-white/10 bg-white/5',
     };
-
-    $planName = $currentSubscription?->plan?->name;
-    $planLabel = $planName ? \Illuminate\Support\Str::after($planName, '— ') : null;
 
     $openRoute = route('student.dashboard');
 
@@ -153,69 +141,16 @@
         </div>
     </section>
 
-    <section class="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <div class="glass col-span-2 flex min-h-[8.5rem] flex-col justify-between rounded-2xl p-4 sm:p-5 lg:col-span-1">
-            <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400">
-                <i data-lucide="badge-check" class="h-5 w-5"></i>
-            </span>
-            <div class="mt-4">
-                <p class="text-xs text-gray-400 font-bn">{{ __('subscription.current.plan') }}</p>
-                <p class="mt-1 truncate text-lg font-bold text-white font-bn" title="{{ $planName }}">{{ $planLabel ?? '—' }}</p>
+    <div class="flex flex-col gap-5 lg:flex-row">
+        @if($statusMessage)
+            <div class="flex flex-1 items-start gap-3 rounded-2xl border px-4 py-3.5 {{ $statusMessageContainerClasses }}">
+                <i data-lucide="{{ $statusIcon }}" class="mt-0.5 h-4 w-4 shrink-0 {{ $statusMessageClasses }}"></i>
+                <p class="text-sm leading-relaxed font-bn {{ $statusMessageClasses }}">{{ $statusMessage }}</p>
             </div>
-        </div>
+        @endif
 
-        <div class="glass flex min-h-[8.5rem] flex-col justify-between rounded-2xl p-4 sm:p-5">
-            <span class="flex h-10 w-10 items-center justify-center rounded-xl {{ $statusIconClasses }}">
-                <i data-lucide="{{ $statusIcon }}" class="h-5 w-5"></i>
-            </span>
-            <div class="mt-4">
-                <p class="text-xs text-gray-400 font-bn">{{ __('subscription.current.status') }}</p>
-                <span class="mt-1 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-bold font-bn {{ $statusBadgeClasses }}">
-                    {{ __('subscription.status.'.$displayStatus) }}
-                </span>
-            </div>
-        </div>
-
-        <div class="glass flex min-h-[8.5rem] flex-col justify-between rounded-2xl p-4 sm:p-5">
-            <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/15 text-sky-400">
-                <i data-lucide="calendar" class="h-5 w-5"></i>
-            </span>
-            <div class="mt-4">
-                <p class="text-xs text-gray-400 font-bn">{{ __('subscription.current.started') }}</p>
-                <p class="mt-1 whitespace-nowrap text-base font-bold text-white sm:text-lg">{{ $currentSubscription?->starts_at?->format('d M Y') ?? '—' }}</p>
-            </div>
-        </div>
-
-        <div class="glass flex min-h-[8.5rem] flex-col justify-between rounded-2xl p-4 sm:p-5">
-            <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15 text-amber-400">
-                <i data-lucide="calendar-clock" class="h-5 w-5"></i>
-            </span>
-            <div class="mt-4">
-                <p class="text-xs text-gray-400 font-bn">{{ __('subscription.current.expires') }}</p>
-                <p class="mt-1 whitespace-nowrap text-base font-bold text-white sm:text-lg">{{ $currentSubscription?->ends_at?->format('d M Y') ?? '—' }}</p>
-            </div>
-        </div>
-
-        <div class="glass col-span-2 flex min-h-[8.5rem] flex-col justify-between rounded-2xl p-4 sm:p-5 lg:col-span-1">
-            <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/15 text-teal-400">
-                <i data-lucide="clock" class="h-5 w-5"></i>
-            </span>
-            <div class="mt-4">
-                <p class="text-xs text-gray-400 font-bn">{{ __('subscription.current.remaining') }}</p>
-                <p class="mt-1 whitespace-nowrap text-base font-bold text-white sm:text-lg">{{ $currentSubscription ? localize_number($remainingDays).' '.__('subscription.plans.days') : '—' }}</p>
-            </div>
-        </div>
-    </section>
-
-    @if($statusMessage)
-        <div class="flex items-start gap-3 rounded-2xl border px-4 py-3.5 {{ $statusMessageContainerClasses }}">
-            <i data-lucide="{{ $statusIcon }}" class="mt-0.5 h-4 w-4 shrink-0 {{ $statusMessageClasses }}"></i>
-            <p class="text-sm leading-relaxed font-bn {{ $statusMessageClasses }}">{{ $statusMessage }}</p>
-        </div>
-    @endif
-
-    <section class="glass rounded-2xl p-4 sm:p-5">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <section class="glass flex-1 rounded-2xl p-4 sm:p-5">
+            <div class="flex flex-col gap-4 2xl:flex-row 2xl:items-center 2xl:justify-between">
             <div class="flex items-start gap-3">
                 <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-300">
                     <i data-lucide="gift" class="h-5 w-5"></i>

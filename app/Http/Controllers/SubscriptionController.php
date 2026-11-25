@@ -47,6 +47,14 @@ class SubscriptionController extends Controller
     }
 
     /**
+     * Show the meal-management subscription landing page.
+     */
+    public function mealManagement(Request $request): View
+    {
+        return view('subscriptions.meal-management', $this->pageData->forProduct($request->user(), SubscriptionPlan::PRODUCT_STUDENT));
+    }
+
+    /**
      * Claim the one-time 30-day trial for a product.
      */
     public function startTrial(Request $request, string $product): RedirectResponse

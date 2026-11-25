@@ -84,7 +84,7 @@ test('an active trial shows the trial badge, message and open action without a d
     $response->assertDontSeeText(__('subscription.trial.button'));
 });
 
-test('an active paid monthly subscription shows the plan, remaining days and management action', function () {
+test('an active paid monthly subscription shows the management action and no duplicate trial', function () {
     $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
     $startsAt = now()->subDays(5);
     $endsAt = now()->addDays(25);
@@ -102,15 +102,14 @@ test('an active paid monthly subscription shows the plan, remaining days and man
         ->assertOk();
 
     $response->assertSeeText(__('subscription.status.active'));
-    $response->assertSee('Monthly');
     $response->assertSeeText(__('subscription.open'));
     $response->assertSeeText(__('subscription.trial.unavailable_active'));
-    $response->assertSee($endsAt->format('d M Y'));
-    $response->assertSee(localize_number(25), false);
+    $response->assertDontSeeText(__('subscription.current.plan'));
+    $response->assertDontSeeText(__('subscription.current.remaining'));
     $response->assertDontSeeText(__('subscription.trial.button'));
 });
 
-test('an active paid yearly subscription shows the yearly plan and keeps both checkout options', function () {
+test('an active paid yearly subscription keeps both checkout options', function () {
     $user = User::factory()->create(['role' => User::ROLE_STUDENT]);
 
     detailsPageSubscribe(
@@ -126,7 +125,6 @@ test('an active paid yearly subscription shows the yearly plan and keeps both ch
         ->assertOk();
 
     $response->assertSeeText(__('subscription.status.active'));
-    $response->assertSee('Yearly');
     $response->assertSee('value="'.detailsPagePlan('student', 'monthly')->slug.'"', false);
     $response->assertSee('value="'.detailsPagePlan('student', 'yearly')->slug.'"', false);
     $response->assertSeeText(__('subscription.plans.yearly'));

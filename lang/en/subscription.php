@@ -67,6 +67,28 @@ return [
         'cancelled_hint' => 'This subscription was cancelled. You can renew it anytime.',
     ],
 
+    'landing' => [
+        'eyebrow' => 'Multi-feature',
+        'description' => 'A simple and effective solution for students and mess managers. Keep your meals, expenses and budget under control in one place.',
+        'warning_title' => 'You do not have an active subscription!',
+        'warning_hint' => 'Buy a new plan or start the free trial to use every feature of the system.',
+        'view_plans' => 'View plans',
+        'trial_badge' => 'Exclusive offer',
+        'trial_description' => 'If you are a new user of this product, try every premium feature free for 30 days without paying anything.',
+        'trial_no_card' => 'No credit card required',
+        'trial_cancel' => 'Cancel anytime',
+        'trial_unlocked' => 'All features unlocked',
+        'trial_start' => 'Start trial',
+        'trial_no_auto_bill' => 'No automatic billing after 30 days',
+        'features_title' => 'What you get',
+        'features_hint' => 'These features unlock when you choose a subscription.',
+        'whatsapp_notifications' => 'WhatsApp notifications',
+        'secure' => '100% safe and secure',
+        'most_popular' => 'Most popular',
+        'buy_plan' => 'Buy plan',
+        'cancel_note' => 'Cancel anytime within :days days.',
+    ],
+
     'catalog' => [
         'student' => [
             'audience' => 'For students and mess members',
