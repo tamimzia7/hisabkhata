@@ -32,7 +32,6 @@
         'expired' => __('subscription.current.expired_subscription'),
         'suspended' => __('subscription.current.suspended_subscription'),
         'cancelled' => __('subscription.current.cancelled_subscription'),
-        'inactive' => __('subscription.current.no_subscription'),
         default => null,
     };
 
