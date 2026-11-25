@@ -157,7 +157,7 @@
                         </span>
                         <div class="min-w-0">
                             <div class="flex flex-wrap items-center gap-2">
-                                <h2 class="text-base font-bold text-white font-bn">{{ __('subscription.trial.title') }}</h2>
+                                <h2 class="inline-flex items-center rounded-xl bg-amber-400 px-3 py-1.5 text-sm font-bold text-amber-950 shadow-lg shadow-amber-500/20 font-bn">{{ __('subscription.trial.title') }}</h2>
                                 <span class="rounded-full bg-amber-500/15 px-2.5 py-1 text-[10px] font-bold text-amber-300 font-bn">{{ __('subscription.trial.badge') }}</span>
                             </div>
                             <p class="mt-1 text-sm leading-relaxed font-bn {{ $trialMessageClasses }}">{{ $trialMessage }}</p>
@@ -175,7 +175,7 @@
                     @if($trialEligible)
                         <form method="POST" action="{{ route('subscriptions.trial', $product) }}" x-data="{ submitting: false }" @submit="submitting = true" class="shrink-0">
                             @csrf
-                            <button type="submit" :disabled="submitting" class="btn-emerald flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold font-bn transition disabled:cursor-not-allowed disabled:opacity-60 2xl:w-auto">
+                            <button type="button" @click="$el.form?.requestSubmit()" :disabled="submitting" class="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 px-6 py-3.5 text-sm font-bold text-amber-950 shadow-lg shadow-amber-500/20 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60 font-bn 2xl:w-auto">
                                 <span x-show="!submitting" class="inline-flex items-center gap-2">
                                     <i data-lucide="gift" class="h-4 w-4"></i>
                                     {{ __('subscription.trial.button') }}
