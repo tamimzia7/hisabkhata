@@ -151,44 +151,45 @@
 
         <section class="glass flex-1 rounded-2xl p-4 sm:p-5">
             <div class="flex flex-col gap-4 2xl:flex-row 2xl:items-center 2xl:justify-between">
-            <div class="flex items-start gap-3">
-                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-300">
-                    <i data-lucide="gift" class="h-5 w-5"></i>
-                </span>
-                <div class="min-w-0">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <h2 class="text-base font-bold text-white font-bn">{{ __('subscription.trial.title') }}</h2>
-                        <span class="rounded-full bg-amber-500/15 px-2.5 py-1 text-[10px] font-bold text-amber-300 font-bn">{{ __('subscription.trial.badge') }}</span>
-                    </div>
-                    <p class="mt-1 text-sm leading-relaxed font-bn {{ $trialMessageClasses }}">{{ $trialMessage }}</p>
-
-                    @if($trialActive && $trial)
-                        <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 font-bn">
-                            <span>{{ __('subscription.trial.start_date') }}: <span class="font-bold text-gray-300">{{ $trial->starts_at?->format('d M Y') ?? '—' }}</span></span>
-                            <span>{{ __('subscription.trial.end_date') }}: <span class="font-bold text-gray-300">{{ $trial->ends_at?->format('d M Y') ?? '—' }}</span></span>
-                            <span>{{ __('subscription.trial.remaining_days') }}: <span class="font-bold text-gray-300">{{ localize_number($trial->remainingDays()) }} {{ __('subscription.plans.days') }}</span></span>
+                <div class="flex items-start gap-3">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-300">
+                        <i data-lucide="gift" class="h-5 w-5"></i>
+                    </span>
+                    <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h2 class="text-base font-bold text-white font-bn">{{ __('subscription.trial.title') }}</h2>
+                            <span class="rounded-full bg-amber-500/15 px-2.5 py-1 text-[10px] font-bold text-amber-300 font-bn">{{ __('subscription.trial.badge') }}</span>
                         </div>
-                    @endif
-                </div>
-            </div>
+                        <p class="mt-1 text-sm leading-relaxed font-bn {{ $trialMessageClasses }}">{{ $trialMessage }}</p>
 
-            @if($trialEligible)
-                <form method="POST" action="{{ route('subscriptions.trial', $product) }}" x-data="{ submitting: false }" @submit="submitting = true" class="shrink-0">
-                    @csrf
-                    <button type="submit" :disabled="submitting" class="btn-emerald flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold font-bn transition disabled:cursor-not-allowed disabled:opacity-60 lg:w-auto">
-                        <span x-show="!submitting" class="inline-flex items-center gap-2">
-                            <i data-lucide="gift" class="h-4 w-4"></i>
-                            {{ __('subscription.trial.button') }}
-                        </span>
-                        <span x-show="submitting" x-cloak class="inline-flex items-center gap-2">
-                            <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
-                            {{ __('subscription.trial.activating') }}
-                        </span>
-                    </button>
-                </form>
-            @endif
-        </div>
-    </section>
+                        @if($trialActive && $trial)
+                            <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 font-bn">
+                                <span>{{ __('subscription.trial.start_date') }}: <span class="font-bold text-gray-300">{{ $trial->starts_at?->format('d M Y') ?? '—' }}</span></span>
+                                <span>{{ __('subscription.trial.end_date') }}: <span class="font-bold text-gray-300">{{ $trial->ends_at?->format('d M Y') ?? '—' }}</span></span>
+                                <span>{{ __('subscription.trial.remaining_days') }}: <span class="font-bold text-gray-300">{{ localize_number($trial->remainingDays()) }} {{ __('subscription.plans.days') }}</span></span>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                @if($trialEligible)
+                    <form method="POST" action="{{ route('subscriptions.trial', $product) }}" x-data="{ submitting: false }" @submit="submitting = true" class="shrink-0">
+                        @csrf
+                        <button type="submit" :disabled="submitting" class="btn-emerald flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold font-bn transition disabled:cursor-not-allowed disabled:opacity-60 2xl:w-auto">
+                            <span x-show="!submitting" class="inline-flex items-center gap-2">
+                                <i data-lucide="gift" class="h-4 w-4"></i>
+                                {{ __('subscription.trial.button') }}
+                            </span>
+                            <span x-show="submitting" x-cloak class="inline-flex items-center gap-2">
+                                <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+                                {{ __('subscription.trial.activating') }}
+                            </span>
+                        </button>
+                    </form>
+                @endif
+            </div>
+        </section>
+    </div>
 
     <div class="grid gap-5 xl:grid-cols-12">
         <section class="glass rounded-3xl p-5 xl:col-span-5">
